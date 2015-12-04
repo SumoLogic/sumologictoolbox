@@ -11,7 +11,7 @@ from tzlocal import get_localzone
 from PyQt4 import QtCore, QtGui, uic
 from sumologic import SumoLogic
 
-qtMainWindowUI = "sumotoolbox.ui" # Enter file here.
+qtMainWindowUI = "sumotoolbox.ui"
 qtCollectorCopyDialogUI = "collectorcopy.ui"
 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtMainWindowUI)
