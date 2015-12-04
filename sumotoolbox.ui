@@ -29,15 +29,15 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>SumoToolBox</string>
+   <string>SumoLogicToolBox</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>10</x>
       <y>150</y>
-      <width>1021</width>
+      <width>1011</width>
       <height>591</height>
      </rect>
     </property>
@@ -659,12 +659,12 @@
        <string>Save to CSV</string>
       </property>
      </widget>
-     <widget class="QCheckBox" name="checkBoxConvertTime">
+     <widget class="QCheckBox" name="checkBoxConvertTimeFromEpoch">
       <property name="geometry">
        <rect>
         <x>320</x>
         <y>170</y>
-        <width>201</width>
+        <width>291</width>
         <height>17</height>
        </rect>
       </property>
@@ -675,26 +675,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Convert Timestamp from Epoch</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="checkBoxConvertTimeStampLocalTime">
-      <property name="geometry">
-       <rect>
-        <x>530</x>
-        <y>170</y>
-        <width>221</width>
-        <height>17</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <family>Arial</family>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Convert Timestamp to Local Time</string>
+       <string>Convert to Selected Timzeone from UTC Epoch</string>
       </property>
      </widget>
     </widget>

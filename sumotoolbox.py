@@ -4,9 +4,9 @@ import sys
 import json
 import re
 import time
-#import datetime as DT
 import csv
-from pytz import common_timezones
+import pytz
+from datetime import datetime
 from tzlocal import get_localzone
 from PyQt4 import QtCore, QtGui, uic
 from sumologic import SumoLogic
@@ -165,10 +165,9 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
         regexprog = re.compile(r'\S+')
         jobsubmitted = False
         savetofile = self.checkBoxSaveSearch.isChecked()
-        converttime = self.checkBoxConvertTime.isChecked()
+        converttimefromepoch = self.checkBoxConvertTimeFromEpoch.isChecked()
         self.jobmessages = []
         self.jobrecords = []
-
 
         if (re.match(regexprog,sourceusername) != None) and (re.match(regexprog,sourcepassword) != None):
             self.sumosource = SumoLogic(sourceusername, sourcepassword, endpoint=sourceurl)
@@ -196,7 +195,6 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
 
                         #return messages
                         if self.buttonGroupOutputType.checkedId() == -2:
-
                             iterations = nummessages // 10000 + 1
                             for iteration in range (1,iterations + 1):
                                 messages = self.sumosource.search_job_messages(searchjob,limit=10000,offset=((iteration-1)*10000))
@@ -207,9 +205,11 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
                             self.tableWidgetSearchResults.setHorizontalHeaderLabels(['time','_raw'])
                             index = 0
                             for message in self.jobmessages:
-                                if converttime:
-                                    datetime = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(float(message['map']['_messagetime']) / 1000))
-                                    message['map']['_messagetime'] = datetime
+                                if converttimefromepoch:
+                                    timezone = pytz.timezone(selectedtimezone)
+                                    converteddatetime = datetime.fromtimestamp(float(message['map']['_messagetime']) / 1000, timezone)
+                                    timestring = str(converteddatetime.strftime('%Y-%m-%d %H:%M:%S'))
+                                    message['map']['_messagetime'] = timestring
                                 self.tableWidgetSearchResults.setItem(index,0,QtGui.QTableWidgetItem(message['map']['_messagetime']))
                                 self.tableWidgetSearchResults.setItem(index,1,QtGui.QTableWidgetItem(message['map']['_raw']))
                                 index += 1
@@ -241,9 +241,12 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
                             for record in self.jobrecords:
                                 columnnum = 0
                                 for fieldname in fieldnames:
-                                    if converttime and (fieldname == '_timeslice'):
-                                        datetime = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(float(record['map']['_timeslice']) / 1000))
-                                        record['map']['_timeslice'] = datetime
+                                    if converttimefromepoch and (fieldname == '_timeslice'):
+                                        timezone = pytz.timezone(selectedtimezone)
+                                        converteddatetime = datetime.fromtimestamp(float(record['map'][fieldname]) / 1000, timezone)
+                                        timestring = str(converteddatetime.strftime('%Y-%m-%d %H:%M:%S'))
+                                        #converteddatetime = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(float(record['map']['_timeslice']) / 1000))
+                                        record['map']['_timeslice'] = timestring
                                     self.tableWidgetSearchResults.setItem(index, columnnum, QtGui.QTableWidgetItem(record['map'][fieldname]))
                                     columnnum += 1
                                 index += 1
@@ -263,8 +266,6 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
                 self.errorbox('Please enter a search.')
         else:
             self.errorbox('No user and/or password.')
-
-
 
     def errorbox(self, message):
         msgBox = QtGui.QMessageBox()
@@ -289,7 +290,7 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
         #Load Timezones and create model for timezone combobox
 
         self.timezonemodel = QtGui.QStandardItemModel()
-        for zone in common_timezones:
+        for zone in pytz.common_timezones:
             text_item = QtGui.QStandardItem(zone)
             self.timezonemodel.appendRow(text_item)
 
