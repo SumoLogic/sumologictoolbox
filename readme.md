@@ -1,4 +1,5 @@
 Sumotoolbox
+===========
 
  Sumotoolbox is a GUI utility for accessing the various Sumo Logic APIs (currently the search
  and connector APIs.) The idea is to make it easier to perform common API tasks such as copying
