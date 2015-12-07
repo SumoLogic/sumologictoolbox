@@ -46,6 +46,12 @@ Search API use:
     fields as local time formatted as %Y-%m-%d %H:%M:%S rather than UTC epoch time.
     9. Click "Start"
 
+Screen Shots:
+=============
+
+![Collector Source Copy](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_collector_example.png "Source Copy")
+
+![Search API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_search_example.png "Search API")
 Known Issues:
 =============
 
