@@ -6,13 +6,21 @@ import re
 import time
 import csv
 import pytz
+import os.path
 from datetime import datetime
 from tzlocal import get_localzone
 from PyQt4 import QtCore, QtGui, uic
 from sumologic import SumoLogic
 
-qtMainWindowUI = "sumotoolbox.ui"
-qtCollectorCopyDialogUI = "collectorcopy.ui"
+#detect if in Pyinstaller packaged and build appropriate base directory path
+if getattr(sys,'frozen', False):
+    basedir = sys._MEIPASS
+else:
+    basedir = os.path.dirname(__file__)
+
+print basedir
+qtMainWindowUI = os.path.join(basedir,'data/sumotoolbox.ui')
+qtCollectorCopyDialogUI = os.path.join(basedir,'data/collectorcopy.ui')
 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtMainWindowUI)
 
@@ -21,13 +29,35 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
+        # detect if we are running in a pyinstaller bundle and set the base directory for file loads"
+        if getattr(sys,'frozen', False):
+            self.basedir = sys._MEIPASS
+        else:
+            self.basedir = os.path.dirname(__file__)
+
         self.setupUi(self)
         self.initModels()
+        self.loadcredentials()
         self.collectorcopyUI = uic.loadUi(qtCollectorCopyDialogUI)
         self.pushButtonUpdateListSource.clicked.connect(self.updatecollectorlistsource)
         self.pushButtonUpdateListDestination.clicked.connect(self.updatecollectorlistdestination)
         self.pushButtonCopyCollectorsToDest.clicked.connect(self.copysourcesfromsourcetodestinationdialog)
         self.pushButtonStartSearch.clicked.connect(self.runsearch)
+
+    def loadcredentials(self):
+
+        if os.path.isfile(os.path.join(self.basedir,'data/credentials.json')):
+            try:
+                with open(os.path.join(self.basedir,'data/credentials.json'), 'r') as filepointer:
+                    credentials = json.load(filepointer)
+                self.SourceUserName.setText(credentials['source']['user'])
+                self.SourcePassword.setText(credentials['source']['password'])
+                self.DestinationUserName.setText(credentials['destination']['user'])
+                self.DestinationPassword.setText(credentials['destination']['password'])
+            except:
+                pass
+
+
 
     def updatecollectorlistsource(self):
         self.listWidgetSourceCollectors.clear()
@@ -276,7 +306,7 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
 
     def initModels(self):
         # Load API Endpoint List from file and create model for the comboboxes
-        with open('apiurls.json', 'r') as infile:
+        with open(os.path.join(self.basedir,'data/apiurls.json'), 'r') as infile:
             self.loadedapiurls=json.load(infile)
 
         self.apiurlsmodel = QtGui.QStandardItemModel()
