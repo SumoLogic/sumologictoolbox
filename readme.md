@@ -33,7 +33,36 @@ Collector Source Copying:
 NOTE: You can use the same credentials for both source and destination to copy sources from one collector to another
 within the same org.
 
-Search API use:
+Collector Backup:
+
+    1. Input Credentials for your source org
+    2. Select your region for source org
+    3. Click "Update" to populate the collector list
+    4. Choose a source collector
+    5. Click 'Backup Collector' to write a json dump of that collector
+
+Collector Restore:
+
+    1. Input Credentials for your destination org
+    2. Select your region for your destination org
+    3. Click "Update" for destination to populate the collector list
+    4. Choose a collector
+    5. Click 'Restore Source(s)' to select a json dump to restore
+    6. Select which sources to restore in the resulting dialog
+    7. Click 'OK'
+
+Source Delete:
+
+    1. Input Credentials for your destination org
+    2. Select your region for your destination org
+    3. Click "Update" for destination to populate the collector list
+    4. Choose a collector
+    5. Choose a source (no multi-select by design to minimize accidental deletion)
+    6. Click "Delete Source"
+    7. Verify that you really want to delete the source by typing "DELETE"
+    8. Click "OK"
+
+Search API:
 
     1. Input source credentials
     2. Select your source region
@@ -52,10 +81,11 @@ Screen Shots:
 ![Collector Source Copy](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_collector_example.png "Source Copy")
 
 ![Search API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_search_example.png "Search API")
+
 Known Issues:
 =============
 
-* Option to modify collection start time when copying collectors does not currently work. Needs tweaking
+* Option to modify collection start time when copying and restoring collectors does not currently work. Needs tweaking
 as currently the Sumo Logic Collector API does not like the value and substitutes "All Time" instead.
 
 * No status updates during searches. When executing a search, especially a lengthy one the UI becomes non-responsive
@@ -67,11 +97,10 @@ indicating that the syntax was wrong.
 To Do:
 ======
 
-* Add "export to file" and "import to file" options for collectors/sources.
-
 * Implement content copying.
 
-* Improve time search time conversion to work on arbitrary fields (for instance a timeslice field not named "_timeslice"
+* Improve search results time conversion to work on arbitrary fields (for instance a timeslice field not named
+ "_timeslice")
 
 * Add custom time formats for time conversion
 

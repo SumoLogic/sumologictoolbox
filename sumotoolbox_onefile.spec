@@ -5,7 +5,9 @@ block_cipher = None
 added_files = [
     ( 'data/apiurls.json', 'data' ),
     ( 'data/sumotoolbox.ui', 'data' ),
-    ( 'data/collectorcopy.ui', 'data' )
+    ( 'data/collectorcopy.ui', 'data' ),
+    ( 'data/deletesources.ui', 'data' ),
+    ( 'data/restoresources.ui', 'data' )
     ]
 
 a = Analysis(['sumotoolbox.py'],

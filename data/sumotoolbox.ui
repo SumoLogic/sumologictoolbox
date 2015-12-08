@@ -37,7 +37,7 @@
      <rect>
       <x>10</x>
       <y>150</y>
-      <width>1011</width>
+      <width>1001</width>
       <height>591</height>
      </rect>
     </property>
@@ -51,7 +51,7 @@
      <enum>QTabWidget::Triangular</enum>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="CollectorAPI">
      <attribute name="title">
@@ -78,7 +78,7 @@
        <rect>
         <x>10</x>
         <y>70</y>
-        <width>491</width>
+        <width>481</width>
         <height>191</height>
        </rect>
       </property>
@@ -112,7 +112,7 @@
        <rect>
         <x>10</x>
         <y>290</y>
-        <width>491</width>
+        <width>481</width>
         <height>201</height>
        </rect>
       </property>
@@ -176,9 +176,9 @@
      <widget class="QListWidget" name="listWidgetDestinationCollectors">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>510</x>
         <y>70</y>
-        <width>491</width>
+        <width>481</width>
         <height>191</height>
        </rect>
       </property>
@@ -204,9 +204,9 @@
      <widget class="QListWidget" name="listWidgetDestinationSources">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>510</x>
         <y>290</y>
-        <width>491</width>
+        <width>481</width>
         <height>201</height>
        </rect>
       </property>
@@ -226,7 +226,7 @@
        <bool>true</bool>
       </property>
       <property name="selectionMode">
-       <enum>QAbstractItemView::MultiSelection</enum>
+       <enum>QAbstractItemView::SingleSelection</enum>
       </property>
       <property name="sortingEnabled">
        <bool>true</bool>
@@ -235,7 +235,7 @@
      <widget class="QLabel" name="label_9">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>510</x>
         <y>50</y>
         <width>81</width>
         <height>16</height>
@@ -254,7 +254,7 @@
      <widget class="QLabel" name="label_10">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>510</x>
         <y>270</y>
         <width>81</width>
         <height>16</height>
@@ -273,9 +273,9 @@
      <widget class="QPushButton" name="pushButtonCopyCollectorsToDest">
       <property name="geometry">
        <rect>
-        <x>430</x>
+        <x>420</x>
         <y>500</y>
-        <width>75</width>
+        <width>71</width>
         <height>23</height>
        </rect>
       </property>
@@ -289,7 +289,7 @@
      <widget class="QPushButton" name="pushButtonUpdateListDestination">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>510</x>
         <y>10</y>
         <width>111</width>
         <height>31</height>
@@ -300,6 +300,76 @@
       </property>
       <property name="text">
        <string>Update</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonBackupCollector">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>500</y>
+        <width>111</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Backup Collector</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonRestoreSources">
+      <property name="geometry">
+       <rect>
+        <x>510</x>
+        <y>500</y>
+        <width>111</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Restore Source(s)</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonDeleteSources">
+      <property name="geometry">
+       <rect>
+        <x>630</x>
+        <y>500</y>
+        <width>111</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Delete Source</string>
+      </property>
+     </widget>
+     <widget class="Line" name="line">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>500</y>
+        <width>20</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
      </widget>
     </widget>
@@ -675,7 +745,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Convert to Selected Timzeone from UTC Epoch</string>
+       <string>Convert to Selected Timezone from UTC Epoch</string>
       </property>
      </widget>
     </widget>

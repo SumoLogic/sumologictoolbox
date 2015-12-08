@@ -21,6 +21,8 @@ else:
 print basedir
 qtMainWindowUI = os.path.join(basedir,'data/sumotoolbox.ui')
 qtCollectorCopyDialogUI = os.path.join(basedir,'data/collectorcopy.ui')
+qtRestoreSourcesDialogUI = os.path.join(basedir, 'data/restoresources.ui')
+qtDeleteSourcesDialogUI = os.path.join(basedir, 'data/deletesources.ui')
 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtMainWindowUI)
 
@@ -39,10 +41,15 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
         self.initModels()
         self.loadcredentials()
         self.collectorcopyUI = uic.loadUi(qtCollectorCopyDialogUI)
+        self.restoresourcesUI = uic.loadUi(qtRestoreSourcesDialogUI)
+        self.deletesourceUI = uic.loadUi(qtDeleteSourcesDialogUI)
         self.pushButtonUpdateListSource.clicked.connect(self.updatecollectorlistsource)
         self.pushButtonUpdateListDestination.clicked.connect(self.updatecollectorlistdestination)
         self.pushButtonCopyCollectorsToDest.clicked.connect(self.copysourcesfromsourcetodestinationdialog)
         self.pushButtonStartSearch.clicked.connect(self.runsearch)
+        self.pushButtonBackupCollector.clicked.connect(self.backupcollector)
+        self.pushButtonRestoreSources.clicked.connect(self.restoresources)
+        self.pushButtonDeleteSources.clicked.connect(self.deletesource)
 
     def loadcredentials(self):
 
@@ -56,8 +63,6 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
                 self.DestinationPassword.setText(credentials['destination']['password'])
             except:
                 pass
-
-
 
     def updatecollectorlistsource(self):
         self.listWidgetSourceCollectors.clear()
@@ -182,6 +187,112 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
         else:
             self.errorbox('No Source Collector Selected.')
 
+    def backupcollector(self):
+        sourcecollector = self.listWidgetSourceCollectors.selectedItems()
+        if len (sourcecollector) == 1:
+            if self.sourcesources:
+                sourcecollector = str(sourcecollector[0].text()) + r'.json'
+                savefile = str(QtGui.QFileDialog.getSaveFileName(self, 'Save As...', sourcecollector))
+                if savefile:
+                    with open(savefile, 'w') as filepointer:
+                        json.dump(self.sourcesources, filepointer)
+                    self.infobox('Wrote file ' + savefile)
+            else:
+                self.errorbox('No sources to backup.')
+
+        else:
+            self.errorbox('No Source Collector Selected.')
+
+    def restoresources(self):
+        destinationcollector = self.listWidgetDestinationCollectors.selectedItems()
+        if len(destinationcollector) == 1:
+            destinationcollectorqstring = destinationcollector[0]
+            destinationcollector = str(destinationcollector[0].text())
+            restorefile = str(QtGui.QFileDialog.getOpenFileName(self, 'Open Backup..','',selectedFilter='*.json'))
+            sources = None
+            try:
+                with open(restorefile) as data_file:
+                    sources = json.load(data_file)
+            except:
+                self.errorbox('Failed to load JSON file.')
+            if sources:
+                self.restoresourcesUI.dateTimeEdit.setMaximumDate(QtCore.QDate.currentDate())
+                self.restoresourcesUI.dateTimeEdit.setDate(QtCore.QDate.currentDate())
+                self.restoresourcesUI.listWidgetRestoreSources.clear()
+                sourcedict = {}
+                for source in sources:
+                    sourcedict[source['name']]=''
+                for source in sourcedict:
+                    self.restoresourcesUI.listWidgetRestoreSources.addItem(source)
+                result = self.restoresourcesUI.exec_()
+                overridecollectiondate = self.restoresourcesUI.checkBoxOverrideCollectionStartTime.isChecked()
+                overridedate = self.restoresourcesUI.dateTimeEdit.dateTime()
+                overridedatemillis = long(overridedate.currentMSecsSinceEpoch())
+                if result:
+                    selectedsources = self.restoresourcesUI.listWidgetRestoreSources.selectedItems()
+                    if len(selectedsources) > 0:
+                        for selectedsource in selectedsources:
+                            for sumosource in sources:
+                                    if sumosource['name'] == str(selectedsource.text()):
+                                        if 'id' in sumosource:
+                                            del sumosource['id']
+                                        if 'alive' in sumosource:
+                                            del sumosource['alive']
+                                        if overridecollectiondate:
+                                            sumosource['cutoffTimestamp'] = overridedatemillis
+                                        template = {}
+                                        template['source'] = sumosource
+                                        notduplicate = True
+                                        for sumodest in self.destinationsources:
+                                            if sumodest['name'] == source:
+                                                notduplicate = False
+                                        if notduplicate:
+                                            self.sumodestination.create_source(self.destinationcollectordict[destinationcollector], template)
+                                        else:
+                                            self.errorbox(source + ' already exists, skipping.')
+                            self.updatedestinationlistsource(destinationcollectorqstring, destinationcollectorqstring)
+                    else:
+                        self.errorbox('No sources selected for import.')
+
+
+
+
+
+        else:
+            self.errorbox('No Destination Collector Selected.')
+
+
+    def deletesource(self):
+        sourcetodelete = self.listWidgetDestinationSources.selectedItems()
+        if len(sourcetodelete) > 1:
+            self.errorbox('Too many sources selected. There can be only one!')
+        if len(sourcetodelete) == 1:
+            message = "You are about to delete the following source:\n\n" + str(sourcetodelete[0].text()) + '\n\nIf you are sure type "DELETE" in the box below.'
+            self.deletesourceUI.labelDeleteSources.setText(message)
+            result = self.deletesourceUI.exec_()
+            if result:
+                if str(self.deletesourceUI.lineEditVerifyDelete.text()) == "DELETE":
+                    destinationcollector = self.listWidgetDestinationCollectors.selectedItems()
+                    destinationcollectorqstring = destinationcollector[0]
+                    destinationcollector = str(destinationcollector[0].text())
+                    destinationcollectorid = self.destinationcollectordict[destinationcollector]
+                    print str(sourcetodelete[0].text())
+                    print destinationcollectorid
+                    for destinationsource in self.destinationsources:
+                        if destinationsource['name'] == str(sourcetodelete[0].text()):
+                            print destinationsource
+                            self.sumodestination.delete_source_by_id(destinationcollectorid, destinationsource['id'])
+                            self.updatedestinationlistsource(destinationcollectorqstring, destinationcollectorqstring)
+                else:
+                    self.errorbox('You failed to type "DELETE". Crisis averted!')
+        else:
+            self.errorbox('No source selected.')
+
+
+
+
+
+
     def runsearch(self):
 
         self.tableWidgetSearchResults.clear()
@@ -275,7 +386,6 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
                                         timezone = pytz.timezone(selectedtimezone)
                                         converteddatetime = datetime.fromtimestamp(float(record['map'][fieldname]) / 1000, timezone)
                                         timestring = str(converteddatetime.strftime('%Y-%m-%d %H:%M:%S'))
-                                        #converteddatetime = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(float(record['map']['_timeslice']) / 1000))
                                         record['map']['_timeslice'] = timestring
                                     self.tableWidgetSearchResults.setItem(index, columnnum, QtGui.QTableWidgetItem(record['map'][fieldname]))
                                     columnnum += 1
@@ -300,6 +410,13 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
     def errorbox(self, message):
         msgBox = QtGui.QMessageBox()
         msgBox.setWindowTitle('Error')
+        msgBox.setText(message)
+        msgBox.addButton(QtGui.QPushButton('OK'), QtGui.QMessageBox.RejectRole)
+        ret = msgBox.exec_()
+
+    def infobox(self, message):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setWindowTitle('Info')
         msgBox.setText(message)
         msgBox.addButton(QtGui.QPushButton('OK'), QtGui.QMessageBox.RejectRole)
         ret = msgBox.exec_()

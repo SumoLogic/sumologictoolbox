@@ -91,6 +91,9 @@ class SumoLogic:
     def delete_source(self, collector_id, source):
         return self.delete('/collectors/' + str(collector_id) + '/sources/' + str(source['source']['id']))
 
+    def delete_source_by_id(self, collector_id, source_id):
+        return self.delete('/collectors/' + str(collector_id) + '/sources/' + str(source_id))
+
     def create_content(self, path, data):
         r = self.post('/content/' + path, data)
         return r.text
