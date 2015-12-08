@@ -2,7 +2,7 @@ Sumotoolbox
 ===========
 
  Sumotoolbox is a GUI utility for accessing the various Sumo Logic APIs (currently the search
- and connector APIs.) The idea is to make it easier to perform common API tasks such as copying
+ and collector APIs.) The idea is to make it easier to perform common API tasks such as copying
  sources and generating CSV files from searches.
 
  Sumotoolbox makes use of the sumologic-python-sdk by Yoway Buorn that is available here:
