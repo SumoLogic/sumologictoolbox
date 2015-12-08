@@ -51,7 +51,7 @@
      <enum>QTabWidget::Triangular</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="CollectorAPI">
      <attribute name="title">
@@ -428,7 +428,7 @@
        <rect>
         <x>910</x>
         <y>150</y>
-        <width>91</width>
+        <width>81</width>
         <height>41</height>
        </rect>
       </property>
@@ -447,7 +447,7 @@
        <rect>
         <x>10</x>
         <y>200</y>
-        <width>991</width>
+        <width>981</width>
         <height>341</height>
        </rect>
       </property>
@@ -493,7 +493,7 @@
        <rect>
         <x>10</x>
         <y>50</y>
-        <width>991</width>
+        <width>981</width>
         <height>91</height>
        </rect>
       </property>
