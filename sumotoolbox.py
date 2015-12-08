@@ -18,7 +18,6 @@ if getattr(sys,'frozen', False):
 else:
     basedir = os.path.dirname(__file__)
 
-print basedir
 qtMainWindowUI = os.path.join(basedir,'data/sumotoolbox.ui')
 qtCollectorCopyDialogUI = os.path.join(basedir,'data/collectorcopy.ui')
 qtRestoreSourcesDialogUI = os.path.join(basedir, 'data/restoresources.ui')
@@ -276,11 +275,8 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
                     destinationcollectorqstring = destinationcollector[0]
                     destinationcollector = str(destinationcollector[0].text())
                     destinationcollectorid = self.destinationcollectordict[destinationcollector]
-                    print str(sourcetodelete[0].text())
-                    print destinationcollectorid
                     for destinationsource in self.destinationsources:
                         if destinationsource['name'] == str(sourcetodelete[0].text()):
-                            print destinationsource
                             self.sumodestination.delete_source_by_id(destinationcollectorid, destinationsource['id'])
                             self.updatedestinationlistsource(destinationcollectorqstring, destinationcollectorqstring)
                 else:
@@ -331,7 +327,6 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
                         numrecords = jobstatus['recordCount']
                         nummessages = jobstatus['messageCount']
                         self.labelSearchResultCount.setText(str(nummessages))
-                    print jobstatus
                     if nummessages is not 0:
 
                         #return messages
