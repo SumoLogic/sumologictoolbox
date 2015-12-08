@@ -18,6 +18,7 @@ if getattr(sys,'frozen', False):
 else:
     basedir = os.path.dirname(__file__)
 
+#This script uses Qt Designer files to define the UI elements which must be loaded
 qtMainWindowUI = os.path.join(basedir,'data/sumotoolbox.ui')
 qtCollectorCopyDialogUI = os.path.join(basedir,'data/collectorcopy.ui')
 qtRestoreSourcesDialogUI = os.path.join(basedir, 'data/restoresources.ui')
@@ -37,11 +38,13 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
             self.basedir = os.path.dirname(__file__)
 
         self.setupUi(self)
-        self.initModels()
-        self.loadcredentials()
+        self.initModels()   #load all the comboboxes and such with values
+        self.loadcredentials()  #if a credential file exists populate the creds with values
+        # init all of the dialogs we'll be using
         self.collectorcopyUI = uic.loadUi(qtCollectorCopyDialogUI)
         self.restoresourcesUI = uic.loadUi(qtRestoreSourcesDialogUI)
         self.deletesourceUI = uic.loadUi(qtDeleteSourcesDialogUI)
+        # connect all of the UI button elements to their respective methods
         self.pushButtonUpdateListSource.clicked.connect(self.updatecollectorlistsource)
         self.pushButtonUpdateListDestination.clicked.connect(self.updatecollectorlistdestination)
         self.pushButtonCopyCollectorsToDest.clicked.connect(self.copysourcesfromsourcetodestinationdialog)
@@ -52,6 +55,8 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
 
     def loadcredentials(self):
 
+        #look to see if the credential file exists and load credentials if it does
+        #fail if anything at all goes wrong
         if os.path.isfile(os.path.join(self.basedir,'data/credentials.json')):
             try:
                 with open(os.path.join(self.basedir,'data/credentials.json'), 'r') as filepointer:
@@ -64,22 +69,24 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
                 pass
 
     def updatecollectorlistsource(self):
-        self.listWidgetSourceCollectors.clear()
-        sourceurl = self.loadedapiurls[str(self.comboBoxSourceRegion.currentText())]
-        sourceusername = str(self.SourceUserName.text())
-        sourcepassword = str(self.SourcePassword.text())
-        self.sourcecollectordict = {}
-        regexprog = re.compile(r'\S+')
+        self.listWidgetSourceCollectors.clear()     #clear the list first since it might already be populated
+        sourceurl = self.loadedapiurls[str(self.comboBoxSourceRegion.currentText())] #get the selected API URL
+        sourceusername = str(self.SourceUserName.text()) #get username
+        sourcepassword = str(self.SourcePassword.text()) #get password
+        self.sourcecollectordict = {} #init this so we can store a dict of collectors (easier to access than list)
+        regexprog = re.compile(r'\S+') # make sure username and password have something in them
         if (re.match(regexprog,sourceusername) != None) and (re.match(regexprog,sourcepassword) != None):
+            #access the API with provided credentials
             self.sumosource = SumoLogic(sourceusername, sourcepassword, endpoint=sourceurl)
             try:
-                self.sourcecollectors = self.sumosource.collectors()
+                self.sourcecollectors = self.sumosource.collectors() #get list of collectors
                 for collector in self.sourcecollectors:
-                    self.sourcecollectordict[collector['name']]=collector['id']
+                    self.sourcecollectordict[collector['name']]=collector['id'] #make a dict with just names and ids
 
                 for collector in self.sourcecollectordict:
-                    self.listWidgetSourceCollectors.addItem(collector)
+                    self.listWidgetSourceCollectors.addItem(collector) #populate the list widget in the GUI
 
+                #set up a signal to update the source list if anything is changed
                 self.listWidgetSourceCollectors.currentItemChanged.connect(self.updatesourcelistsource)
             except:
                 self.errorbox('Incorrect Credentials.')
@@ -87,22 +94,24 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
            self.errorbox('No user and/or password.')
 
     def updatecollectorlistdestination(self):
-        self.listWidgetDestinationCollectors.clear()
-        destinationurl = self.loadedapiurls[str(self.comboBoxDestinationRegion.currentText())]
-        destinationusername = str(self.DestinationUserName.text())
-        destinationpassword = str(self.DestinationPassword.text())
-        self.destinationcollectordict = {}
-        regexprog = re.compile(r'\S+')
+        self.listWidgetDestinationCollectors.clear() #clear the list first since it might already be populated
+        destinationurl = self.loadedapiurls[str(self.comboBoxDestinationRegion.currentText())] #get the selected API URL
+        destinationusername = str(self.DestinationUserName.text()) #get username
+        destinationpassword = str(self.DestinationPassword.text()) #get password
+        self.destinationcollectordict = {} #init this so we can store a dict of collectors (easier to access than list)
+        regexprog = re.compile(r'\S+') # make sure username and password have something in them
         if (re.match(regexprog, destinationusername) is not None) and (re.match(regexprog,destinationpassword) is not None):
+            #access the API with provided credentials
             self.sumodestination = SumoLogic(destinationusername, destinationpassword, endpoint=destinationurl)
             try:
-                self.destinationcollectors = self.sumodestination.collectors()
+                self.destinationcollectors = self.sumodestination.collectors() #get list of collectors
                 for collector in self.destinationcollectors:
-                    self.destinationcollectordict[collector['name']]=collector['id']
+                    self.destinationcollectordict[collector['name']]=collector['id'] #make a dict with just names and ids
 
                 for collector in self.destinationcollectordict:
-                    self.listWidgetDestinationCollectors.addItem(collector)
+                    self.listWidgetDestinationCollectors.addItem(collector) #populate the list widget in the GUI
 
+                #set up a signal to update the source list if anything is changed
                 self.listWidgetDestinationCollectors.currentItemChanged.connect(self.updatedestinationlistsource)
             except:
                 self.errorbox('Incorrect Credentials.')
@@ -111,71 +120,78 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
 
     def updatesourcelistsource(self, currentcollector, prevcollector):
 
-        self.listWidgetSourceSources.clear()
-        if currentcollector != None:
+        self.listWidgetSourceSources.clear() #clear the list first since it might already be populated
+        if currentcollector != None: #check to make sure that there is a collector selected
             self.sourcesourcesdict = {}
+            # populate the list of sources
             self.sourcesources = self.sumosource.sources(self.sourcecollectordict[str(currentcollector.text())])
             for source in self.sourcesources:
-                self.sourcesourcesdict[source['name']]=''
+                self.sourcesourcesdict[source['name']]='' #this is sloppy but I just want a dict of names
             for source in self.sourcesourcesdict:
-                self.listWidgetSourceSources.addItem(source)
+                self.listWidgetSourceSources.addItem(source) #populate the display with sources
 
     def updatedestinationlistsource(self, currentcollector, prevcollector):
 
-        self.listWidgetDestinationSources.clear()
-        if currentcollector != None:
+        self.listWidgetDestinationSources.clear() #clear the list first since it might already be populated
+        if currentcollector != None: #check to make sure that there is a collector selected
             self.destinationsourcesdict = {}
+            # populate the list of sources
             self.destinationsources = self.sumodestination.sources(self.destinationcollectordict[str(currentcollector.text())])
             for source in self.destinationsources:
-                self.destinationsourcesdict[source['name']]=''
+                self.destinationsourcesdict[source['name']]='' #this is sloppy but I just want a dict of names
             for source in self.destinationsourcesdict:
-                self.listWidgetDestinationSources.addItem(source)
+                self.listWidgetDestinationSources.addItem(source) #populate the display with sources
 
     def copysourcesfromsourcetodestinationdialog(self):
 
-        sourcecollector = self.listWidgetSourceCollectors.selectedItems()
-        if len (sourcecollector) == 1:
-            sourcecollector = sourcecollector[0].text()
-            destinationcollector = self.listWidgetDestinationCollectors.selectedItems()
-            if len(destinationcollector) == 1:
+        sourcecollector = self.listWidgetSourceCollectors.selectedItems() #get the selected source collector
+        if len (sourcecollector) == 1: #make sure there is a collector selected, otherwise bail
+            sourcecollector = sourcecollector[0].text() #qstring to string conversion
+            destinationcollector = self.listWidgetDestinationCollectors.selectedItems() #get the selected dest collector
+            if len(destinationcollector) == 1: #make sure there is a collector selected, otherwise bail
 
                 destinationcollectorqstring = destinationcollector[0]
-                destinationcollector = str(destinationcollector[0].text())
-                sourcesources = self.listWidgetSourceSources.selectedItems()
-                if len(sourcesources) > 0:
+                destinationcollector = str(destinationcollector[0].text()) #qstring to string conversion
+                sourcesources = self.listWidgetSourceSources.selectedItems() #get the selected sources
+                if len(sourcesources) > 0: #make sure at least one source is selected
                     sourcelist = []
-                    for source in sourcesources:
+                    for source in sourcesources: #iterate through source names to build a warning message
                         sourcelist.append(source.text())
                     message = "You are about to copy the following sources from collector \"" + sourcecollector + "\" to \"" + destinationcollector + "\". Is this correct? \n\n"
                     for source in sourcelist:
                         message = message + source + "\n"
-                    self.collectorcopyUI.labelCollectorCopy.setText(message)
-                    self.collectorcopyUI.dateTimeEdit.setMaximumDate(QtCore.QDate.currentDate())
-                    self.collectorcopyUI.dateTimeEdit.setDate(QtCore.QDate.currentDate())
-                    result = self.collectorcopyUI.exec_()
+                    self.collectorcopyUI.labelCollectorCopy.setText(message) #set the warning message in the copy dialog
+                    self.collectorcopyUI.dateTimeEdit.setMaximumDate(QtCore.QDate.currentDate()) #make sure user doesn't pick time in future
+                    self.collectorcopyUI.dateTimeEdit.setDate(QtCore.QDate.currentDate()) #set date to today
+                    result = self.collectorcopyUI.exec_() #bring up the copy dialog
+                    #process collection time override inputs
                     overridecollectiondate = self.collectorcopyUI.checkBoxOverrideCollectionStartTime.isChecked()
                     overridedate = self.collectorcopyUI.dateTimeEdit.dateTime()
+                    #THIS IS BROKEN.... for some reason the API will not accept the following as valid Epoch time
+                    #Maybe the longint isn't getting the "L" appended to it?
                     overridedatemillis = long(overridedate.currentMSecsSinceEpoch())
-                    if result:
-                        for source in sourcelist:
+                    if result:  #If they clicked "OK" rather than cancel
+                        for source in sourcelist: #iterate through the selected sources and copy them
                             for sumosource in self.sourcesources:
+                                #
                                 if sumosource['name'] == source:
-                                    if 'id' in sumosource:
+                                    if 'id' in sumosource: #the API creates an ID so this must be deleted before sending
                                         del sumosource['id']
                                     if 'alive' in sumosource:
-                                        del sumosource['alive']
+                                        del sumosource['alive'] #the API sets this itself so this must be deleted before sending
                                     if overridecollectiondate:
                                         sumosource['cutoffTimestamp'] = overridedatemillis
                                     template = {}
-                                    template['source'] = sumosource
+                                    template['source'] = sumosource #the API expects a dict with a key called 'source'
                                     notduplicate = True
                                     for sumodest in self.destinationsources:
-                                        if sumodest['name'] == source:
+                                        if sumodest['name'] == source: #make sure the source doesn't already exist in the destination
                                             notduplicate = False
-                                    if notduplicate:
+                                    if notduplicate: #finally lets copy this thing
                                         self.sumodestination.create_source(self.destinationcollectordict[destinationcollector], template)
                                     else:
                                         self.errorbox(source + ' already exists, skipping.')
+                        #call the update method for the dest sources since they have changed after the copy
                         self.updatedestinationlistsource(destinationcollectorqstring, destinationcollectorqstring)
 
 
@@ -187,9 +203,9 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
             self.errorbox('No Source Collector Selected.')
 
     def backupcollector(self):
-        sourcecollector = self.listWidgetSourceCollectors.selectedItems()
-        if len (sourcecollector) == 1:
-            if self.sourcesources:
+        sourcecollector = self.listWidgetSourceCollectors.selectedItems() #get which sources have been selected
+        if len (sourcecollector) == 1: #make sure something was selected
+            if self.sourcesources: #make sure there's something to write to the file
                 sourcecollector = str(sourcecollector[0].text()) + r'.json'
                 savefile = str(QtGui.QFileDialog.getSaveFileName(self, 'Save As...', sourcecollector))
                 if savefile:
