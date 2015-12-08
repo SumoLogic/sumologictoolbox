@@ -47,6 +47,12 @@
       <verstretch>0</verstretch>
      </sizepolicy>
     </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
     <property name="tabShape">
      <enum>QTabWidget::Triangular</enum>
     </property>
@@ -65,6 +71,12 @@
         <width>111</width>
         <height>31</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="contextMenuPolicy">
        <enum>Qt::NoContextMenu</enum>
@@ -279,6 +291,12 @@
         <height>23</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="contextMenuPolicy">
        <enum>Qt::NoContextMenu</enum>
       </property>
@@ -294,6 +312,12 @@
         <width>111</width>
         <height>31</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="contextMenuPolicy">
        <enum>Qt::NoContextMenu</enum>
@@ -753,8 +777,8 @@
    <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
-      <x>9</x>
-      <y>9</y>
+      <x>10</x>
+      <y>10</y>
       <width>491</width>
       <height>131</height>
      </rect>
@@ -799,6 +823,12 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="contextMenuPolicy">
       <enum>Qt::NoContextMenu</enum>
      </property>
@@ -834,6 +864,12 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="contextMenuPolicy">
       <enum>Qt::NoContextMenu</enum>
      </property>
@@ -868,6 +904,12 @@
        <width>471</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="contextMenuPolicy">
       <enum>Qt::NoContextMenu</enum>
@@ -929,6 +971,12 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="contextMenuPolicy">
       <enum>Qt::NoContextMenu</enum>
      </property>
@@ -963,6 +1011,12 @@
        <width>471</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="contextMenuPolicy">
       <enum>Qt::NoContextMenu</enum>
@@ -999,6 +1053,12 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="contextMenuPolicy">
       <enum>Qt::NoContextMenu</enum>
      </property>
@@ -1025,6 +1085,23 @@
  </widget>
  <resources/>
  <connections/>
+ <designerdata>
+  <property name="gridDeltaX">
+   <number>10</number>
+  </property>
+  <property name="gridDeltaY">
+   <number>10</number>
+  </property>
+  <property name="gridSnapX">
+   <bool>true</bool>
+  </property>
+  <property name="gridSnapY">
+   <bool>true</bool>
+  </property>
+  <property name="gridVisible">
+   <bool>true</bool>
+  </property>
+ </designerdata>
  <buttongroups>
   <buttongroup name="buttonGroupOutputType"/>
  </buttongroups>

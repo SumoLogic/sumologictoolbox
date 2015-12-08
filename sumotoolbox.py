@@ -276,7 +276,6 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
         else:
             self.errorbox('No Destination Collector Selected.')
 
-
     def deletesource(self):
         sourcetodelete = self.listWidgetDestinationSources.selectedItems()
         if len(sourcetodelete) > 1:
@@ -299,11 +298,6 @@ class sumotoolbox(QtGui.QMainWindow, Ui_MainWindow):
                     self.errorbox('You failed to type "DELETE". Crisis averted!')
         else:
             self.errorbox('No source selected.')
-
-
-
-
-
 
     def runsearch(self):
 
