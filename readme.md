@@ -129,3 +129,5 @@ Support
 =======
 
 This repository and the code within is not supported by Sumo Logic.
+
+Feel free to e-mail me with issues: tmacdonald@sumologic.com
