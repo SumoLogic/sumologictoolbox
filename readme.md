@@ -22,9 +22,13 @@ Dependencies
 Sumotoolbox was created using python 3.6, pyqt5 and the Qt designer application. The following python modules are required:
 
 pyqt5
+
 requests
+
 tzlocal
+
 pytz
+
 
 
 Features and Usage
