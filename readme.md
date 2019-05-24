@@ -9,12 +9,23 @@ Sumotoolbox
 
  https://github.com/SumoLogic/sumologic-python-sdk
 
+Using Sumotoolbox
+=================
+
+The easiest way to use sumotoolbox is to look in the "dist" directory of this repo and grab the executable for your platform. Run the executable, pick your region, enter your creds, and start using the tool. 
+
+If you prefer to clone the archive and run from source then you'll need Python 3.6 or higher and the modules listed in the dependency section.  
+
 Dependencies
 ============
 
-Sumotoolbox was created using python 3.6, pyqt5 and the Qt designer application. A working pyqt5 installation must be
-present to execute this script within your python environment. Alternatively you can download the Windows, Mac OS X, or Linux
-binaries available in the "dist" folder which come bundled with all required libraries. 
+Sumotoolbox was created using python 3.6, pyqt5 and the Qt designer application. The following python modules are required:
+
+pyqt5
+requests
+tzlocal
+pytz
+
 
 Features and Usage
 ==================
@@ -97,8 +108,7 @@ Known Issues:
 =============
 
 * No status updates during searches/copy operations. When making API calls the UI becomes non-responsive
-until the calls complete. This is due to the search loop blocking updates to the UI. One day this might be fixed
-by multithreading the app but currently this is expected behaviour. 
+until the calls complete. This is due to the requests library blocking Qt5 when REST calls are being used. One day this might be fixed by multithreading the app but currently this is expected behaviour. 
 
 * Entering an invalid search into the search box and executing may result in a "Bad Credentials" error rather than
 indicating that the syntax was wrong. Test your searches in the Sumo Logic UI prior to using this tool to dump logs
