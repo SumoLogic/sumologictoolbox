@@ -5,13 +5,10 @@ block_cipher = None
 added_files = [
     ( 'data/apiurls.json', 'data' ),
     ( 'data/sumotoolbox.ui', 'data' ),
-    ( 'data/collectorcopy.ui', 'data' ),
-    ( 'data/deletesources.ui', 'data' ),
-    ( 'data/restoresources.ui', 'data' )
     ]
 
 a = Analysis(['sumotoolbox.py'],
-             pathex=['D:\\stuff\\pycharm_checkouts\\sumologictoolbox'],
+             pathex=['/mnt/tim/PycharmProjects/sumotoolbox'],
              binaries=None,
              datas=added_files,
              hiddenimports=[],
@@ -25,9 +22,7 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          a.binaries + [('libQtCLucene.4.dylib',
-                        '/usr/lib/libQtCLucene.4.dylib',
-                        'BINARY')],
+          a.binaries,
           a.zipfiles,
           a.datas,
           name='sumotoolbox',

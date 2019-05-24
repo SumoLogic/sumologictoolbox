@@ -5,17 +5,16 @@ Sumotoolbox
  and collector APIs.) The idea is to make it easier to perform common API tasks such as copying
  sources and generating CSV files from searches.
 
- Sumotoolbox makes use of the sumologic-python-sdk by Yoway Buorn that is available here:
+ Sumotoolbox makes use of the sumologic-python-sdk that is available here:
 
  https://github.com/SumoLogic/sumologic-python-sdk
 
 Dependencies
 ============
 
-Sumotoolbox was created using python 2.7, pyqt4 and the Qt designer application. A working pyqt4 installation must be
-present to execute this script within your python environment. Alternatively you can download the Windows or Mac OS X
-binaries available in the "dist" folder which come bundled with all required libraries. They were created on Windows 10
-and OS X Yosemite so your mileage may vary with older OS releases.
+Sumotoolbox was created using python 3.6, pyqt5 and the Qt designer application. A working pyqt5 installation must be
+present to execute this script within your python environment. Alternatively you can download the Windows, Mac OS X, or Linux
+binaries available in the "dist" folder which come bundled with all required libraries. 
 
 Features and Usage
 ==================
@@ -35,33 +34,41 @@ within the same org.
 
 Collector Backup:
 
-    1. Input Credentials for your source org
-    2. Select your region for source org
+    1. Input Credentials for your org
+    2. Select your region for your org
     3. Click "Update" to populate the collector list
-    4. Choose a source collector
-    5. Click 'Backup Collector' to write a json dump of that collector
+    4. Choose one or more collectors
+    5. Click 'Backup Collector(s)' to write a json dump of the selected collectors and their sources
+    
+    Note: There is not currently a collector restore capability in this tool. 
 
-Collector Restore:
+Collector Delete:
 
-    1. Input Credentials for your destination org
-    2. Select your region for your destination org
+    1. Input Credentials for your org
+    2. Select your region for your org
     3. Click "Update" for destination to populate the collector list
-    4. Choose a collector
-    5. Click 'Restore Source(s)' to select a json dump to restore
-    6. Select which sources to restore in the resulting dialog
-    7. Click 'OK'
-
+    4. Choose one or more collectors
+    6. Click "Delete Collector(s)"
+    7. Verify that you really want to delete the collector(s) by typing "DELETE"
+    8. Click "OK"
+    
+    NOTE: This can be very dangerous. Accidentally deleting the wrong collector(s) could result in log collection interruption 
+    and many, many hours of restoration work. Use with EXTREME caution. 
+    
 Source Delete:
 
-    1. Input Credentials for your destination org
-    2. Select your region for your destination org
+    1. Input Credentials for your org
+    2. Select your region for your org
     3. Click "Update" for destination to populate the collector list
     4. Choose a collector
-    5. Choose a source (no multi-select by design to minimize accidental deletion)
-    6. Click "Delete Source"
-    7. Verify that you really want to delete the source by typing "DELETE"
+    5. Choose one or more sources
+    6. Click "Delete Source(s)"
+    7. Verify that you really want to delete the source(s) by typing "DELETE"
     8. Click "OK"
 
+    NOTE: This can be very dangerous. Accidentally deleting the wrong sources(s) could result in log collection interruption 
+    and many, many hours of restoration work. Use with EXTREME caution. 
+    
 Search API:
 
     1. Input source credentials
@@ -74,6 +81,10 @@ Search API:
     8. (Optional) Check "Convert to Selected Timezone from UTC Epoch". This will return message times and "_timeslice"
     fields as local time formatted as %Y-%m-%d %H:%M:%S rather than UTC epoch time.
     9. Click "Start"
+    
+    NOTE: The use case for this fuctionality is dumping to CSV. The Sumo Logic UI export feature is currently limited to 100,000
+    log messages. This tool should reliable dump much more than that, however the UI will "freeze" during the dump. This could take minutes
+    or even hours depending on the size of the dump. Please resist the temptation to rage quit because of an unresposive UI. 
 
 Screen Shots:
 =============
@@ -85,28 +96,30 @@ Screen Shots:
 Known Issues:
 =============
 
-* Option to modify collection start time when copying and restoring collectors does not currently work. Needs tweaking
-as currently the Sumo Logic Collector API does not like the value and substitutes "All Time" instead.
-
-* No status updates during searches. When executing a search, especially a lengthy one the UI becomes non-responsive
-until the search completes. This is due to the search loop blocking updates to the UI.
+* No status updates during searches/copy operations. When making API calls the UI becomes non-responsive
+until the calls complete. This is due to the search loop blocking updates to the UI. One day this might be fixed
+by multithreading the app but currently this is expected behaviour. 
 
 * Entering an invalid search into the search box and executing may result in a "Bad Credentials" error rather than
-indicating that the syntax was wrong.
+indicating that the syntax was wrong. Test your searches in the Sumo Logic UI prior to using this tool to dump logs
+to CSV. 
 
 To Do:
 ======
 
-* Implement content copying.
-
-* Improve search results time conversion to work on arbitrary fields (for instance a timeslice field not named
- "_timeslice")
-
-* Add custom time formats for time conversion
+* Implement the content API tab (content copying, etc...)
 
 * Improve error handling
 
 * Implement non-blocking "Working" dialog box to indicate search progress for long searches.
+
+* Add "source restore" functionality
+
+* Add "source update" functionality (for instance to add filters)
+
+* Add "hosted collector create" functionality
+
+* Add encrypted keystore (so you don't have to type in creds each time)
 
 License
 =======
@@ -128,6 +141,11 @@ limitations under the License.
 Support
 =======
 
-This repository and the code within is not supported by Sumo Logic.
+This is an opensource tool that I've written in my spare time. It is NOT an official Sumo Logic product. Use at your
+own risk. 
 
-Feel free to e-mail me with issues: tmacdonald@sumologic.com
+This repository and the code within are NOT supported by Sumo Logic.
+
+Feel free to e-mail me with issues however and I will provide "best effort" fixes: tmacdonald@sumologic.com
+
+Better yet feel free to contribute fixes directly. 
