@@ -16,6 +16,22 @@ The easiest way to use sumotoolbox is to look in the "dist" directory of this re
 
 If you prefer to clone the archive and run from source then you'll need Python 3.6 or higher and the modules listed in the dependency section.  
 
+Essentially the steps are as follows: 
+
+1.Download and install python 3.6 or higher from python.org. Make sure to choose the "add python the default path" checkbox in the installer (may be in advanced settings.)
+2. Open a new shell
+3. execute the following commands to install the module dependencies:
+
+ pip3 install pyqt5
+ pip3 install requests
+ pip3 install tzlocal
+ pip3 install pytz
+ 
+4. Download this repo (either as a zip from the main repo download link or using git.) Unzip if you downloaded the zip. 
+5. Change to the directory you put sumotoolbox in.Type the following to run the script:
+
+ python3 sumotoolbox.py
+
 Dependencies
 ============
 
