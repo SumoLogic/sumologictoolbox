@@ -70,7 +70,7 @@ Collector Backup:
     4. Choose one or more collectors
     5. Click 'Backup Collector(s)' to write a json dump of the selected collectors and their sources
     
-    Note: There is not currently a collector restore capability in this tool. 
+    NOTE: There is not currently a collector restore capability in this tool. 
 
 Collector Delete:
 
