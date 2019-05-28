@@ -39,12 +39,9 @@ Dependencies
 
 Sumotoolbox was created using python 3.6, pyqt5 and the Qt designer application. The following python modules are required:
 
-pyqt5
-
-requests
-
-tzlocal
-
+pyqt5  
+requests  
+tzlocal  
 pytz
 
 
@@ -85,8 +82,9 @@ Collector Delete:
     7. Verify that you really want to delete the collector(s) by typing "DELETE"
     8. Click "OK"
     
-    NOTE: This can be very dangerous. Accidentally deleting the wrong collector(s) could result in log collection interruption 
-    and many, many hours of restoration work. Use with EXTREME caution. 
+    NOTE: This can be very dangerous. Accidentally deleting the wrong collector(s) could result
+    in log collection interruption and many, many hours of restoration work. Use with EXTREME
+    caution. 
     
 Source Delete:
 
@@ -115,10 +113,10 @@ Search API:
     fields as local time formatted as %Y-%m-%d %H:%M:%S rather than UTC epoch time.
     9. Click "Start"
     
-    NOTE: The use case for this fuctionality is dumping to CSV. The Sumo Logic UI export feature is currently limited to
-    100,000 log messages. This tool should reliable dump much more than that, however the UI will "freeze" during the dump.
-    This could take minutes or even hours depending on the size of the dump. Please resist the temptation to rage quit
-    because of an unresposive UI. 
+    NOTE: The use case for this fuctionality is dumping to CSV. The Sumo Logic UI export feature is
+    currently limited to 100,000 log messages. This tool should reliable dump much more than that,
+    however the UI will "freeze" during the dump. This could take minutes or even hours depending 
+    on the size of the dump. Please resist the temptation to rage quit because of an unresposive UI. 
 
 Screen Shots:
 =============
