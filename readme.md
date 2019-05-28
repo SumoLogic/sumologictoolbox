@@ -105,12 +105,15 @@ Search API:
     1. Input source credentials
     2. Select your source region
     3. Select your timezone (defaults to local system timezone)
-    4. Select your time range (defaults to a relative 15 minute window from the time the app was launched)
+    4. Select your time range (defaults to a relative 15 minute window from the time
+    the app was launched)
     5. Enter a valid Sumo Logic search query
-    6. Select whether you want to see message results or record results (raw messages vs. aggregate data.)
+    6. Select whether you want to see message results or record results (raw messages
+    vs. aggregate data.)
     7. (Optional) Check "Save to CSV" to create a CSV file from the results
-    8. (Optional) Check "Convert to Selected Timezone from UTC Epoch". This will return message times and "_timeslice"
-    fields as local time formatted as %Y-%m-%d %H:%M:%S rather than UTC epoch time.
+    8. (Optional) Check "Convert to Selected Timezone from UTC Epoch". This will return message
+    times and "_timeslice"fields as local time formatted as %Y-%m-%d %H:%M:%S rather than 
+    UTC epoch time.
     9. Click "Start"
     
     NOTE: The use case for this fuctionality is dumping to CSV. The Sumo Logic UI export feature is
