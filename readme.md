@@ -24,13 +24,10 @@ Essentially the steps are as follows:
 
 3. execute the following commands to install the module dependencies:
 
- pip3 install pyqt5
- 
- pip3 install requests
- 
- pip3 install tzlocal
- 
- pip3 install pytz
+ pip3 install pyqt5   
+ pip3 install requests  
+ pip3 install tzlocal   
+ pip3 install pytz  
  
 4. Download this repo (either as a zip from the main repo download link or using git.) Unzip if you downloaded the zip. 
 5. Change to the directory you put sumotoolbox in.Type the following to run the script:
@@ -102,8 +99,8 @@ Source Delete:
     7. Verify that you really want to delete the source(s) by typing "DELETE"
     8. Click "OK"
 
-    NOTE: This can be very dangerous. Accidentally deleting the wrong sources(s) could result in log collection interruption 
-    and many, many hours of restoration work. Use with EXTREME caution. 
+    NOTE: This can be very dangerous. Accidentally deleting the wrong sources(s) could result in log
+    collection interruption and many, many hours of restoration work. Use with EXTREME caution. 
     
 Search API:
 
@@ -118,7 +115,10 @@ Search API:
     fields as local time formatted as %Y-%m-%d %H:%M:%S rather than UTC epoch time.
     9. Click "Start"
     
-    NOTE: The use case for this fuctionality is dumping to CSV. The Sumo Logic UI export feature is currently limited to 100,000 log messages. This tool should reliable dump much more than that, however the UI will "freeze" during the dump. This could take minutes or even hours depending on the size of the dump. Please resist the temptation to rage quit because of an unresposive UI. 
+    NOTE: The use case for this fuctionality is dumping to CSV. The Sumo Logic UI export feature is currently limited to
+    100,000 log messages. This tool should reliable dump much more than that, however the UI will "freeze" during the dump.
+    This could take minutes or even hours depending on the size of the dump. Please resist the temptation to rage quit
+    because of an unresposive UI. 
 
 Screen Shots:
 =============
