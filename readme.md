@@ -118,9 +118,7 @@ Search API:
     fields as local time formatted as %Y-%m-%d %H:%M:%S rather than UTC epoch time.
     9. Click "Start"
     
-    NOTE: The use case for this fuctionality is dumping to CSV. The Sumo Logic UI export feature is currently limited to 100,000
-    log messages. This tool should reliable dump much more than that, however the UI will "freeze" during the dump. This could take minutes
-    or even hours depending on the size of the dump. Please resist the temptation to rage quit because of an unresposive UI. 
+    NOTE: The use case for this fuctionality is dumping to CSV. The Sumo Logic UI export feature is currently limited to 100,000 log messages. This tool should reliable dump much more than that, however the UI will "freeze" during the dump. This could take minutes or even hours depending on the size of the dump. Please resist the temptation to rage quit because of an unresposive UI. 
 
 Screen Shots:
 =============
