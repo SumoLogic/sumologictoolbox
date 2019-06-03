@@ -14,6 +14,8 @@ Using Sumotoolbox
 
 The easiest way to use sumotoolbox is to look in the "dist" directory of this repo and grab the executable for your platform. Run the executable, pick your region, enter your creds, and start using the tool. 
 
+Note: The executables are built for 64-bit only and may not run on less than current operating systems. In the case of Windows my build is for a very recent version of Windows 10 and has failed to work on older versions. Unfortunately I do not have access to an older version of Windows 10 to build against so if it doesn't work your only option may be to install the source as described below. 
+
 If you prefer to clone the archive and run from source then you'll need Python 3.6 or higher and the modules listed in the dependency section.  
 
 Essentially the steps are as follows: 
@@ -30,7 +32,7 @@ Essentially the steps are as follows:
  pip3 install pytz  
  
 4. Download this repo (either as a zip from the main repo download link or using git.) Unzip if you downloaded the zip. 
-5. Change to the directory you put sumotoolbox in.Type the following to run the script:
+5. Change to the directory you put sumotoolbox in. Type the following to run the script:
 
  python3 sumotoolbox.py
 
