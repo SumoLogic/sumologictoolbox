@@ -20,7 +20,7 @@ If you prefer to clone the archive and run from source then you'll need Python 3
 
 Essentially the steps are as follows: 
 
-1. Download and install python 3.6 or higher from python.org. Make sure to choose the "add python the default path" checkbox in the installer (may be in advanced settings.)
+1. Download and install python 3.6 or higher from python.org. Make sure to choose the "add python to the default path" checkbox in the installer (may be in advanced settings.)
 
 2. Open a new shell
 
