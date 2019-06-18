@@ -40,54 +40,81 @@ class findReplaceCopyDialog(QtWidgets.QDialog):
 
     def __init__(self, fromcategories, tocategories, parent=None):
         super(findReplaceCopyDialog, self).__init__(parent)
+        self.objectlist = []
         self.setupUi(self, fromcategories, tocategories)
 
-    def setupUi(self, FindReplaceCopy, fromcategories, tocategories):
-        FindReplaceCopy.setObjectName("FindReplaceCopy")
-        FindReplaceCopy.resize(1157, 640)
-        self.buttonBox = QtWidgets.QDialogButtonBox(FindReplaceCopy)
-        self.buttonBox.setGeometry(QtCore.QRect(10, 600, 461, 32))
+    def setupUi(self, frcd, fromcategories, tocategories):
+
+        # setup static elements
+        frcd.setObjectName("FindReplaceCopy")
+        frcd.resize(1150, 640)
+        self.buttonBox = QtWidgets.QDialogButtonBox(frcd)
+        self.buttonBox.setGeometry(QtCore.QRect(10, 600, 1130, 35))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
-        self.label = QtWidgets.QLabel(FindReplaceCopy)
-        self.label.setGeometry(QtCore.QRect(10, 10, 1121, 111))
+        self.buttonBox.setObjectName("buttonBoxOkCancel")
+        self.label = QtWidgets.QLabel(frcd)
+        self.label.setGeometry(QtCore.QRect(20, 10, 1120, 100))
         self.label.setWordWrap(True)
-        self.label.setObjectName("label")
-        self.scrollArea = QtWidgets.QScrollArea(FindReplaceCopy)
-        self.scrollArea.setGeometry(QtCore.QRect(10, 120, 1131, 461))
+        self.label.setObjectName("labelInstructions")
+        self.scrollArea = QtWidgets.QScrollArea(frcd)
+        self.scrollArea.setGeometry(QtCore.QRect(10, 110, 1130, 460))
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1131, 461))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1130, 460))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.groupBox = QtWidgets.QGroupBox(self.scrollAreaWidgetContents)
-        self.groupBox.setGeometry(QtCore.QRect(20, 20, 1041, 41))
-        self.groupBox.setTitle("")
-        self.groupBox.setObjectName("groupBox")
-        self.checkBox = QtWidgets.QCheckBox(self.groupBox)
-        self.checkBox.setGeometry(QtCore.QRect(10, 10, 21, 23))
-        self.checkBox.setText("")
-        self.checkBox.setObjectName("checkBox")
-        self.comboBox = QtWidgets.QComboBox(self.groupBox)
-        self.comboBox.setGeometry(QtCore.QRect(50, 10, 481, 26))
-        self.comboBox.setObjectName("comboBox")
-        self.comboBox_2 = QtWidgets.QComboBox(self.groupBox)
-        self.comboBox_2.setGeometry(QtCore.QRect(550, 10, 481, 26))
-        self.comboBox_2.setObjectName("comboBox_2")
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
-        self.retranslateUi(FindReplaceCopy)
-        self.buttonBox.accepted.connect(FindReplaceCopy.accept)
-        self.buttonBox.rejected.connect(FindReplaceCopy.reject)
-        QtCore.QMetaObject.connectSlotsByName(FindReplaceCopy)
+        # set up the list of destination categories to populate into the comboboxes
+        itemmodel = QtGui.QStandardItemModel()
+        for tocategory in tocategories:
+            text_item = QtGui.QStandardItem(str(tocategory))
+            itemmodel.appendRow(text_item)
+
+        # Create 1 set of (checkbox, label, combobox per fromcategory
+
+        x = 10
+        y = 0
+        width = 1040
+        height = 40
+
+        for index, fromcategory in enumerate(fromcategories):
+
+            objectdict = {'groupbox': None, 'checkbox': None, 'label': None, 'combobox': None}
+
+            #objectdict['groupbox'] = QtWidgets.QGroupBox(self.scrollAreaWidgetContents)
+            #objectdict['groupbox'].setGeometry(QtCore.QRect(x, y, width, height))
+            #objectdict['groupbox'].setTitle("")
+            #objectdict['groupbox'].setObjectName("groupBox" + str(index))
+            objectdict['checkbox'] = QtWidgets.QCheckBox(self.scrollAreaWidgetContents)
+            objectdict['checkbox'].setGeometry(QtCore.QRect(x + 10, y + 14, 20, 20))
+            objectdict['checkbox'].setText("")
+            objectdict['checkbox'].setObjectName("checkBox" + str(index))
+            objectdict['label']= QtWidgets.QLabel(self.scrollAreaWidgetContents)
+            objectdict['label'].setGeometry(QtCore.QRect(x + 40, y + 10, 480, 25))
+            objectdict['label'].setObjectName("comboBox")
+            objectdict['label'].setText(fromcategory)
+            objectdict['combobox'] = QtWidgets.QComboBox(self.scrollAreaWidgetContents)
+            objectdict['combobox'].setGeometry(QtCore.QRect( x + 550, y + 10, 485, 25))
+            objectdict['combobox'].setObjectName("comboBox" + str(index))
+            objectdict['combobox'].setModel(itemmodel)
+            objectdict['combobox'].setEditable(True)
+            self.objectlist.append(objectdict)
+            y = y + 35
+
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.retranslateUi(frcd)
+        self.buttonBox.accepted.connect(frcd.accept)
+        self.buttonBox.rejected.connect(frcd.reject)
+        QtCore.QMetaObject.connectSlotsByName(frcd)
 
     def retranslateUi(self, FindReplaceCopy):
         _translate = QtCore.QCoreApplication.translate
         FindReplaceCopy.setWindowTitle(_translate("FindReplaceCopy", "Dialog"))
         self.label.setText(_translate("FindReplaceCopy",
-                                      "<html><head/><body><p>From the drop downs on the left select the Sumo Logic source categories you want to replace. These have been populated from your exported content. </p><p>From the drop downs on the right select the source categories you want to replace them with. These have been populated from your destination org/tenant. </p><p>Checked items will be replaced, unchecked items will be ignored. </p></body></html>"))
+                                      "<html><head/><body><p>Each entry on the left is one of the source categories present in your content. </p><p>From the drop downs on the right select the source categories you want to replace them with or type your own. These have been populated from your destination org/tenant. </p><p>Checked items will be replaced, unchecked items will be ignored. </p></body></html>"))
 
 
 class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -425,10 +452,11 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                     contentstring = json.dumps(content)
                     categories = categories + re.findall(r'\"_sourceCategory\s*=\s*([^\s\\|]*)', contentstring)
                 uniquecategories = list(set(categories))  # dedup the list
-
-                #dialog = findReplaceCopyDialog(list1, list2)
-                #dialog.exec()
-                #dialog.show()
+                print(len(uniquecategories))
+                list2 = ['test','test2']
+                dialog = findReplaceCopyDialog(uniquecategories, list2)
+                dialog.exec()
+                dialog.show()
 
         else:
             self.errorbox('You have not made any selections.')
