@@ -51,7 +51,7 @@
      <enum>QTabWidget::Triangular</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="CollectorAPI">
      <attribute name="title">
@@ -478,7 +478,7 @@
        <string>Delete Source(s)</string>
       </property>
      </widget>
-     <widget class="QLabel" name="labellegend">
+     <widget class="QLabel" name="labelcollectorlegend">
       <property name="geometry">
        <rect>
         <x>580</x>
@@ -507,26 +507,419 @@
      <attribute name="title">
       <string>Content API</string>
      </attribute>
-     <widget class="QLabel" name="label_12">
+     <widget class="QPushButton" name="pushButtonUpdateContentLeft">
       <property name="geometry">
        <rect>
-        <x>450</x>
-        <y>310</y>
-        <width>371</width>
-        <height>91</height>
+        <x>10</x>
+        <y>10</y>
+        <width>111</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="font">
        <font>
         <family>Arial</family>
-        <pointsize>28</pointsize>
+        <pointsize>10</pointsize>
        </font>
       </property>
-      <property name="text">
-       <string>Not Yet Implemented</string>
+      <property name="contextMenuPolicy">
+       <enum>Qt::NoContextMenu</enum>
       </property>
-      <property name="textFormat">
-       <enum>Qt::AutoText</enum>
+      <property name="text">
+       <string>Update</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonUpdateContentRight">
+      <property name="geometry">
+       <rect>
+        <x>690</x>
+        <y>10</y>
+        <width>111</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::NoContextMenu</enum>
+      </property>
+      <property name="text">
+       <string>Update</string>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="contentListWidgetLeft">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>561</width>
+        <height>621</height>
+       </rect>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::ExtendedSelection</enum>
+      </property>
+     </widget>
+     <widget class="QListWidget" name="contentListWidgetRight">
+      <property name="geometry">
+       <rect>
+        <x>690</x>
+        <y>90</y>
+        <width>561</width>
+        <height>621</height>
+       </rect>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::ExtendedSelection</enum>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonParentDirContentLeft">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>10</y>
+        <width>96</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Parent Dir</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonParentDirContentRight">
+      <property name="geometry">
+       <rect>
+        <x>810</x>
+        <y>10</y>
+        <width>96</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Parent Dir</string>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="contentButtonGroupBoxLeft">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>-20</y>
+        <width>341</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string/>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+      <widget class="QRadioButton" name="personalRadioButton">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Personal
+Folder</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupContentLeft</string>
+       </attribute>
+      </widget>
+      <widget class="QRadioButton" name="globalRadioButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>100</x>
+         <y>30</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Global
+Folders</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupContentLeft</string>
+       </attribute>
+      </widget>
+      <widget class="QRadioButton" name="adminRadioButton">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>30</y>
+         <width>161</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Admin Recommended
+Folders</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupContentLeft</string>
+       </attribute>
+      </widget>
+     </widget>
+     <widget class="QLabel" name="labelcollectorlegend_2">
+      <property name="geometry">
+       <rect>
+        <x>580</x>
+        <y>90</y>
+        <width>101</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Content&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Legend:&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;------------&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Black: Folder&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; color:#0000ff;&quot;&gt;Blue: Content&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="contentButtonGroupBoxRight">
+      <property name="geometry">
+       <rect>
+        <x>910</x>
+        <y>-20</y>
+        <width>341</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string/>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+      <widget class="QRadioButton" name="personalRadioButton_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Personal
+Folder</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupContentRight</string>
+       </attribute>
+      </widget>
+      <widget class="QRadioButton" name="globalRadioButton_2">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>100</x>
+         <y>30</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Global
+Folders</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupContentRight</string>
+       </attribute>
+      </widget>
+      <widget class="QRadioButton" name="adminRadioButton_2">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>30</y>
+         <width>161</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Admin Recommended
+Folders</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupContentRight</string>
+       </attribute>
+      </widget>
+     </widget>
+     <widget class="QLabel" name="contentCurrentDirLabelLeft">
+      <property name="geometry">
+       <rect>
+        <x>17</x>
+        <y>47</y>
+        <width>551</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="contentCurrentDirLabelRight">
+      <property name="geometry">
+       <rect>
+        <x>690</x>
+        <y>50</y>
+        <width>551</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonContentNewFolderLeft">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>720</y>
+        <width>96</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>New Folder</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonContentDeleteLeft">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>720</y>
+        <width>96</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Delete</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonContentDeleteRight">
+      <property name="geometry">
+       <rect>
+        <x>800</x>
+        <y>720</y>
+        <width>96</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Delete</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonContentNewFolderRight">
+      <property name="geometry">
+       <rect>
+        <x>690</x>
+        <y>720</y>
+        <width>96</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>New Folder</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonContentCopyRightToLeft">
+      <property name="geometry">
+       <rect>
+        <x>590</x>
+        <y>370</y>
+        <width>80</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::NoContextMenu</enum>
+      </property>
+      <property name="text">
+       <string>&lt;- Copy</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonContentCopyLeftToRight">
+      <property name="geometry">
+       <rect>
+        <x>590</x>
+        <y>340</y>
+        <width>80</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::NoContextMenu</enum>
+      </property>
+      <property name="text">
+       <string>Copy -&gt;</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonContentFindReplaceCopyLeftToRight">
+      <property name="geometry">
+       <rect>
+        <x>590</x>
+        <y>430</y>
+        <width>80</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::NoContextMenu</enum>
+      </property>
+      <property name="text">
+       <string>Find 
+Replace-&gt;
+Copy</string>
       </property>
      </widget>
     </widget>
@@ -958,7 +1351,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Username / Access Key ID:</string>
+      <string>Access Key ID:</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="LineEditLeftUserName">
@@ -999,7 +1392,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Password / Access Key :</string>
+      <string>Access Key :</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="LineEditLeftPassword">
@@ -1112,7 +1505,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Username / Access Key ID:</string>
+      <string>Access Key ID:</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="LineEditRightUserName">
@@ -1153,7 +1546,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Password / Access Key :</string>
+      <string>Access Key :</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="LineEditRightPassword">
@@ -1216,5 +1609,7 @@
  </designerdata>
  <buttongroups>
   <buttongroup name="buttonGroupOutputType"/>
+  <buttongroup name="buttonGroupContentRight"/>
+  <buttongroup name="buttonGroupContentLeft"/>
  </buttongroups>
 </ui>
