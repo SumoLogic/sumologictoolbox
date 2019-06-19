@@ -39,6 +39,7 @@ path" checkbox in the installer (may be in advanced settings.)
     pip3 install requests  
     pip3 install tzlocal   
     pip3 install pytz
+    
     pip3 install logzero  !New Requirement!
  
 4. Download this repo (either as a zip from the main repo download link or using git.) Unzip if you downloaded the zip. 
@@ -56,7 +57,8 @@ pyqt5
 requests  
 tzlocal  
 pytz
-logzero
+
+logzero     !New Dependency!
 
 
 
