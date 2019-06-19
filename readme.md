@@ -282,4 +282,4 @@ This repository and the code within are NOT supported by Sumo Logic.
 
 Feel free to e-mail me with issues however and I will provide "best effort" fixes: tmacdonald@sumologic.com
 
-Better yet feel free to contribute fixes directly. 
+
