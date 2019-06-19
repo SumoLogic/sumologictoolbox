@@ -1,8 +1,8 @@
 Sumotoolbox
 ===========
 
- Sumotoolbox is a GUI utility for accessing the various Sumo Logic APIs (currently the search
- and collector APIs.) The idea is to make it easier to perform common API tasks such as copying
+ Sumotoolbox is a GUI utility for accessing the various Sumo Logic APIs (currently the search, content and collector
+ APIs.) The idea is to make it easier to perform common API tasks such as copying
  sources and generating CSV files from searches.
 
  Sumotoolbox makes use of the sumologic-python-sdk that is available here:
@@ -12,15 +12,28 @@ Sumotoolbox
 Using Sumotoolbox
 =================
 
-The easiest way to use sumotoolbox is to look in the "dist" directory of this repo and grab the executable for your platform. Run the executable, pick your region, enter your creds, and start using the tool. 
+The easiest way to use sumotoolbox is to look in the "dist" directory of this repo and grab the executable for your 
+platform. Run the executable, pick your region, enter your creds, and start using the tool. 
 
-Note: The executables are built for 64-bit only and may not run on less than current operating systems. In the case of Windows my build is for a very recent version of Windows 10 and has failed to work on older versions. Unfortunately I do not have access to an older version of Windows 10 to build against. If it doesn't work your only option may be to install the source as described below. 
+Note: The executables are built for 64-bit only and may not run on less than current operating systems. 
+In the case of Windows my build is for a very recent version of Windows 10 and has failed to work on older versions.
+Unfortunately I do not have access to an older version of Windows 10 to build against. If it doesn't work your only
+option may be to install the source as described below. 
 
-If you prefer to clone the archive and run from source then you'll need Python 3.6 or higher and the modules listed in the dependency section.  
+Installing the Source
+=====================
 
-Essentially the steps are as follows: 
+If you prefer to clone the archive and run from source then you'll need Python 3.6 or higher and the modules listed 
+in the dependency section.  
 
-1. Download and install python 3.6 or higher from python.org. Make sure to choose the "add python to the default path" checkbox in the installer (may be in advanced settings.)
+The steps are as follows: 
+
+1. Download and install python 3.6 or higher from python.org. Make sure to choose the "add python to the default 
+path" checkbox in the installer (may be in advanced settings.)
+
+If you have Linux you can skip this step, but ensure you have python3 installed for your distro. 
+
+If you have OS X you cannot use the python that comes with the OS, it is too old.
 
 2. Open a new shell
 
@@ -29,22 +42,25 @@ Essentially the steps are as follows:
  pip3 install pyqt5   
  pip3 install requests  
  pip3 install tzlocal   
- pip3 install pytz  
+ pip3 install pytz
+ pip3 install logzero  !New Requirement!
  
 4. Download this repo (either as a zip from the main repo download link or using git.) Unzip if you downloaded the zip. 
-5. Change to the directory you put sumotoolbox in. Type the following to run the script:
+5. Change to the directory in which you installed sumotoolbox. Type the following to run the script:
 
  python3 sumotoolbox.py
 
 Dependencies
 ============
 
-Sumotoolbox was created using python 3.6, pyqt5 and the Qt designer application. The following python modules are required:
+Sumotoolbox was created using python 3.6, pyqt5 and the Qt designer application. The following python modules are
+ required:
 
 pyqt5  
 requests  
 tzlocal  
 pytz
+logzero
 
 
 
@@ -123,12 +139,94 @@ Search API:
     however the UI will "freeze" during the dump. This could take minutes or even hours depending 
     on the size of the dump. Please resist the temptation to rage quit because of an unresposive UI. 
 
+Content Folder Creation:    !NEW!
+    
+    1. Input Credentials for your org
+    2. Select your region for your org
+    3. Click "Update" for destination to populate the collector list
+    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context
+    4. Navigate to the location you want to create the new folder. 
+    6. Click "New Folder".
+    7. Enter a name for the new folder. 
+    8. Click "OK"
+    
+    NOTE: You cannot create top level folders when in the "Admin Recommeded" context. This
+    should be fixed in the future. 
+    
+    NOTE: Global folder browsing (other peoples shares) is currently disabled. Look for that in a future release. 
+    
+Content Deletion:    !NEW!
+    
+    1. Input Credentials for your org
+    2. Select your region for your org
+    3. Click "Update" for destination to populate the collector list
+    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context
+    4. Navigate to the location that contains the content you wish to delete. 
+    6. Select one or more items from the list. 
+    7. Click "Delete"
+    7. Verify that you really want to delete the source(s) by typing "DELETE"
+    8. Click "OK"
+    
+    NOTE: You cannot delete top level folders when in the "Admin Recommeded" context. This
+    should be fixed in the future. 
+    
+    NOTE: This can be very dangerous. Accidentally deleting the wrong content could result in serious issues and
+    many hours of restoration work. Use with EXTREME caution. 
+    
+    NOTE: Global folder browsing (other peoples shares) is currently disabled. Look for that in a future release.   
+
+Content Copying:    !NEW!
+
+    1.  Input Credentials for your source and destination orgs
+    2. Select your regions for source and destination orgs
+    3. Click "Update" for source and destination to populate the content lists
+    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
+    5. Select one or more items from the list
+    6. Click "Copy" (left to right or right to left). Your content will be copied to the current folder in the
+    destination pane.
+    
+Content Find/Replace/Copy:  !NEW!
+
+    Copying content between orgs often requires that the sourceCategory tags be changed to match the new 
+    environment. The Find/Replace/Copy feature is intended to lighten this burden by doing sourceCategory
+    tag replacement during the copy. It finds all of the sourceCategory tags in your original content and presents
+    them to you along with the sourceCategory tags in your destination environment allowing you to match them for
+    replacement.
+    
+    1.  Input Credentials for your source and destination orgs
+    2. Select your regions for source and destination orgs
+    3. Click "Update" for source and destination to populate the content lists
+    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
+    5. Select one or more items from the list
+    6. Click "Find/Replace/Copy" (left to right or right to left). 
+    7. Wait a bit (the REST calls involved can take a while)
+    8. Choose what tags to replace. 
+    9. Click "OK"
+    10. Wait a bit (lot) more. If you are copying large amounts of content the wait can be significant. The UI will
+    seem to freeze or lockup during the copy because the tool is not multithreaded. Have patience and resist the urge
+    to rage quit, it's still a million times faster than doing this by hand.
+    11. Once the pop-up window closes your content should be copied to the current folder in the destination pane.
+    
+
+Logging:    !NEW!
+
+    The tool should now generate a "sumologic.log" file in the directory it lives in. If you experience a bug, which is
+    likely, please delete the log file, recreate the bug, and send me the new log file along with a screenshot and/or 
+    description or what you were doing at the time. I can't promise an immediate fix but I will do my best.
+    
+    tmacdonald@sumologic.com
+   
+    
+    
+
 Screen Shots:
 =============
 
 ![Collector Source Copy](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_collector_example.png "Source Copy")
 
 ![Search API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_search_example.png "Search API")
+
+![Search API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_content_example.png "Search API")
 
 Known Issues:
 =============
@@ -140,10 +238,12 @@ until the calls complete. This is due to the requests library blocking Qt5 when 
 indicating that the syntax was wrong. Test your searches in the Sumo Logic UI prior to using this tool to dump logs
 to CSV. 
 
+* Access to Globally Shared Content Folders is currently disabled as that code is refined. 
+
 To Do:
 ======
 
-* Implement the content API tab (content copying, etc...)
+* Implement global folders in the content tab
 
 * Improve error handling
 

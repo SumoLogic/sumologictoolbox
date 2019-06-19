@@ -922,6 +922,30 @@ Replace-&gt;
 Copy</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="pushButtonContentFindReplaceCopyRightToLeft">
+      <property name="geometry">
+       <rect>
+        <x>590</x>
+        <y>510</y>
+        <width>80</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::NoContextMenu</enum>
+      </property>
+      <property name="text">
+       <string>Find 
+&lt;-Replace
+Copy</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="SearchAPI">
      <attribute name="title">

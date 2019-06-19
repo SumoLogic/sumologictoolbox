@@ -6,7 +6,7 @@ import re
 import csv
 import pytz
 import os.path
-from datetime import datetime
+from datetime import datetime, timezone
 from tzlocal import get_localzone
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from sumologic import SumoLogic
@@ -26,7 +26,7 @@ else:
 
 # Setup logging
 logzero.logfile("sumotoolbox.log")
-logzero.loglevel(level=10) #  Info Logging
+logzero.loglevel(level=20) #  Info Logging
 # Log messages
 logger.info("SumoLogicToolBox started.")
 
@@ -54,17 +54,17 @@ class findReplaceCopyDialog(QtWidgets.QDialog):
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBoxOkCancel")
         self.label = QtWidgets.QLabel(frcd)
-        self.label.setGeometry(QtCore.QRect(20, 10, 1120, 100))
+        self.label.setGeometry(QtCore.QRect(20, 10, 1120, 140))
         self.label.setWordWrap(True)
         self.label.setObjectName("labelInstructions")
         self.scrollArea = QtWidgets.QScrollArea(frcd)
-        self.scrollArea.setGeometry(QtCore.QRect(10, 110, 1130, 460))
+        self.scrollArea.setGeometry(QtCore.QRect(10, 150, 1130, 440))
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
-        self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1130, 460))
+        self.scrollAreaWidget = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents = QtWidgets.QFormLayout()
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
 
         # set up the list of destination categories to populate into the comboboxes
@@ -72,39 +72,39 @@ class findReplaceCopyDialog(QtWidgets.QDialog):
         for tocategory in tocategories:
             text_item = QtGui.QStandardItem(str(tocategory))
             itemmodel.appendRow(text_item)
+        itemmodel.sort(0)
 
         # Create 1 set of (checkbox, label, combobox per fromcategory
 
-        x = 10
-        y = 0
-        width = 1040
-        height = 40
 
         for index, fromcategory in enumerate(fromcategories):
 
-            objectdict = {'groupbox': None, 'checkbox': None, 'label': None, 'combobox': None}
-
-            #objectdict['groupbox'] = QtWidgets.QGroupBox(self.scrollAreaWidgetContents)
-            #objectdict['groupbox'].setGeometry(QtCore.QRect(x, y, width, height))
-            #objectdict['groupbox'].setTitle("")
-            #objectdict['groupbox'].setObjectName("groupBox" + str(index))
-            objectdict['checkbox'] = QtWidgets.QCheckBox(self.scrollAreaWidgetContents)
-            objectdict['checkbox'].setGeometry(QtCore.QRect(x + 10, y + 14, 20, 20))
+            objectdict = {'checkbox': None, 'label': None, 'combobox': None}
+            layout = QtWidgets.QHBoxLayout()
+            objectdict['checkbox'] = QtWidgets.QCheckBox()
+            objectdict['checkbox'].setGeometry(QtCore.QRect(0, 0, 20, 20))
             objectdict['checkbox'].setText("")
             objectdict['checkbox'].setObjectName("checkBox" + str(index))
-            objectdict['label']= QtWidgets.QLabel(self.scrollAreaWidgetContents)
-            objectdict['label'].setGeometry(QtCore.QRect(x + 40, y + 10, 480, 25))
-            objectdict['label'].setObjectName("comboBox")
+            layout.addWidget(objectdict['checkbox'])
+            objectdict['label']= QtWidgets.QLabel()
+            objectdict['label'].setGeometry(QtCore.QRect(0, 0, 480, 25))
+            objectdict['label'].setObjectName("comboBox" + str(index))
             objectdict['label'].setText(fromcategory)
-            objectdict['combobox'] = QtWidgets.QComboBox(self.scrollAreaWidgetContents)
-            objectdict['combobox'].setGeometry(QtCore.QRect( x + 550, y + 10, 485, 25))
+            layout.addWidget(objectdict['label'])
+            objectdict['combobox'] = QtWidgets.QComboBox()
+            objectdict['combobox'].setGeometry(QtCore.QRect(550, 0, 485, 25))
             objectdict['combobox'].setObjectName("comboBox" + str(index))
             objectdict['combobox'].setModel(itemmodel)
             objectdict['combobox'].setEditable(True)
+            layout.addWidget(objectdict['combobox'])
             self.objectlist.append(objectdict)
-            y = y + 35
+            self.scrollAreaWidgetContents.addRow(layout)
 
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.scrollAreaWidget.setLayout(self.scrollAreaWidgetContents)
+        self.scrollArea.setWidget(self.scrollAreaWidget)
+        self.scrollArea.show()
+
+
         self.retranslateUi(frcd)
         self.buttonBox.accepted.connect(frcd.accept)
         self.buttonBox.rejected.connect(frcd.reject)
@@ -114,7 +114,16 @@ class findReplaceCopyDialog(QtWidgets.QDialog):
         _translate = QtCore.QCoreApplication.translate
         FindReplaceCopy.setWindowTitle(_translate("FindReplaceCopy", "Dialog"))
         self.label.setText(_translate("FindReplaceCopy",
-                                      "<html><head/><body><p>Each entry on the left is one of the source categories present in your content. </p><p>From the drop downs on the right select the source categories you want to replace them with or type your own. These have been populated from your destination org/tenant. </p><p>Checked items will be replaced, unchecked items will be ignored. </p></body></html>"))
+                                      "<html><head/><body><p>Each entry on the left is one of the source categories present in your content. </p><p>From the drop downs on the right select the source categories you want to replace them with or type your own. These have been populated from your destination org/tenant. </p><p>Checked items will be replaced, unchecked items will not be modified. </p><p>Note: The query that populates the destination dropdowns only searches for source categories that have ingested something in the last hour. If you are sporadically ingesting data then some source categories may not show up. You can type those in manually.</p></body></html>"))
+
+    def getresults(self):
+        results = []
+        for object in self.objectlist:
+            if str(object['checkbox'].checkState()) == '2':
+                objectdata = { 'from': str(object['label'].text()), 'to': str(object['combobox'].currentText())}
+                results.append(objectdata)
+        return results
+
 
 
 class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -228,8 +237,6 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             str(self.LineEditRightUserName.text()),
             str(self.LineEditRightPassword.text())
         ))
-
-        # self.pushButtonRestoreSources.clicked.connect(self.restoresources)
 
         # set up a signal to update the source list if a new collector is set
         self.listWidgetLeftCollectors.itemSelectionChanged.connect(lambda: self.updatesourcelist(
@@ -412,6 +419,20 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             self.contentCurrentDirLabelLeft
         ))
 
+        self.pushButtonContentFindReplaceCopyRightToLeft.clicked.connect(lambda: self.findreplacecopycontent(
+            self.contentListWidgetRight,
+            self.contentListWidgetLeft,
+            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
+            str(self.LineEditRightUserName.text()),
+            str(self.LineEditRightPassword.text()),
+            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
+            str(self.LineEditLeftUserName.text()),
+            str(self.LineEditLeftPassword.text()),
+            self.buttonGroupContentRight.checkedId(),
+            self.buttonGroupContentLeft.checkedId(),
+            self.contentCurrentDirLabelLeft
+        ))
+
     # Start methods for Content Tab
 
     def findreplacecopycontent(self, ContentListWidgetFrom, ContentListWidgetTo, fromurl, fromid, fromkey, tourl, toid, tokey,
@@ -419,15 +440,15 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
 
         logger.info("Copying Content")
 
-        selecteditems = ContentListWidgetFrom.selectedItems()
-        if len(selecteditems) > 0:  # make sure something was selected
+        selecteditemsfrom = ContentListWidgetFrom.selectedItems()
+        if len(selecteditemsfrom) > 0:  # make sure something was selected
             try:
                 exportsuccessful = False
                 fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl)
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl)
                 if (toradioselected == -2):  # Personal Folder Selected
                     contents = []
-                    for selecteditem in selecteditems:
+                    for selecteditem in selecteditemsfrom:
                         for child in ContentListWidgetFrom.currentContent['children']:
                             if child['name'] == str(selecteditem.text()):
                                 item_id = child['id']
@@ -437,7 +458,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                     currentdir = ContentListWidgetTo.currentdirlist[-1]
                     if currentdir['id'] != 'TOP':
                         contents = []
-                        for selecteditem in selecteditems:
+                        for selecteditem in selecteditemsfrom:
                             for child in ContentListWidgetFrom.currentContent['children']:
                                 if child['name'] == str(selecteditem.text()):
                                     item_id = child['id']
@@ -446,17 +467,73 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             except Exception as e:
                 logger.exception(e)
                 self.errorbox('Source:Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                return
             if exportsuccessful:
-                categories=[]
+                categoriesfrom=[]
                 for content in contents:
                     contentstring = json.dumps(content)
-                    categories = categories + re.findall(r'\"_sourceCategory\s*=\s*([^\s\\|]*)', contentstring)
-                uniquecategories = list(set(categories))  # dedup the list
-                print(len(uniquecategories))
-                list2 = ['test','test2']
-                dialog = findReplaceCopyDialog(uniquecategories, list2)
+                    categoriesfrom = categoriesfrom + re.findall(r'\"_sourceCategory\s*=\s*\\?\"?([^\s\\|]*)', contentstring)
+                uniquecategoriesfrom = list(set(categoriesfrom))  # dedupe the list
+                print(uniquecategoriesfrom)
+                try:
+                    fromtime = str(QtCore.QDateTime.currentDateTime().addSecs(-3600).toString(QtCore.Qt.ISODate))
+                    totime = str(QtCore.QDateTime.currentDateTime().toString(QtCore.Qt.ISODate))
+
+                    query = r'* | count by _sourceCategory | fields _sourceCategory'
+                    searchresults = tosumo.search_job_records_sync(query, fromTime=fromtime, toTime=totime, timeZone='UTC', byReceiptTime='false' )
+                    categoriesto = []
+                    for record in searchresults['records']:
+                        categoriesto.append(record['map']['_sourcecategory'])
+                    uniquecategoriesto = list(set(categoriesto))
+
+                except Exception as e:
+                    logger.exception(e)
+                    self.errorbox('Destination:Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                    return
+                dialog = findReplaceCopyDialog(uniquecategoriesfrom, uniquecategoriesto)
                 dialog.exec()
                 dialog.show()
+                if str(dialog.result()) == '1':
+                    replacelist = dialog.getresults()
+                    logger.info(replacelist)
+                    if len(replacelist) > 0:
+                        newcontents = []
+                        for content in contents:
+                            for entry in replacelist:
+
+                                contentstring = json.dumps(content)
+                                contentstring = contentstring.replace(str(entry['from']), str(entry['to']))
+                                logger.info(contentstring)
+                                newcontents.append(json.loads(contentstring))
+                    else:
+                        newcontents = contents
+                    if (toradioselected == -2):  # Personal Folder Selected
+                        try:
+                            tofolderid = ContentListWidgetTo.currentContent['id']
+                            for newcontent in newcontents:
+                                status = tosumo.import_content_job_sync(tofolderid, newcontent, adminmode=False)
+                            self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected,
+                                                       todirectorylabel)
+                            return
+                        except Exception as e:
+                            logger.exception(e)
+                            self.errorbox('Destination:Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                            return
+                    elif toradioselected == -4:  # Admin recommended Folder Selected
+                        try:
+                            tofolderid = ContentListWidgetTo.currentContent['id']
+                            for newcontent in newcontents:
+                                status = tosumo.import_content_job_sync(tofolderid, newcontent, adminmode=True)
+                            self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected,
+                                                       todirectorylabel)
+                        except Exception as e:
+                            logger.exception(e)
+                            self.errorbox('Destination:Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                            return
+                else:
+                    return
+
+
 
         else:
             self.errorbox('You have not made any selections.')
@@ -711,7 +788,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                 item_name = ''
                 if radioselected == -3:
                     logger.info("Getting User info for Global Folder")
-                    user_info = sumo.get_user(object['id'])
+                    user_info = sumo.get_user(object['createdBy'])
                     item_name = '[' + user_info['firstName'] + ' ' + user_info['lastName'] + ']'
                 item_name = item_name + object['name']
                 item = ContentListWidget.addItem(item_name)  # populate the list widget in the GUI

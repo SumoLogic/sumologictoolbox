@@ -113,7 +113,7 @@ class SumoLogic(object):
         return json.loads(r.text)
 
     def search_job(self, query, fromTime=None, toTime=None, timeZone='UTC', byReceiptTime=None):
-        params = {'query': query, 'from': fromTime, 'to': toTime, 'timeZone': timeZone, 'byReceiptTime': byReceiptTime}
+        params = {'query': str(query), 'from': str(fromTime), 'to': str(toTime), 'timeZone': str(timeZone), 'byReceiptTime': str(byReceiptTime)}
         r = self.post('/v1/search/jobs', params)
         return json.loads(r.text)
 
@@ -121,14 +121,15 @@ class SumoLogic(object):
         r = self.get('/v1/search/jobs/' + str(search_job['id']))
         return json.loads(r.text)
 
-    def search_job_records_sync(self, query, fromTime=None, toTime=None, timeZone='UTC', byReceiptTime=None):
-        r = self.search_job(str(query), fromTime=fromTime, toTime=toTime, timeZone=timeZone, byReceiptTime=byReceiptTime)
-        job_id = str(r['id'])
-        status = self.search_job_status( job_id)
-        while status['status'] == 'InProgress':
-            status = self.search_job_status(job_id)
-        if status['status'] == 'Success':
-            r = self.search_job_records(job_id)
+    def search_job_records_sync(self, query, fromTime=None, toTime=None, timeZone=None, byReceiptTime=None):
+        r = self.search_job(query, fromTime=fromTime, toTime=toTime, timeZone=timeZone, byReceiptTime=byReceiptTime)
+        status = self.search_job_status(r)
+        while status['state'] != 'DONE GATHERING RESULTS':
+            if status['state'] == 'CANCELLED':
+                break
+            status = self.search_job_status(r)
+        if status['state'] == 'DONE GATHERING RESULTS':
+            r = self.search_job_records(r, limit=10000)
             return r
         else:
             return status
