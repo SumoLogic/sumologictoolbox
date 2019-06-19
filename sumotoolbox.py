@@ -26,7 +26,7 @@ else:
 
 # Setup logging
 logzero.logfile("sumotoolbox.log")
-logzero.loglevel(level=10) #  Info Logging
+logzero.loglevel(level=20)  #  Info Logging
 # Log messages
 logger.info("SumoLogicToolBox started.")
 
