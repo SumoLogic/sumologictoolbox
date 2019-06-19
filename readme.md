@@ -5,10 +5,6 @@ Sumotoolbox
  APIs.) The idea is to make it easier to perform common API tasks such as copying
  sources and generating CSV files from searches.
 
- Sumotoolbox makes use of the sumologic-python-sdk that is available here:
-
- https://github.com/SumoLogic/sumologic-python-sdk
-
 Using Sumotoolbox
 =================
 
