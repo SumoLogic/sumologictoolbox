@@ -474,7 +474,6 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                     contentstring = json.dumps(content)
                     categoriesfrom = categoriesfrom + re.findall(r'\"_sourceCategory\s*=\s*\\?\"?([^\s\\|]*)', contentstring)
                 uniquecategoriesfrom = list(set(categoriesfrom))  # dedupe the list
-                print(uniquecategoriesfrom)
                 try:
                     fromtime = str(QtCore.QDateTime.currentDateTime().addSecs(-3600).toString(QtCore.Qt.ISODate))
                     totime = str(QtCore.QDateTime.currentDateTime().toString(QtCore.Qt.ISODate))
@@ -852,7 +851,6 @@ If you are absolutely sure, type "DELETE" in the box below.
                     item = CollectorListWidget.addItem(collector['name'])  # populate the list widget in the GUI
                     items = CollectorListWidget.findItems(collector['name'], QtCore.Qt.MatchExactly)
                     if collector['collectorType'] == 'Installable':
-                        print(len(items))
                         items[0].setForeground(QtGui.QBrush(QtCore.Qt.blue))
                     if collector['alive'] == False:
                         items[0].setData(6, QtGui.QFont("Arial",pointSize=10,italic=True))
@@ -937,7 +935,6 @@ If you are absolutely sure, type "DELETE" in the box below.
         except Exception as e:
             self.errorbox('Encountered a bug. Check the console output.')
             logger.exception(e)
-            traceback.print_exc()
 
     def backupcollector(self, CollectorListWidget, url, id, key):
         logger.info("Backing Up Collector")
@@ -992,7 +989,6 @@ If you are absolutely sure, type "DELETE" in the box below.
                     except Exception as e:
                         self.errorbox('Failed to delete collector: ' + str(collectornamesqstring.text()))
                         logger.exception(e)
-                        traceback.print_exc()
                 self.updatecollectorlist(CollectorListWidget, url, id, key)
 
         else:
@@ -1012,7 +1008,6 @@ If you are absolutely sure, type "DELETE" in the box below.
             except Exception as e:
                 self.errorbox('Failed to load JSON file.')
                 logger.exception(e)
-                traceback.print_exc()
 
             if sources:
                 self.restoresourcesUI.dateTimeEdit.setMaximumDate(QtCore.QDate.currentDate())
@@ -1088,7 +1083,6 @@ If you are absolutely sure, type "DELETE" in the box below.
                         except Exception as e:
                             self.errorbox('Failed to delete source: ' + str(sourcenameqstring.text()))
                             logger.exception(e)
-                            traceback.print_exc()
                     self.updatesourcelist(CollectorListWidget, SourceListWidget, url, id, key)
 
             else:
@@ -1174,7 +1168,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                                     except Exception as e:
                                         self.errorbox("Failed writing. Check destination permissions.")
                                         logger.exception(e)
-                                        traceback.print_exc()
+
                         # return records
                         if self.buttonGroupOutputType.checkedId() == -3:
                             iterations = numrecords // 10000 + 1
@@ -1221,7 +1215,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                                         except Exception as e:
                                             self.errorbox("Failed writing. Check destination permissions.")
                                             logger.exception(e)
-                                            traceback.print_exc()
+
                             else:
                                 self.errorbox('Search did not return any records.')
                     else:
