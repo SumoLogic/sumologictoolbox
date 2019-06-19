@@ -222,7 +222,7 @@ Screen Shots:
 
 ![Search API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_search_example.png "Search API")
 
-![Content API Example](https://github.com/voltaire321/sumologictoolbox/blob/screenshots/sumotoolbox_content_example.png "Search API")
+![Content API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_content_example.png "Search API")
 
 Known Issues:
 =============
