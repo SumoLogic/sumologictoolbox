@@ -26,7 +26,7 @@ else:
 
 # Setup logging
 logzero.logfile("sumotoolbox.log")
-logzero.loglevel(level=20) #  Info Logging
+logzero.loglevel(level=10) #  Info Logging
 # Log messages
 logger.info("SumoLogicToolBox started.")
 
@@ -1113,8 +1113,9 @@ If you are absolutely sure, type "DELETE" in the box below.
                 try:
                     searchjob = sumo.search_job(searchstring, starttime, endtime, selectedtimezone)
                     jobsubmitted = True
-                except:
-                    self.errorbox('Incorrect Credentials.')
+                except Exception as e:
+                    self.errorbox("Failed to submit search job. Check credentials, endpoint, and query.")
+                    logger.exception(e)
                 if jobsubmitted:
                     self.labelSearchResultCount.setText('0')
                     jobstatus = sumo.search_job_status(searchjob)
@@ -1220,6 +1221,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                                 self.errorbox('Search did not return any records.')
                     else:
                         self.errorbox('Search did not return any messages.')
+
             else:
                 self.errorbox('Please enter a search.')
         else:
