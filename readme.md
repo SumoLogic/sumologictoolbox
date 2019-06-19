@@ -27,19 +27,19 @@ The steps are as follows:
 1. Download and install python 3.6 or higher from python.org. Make sure to choose the "add python to the default 
 path" checkbox in the installer (may be in advanced settings.)
 
-If you have Linux you can skip this step, but ensure you have python3 installed for your distro. 
+    If you have Linux you can skip this step, but ensure you have python3 installed for your distro. 
 
-If you have OS X you cannot use the python that comes with the OS, it is too old.
+    If you have OS X you cannot use the python that comes with the OS, it is too old.
 
 2. Open a new shell
 
 3. execute the following commands to install the module dependencies:
 
- pip3 install pyqt5   
- pip3 install requests  
- pip3 install tzlocal   
- pip3 install pytz
- pip3 install logzero  !New Requirement!
+    pip3 install pyqt5   
+    pip3 install requests  
+    pip3 install tzlocal   
+    pip3 install pytz
+    pip3 install logzero  !New Requirement!
  
 4. Download this repo (either as a zip from the main repo download link or using git.) Unzip if you downloaded the zip. 
 5. Change to the directory in which you installed sumotoolbox. Type the following to run the script:
@@ -222,7 +222,7 @@ Screen Shots:
 
 ![Search API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_search_example.png "Search API")
 
-![Search API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_content_example.png "Search API")
+![Content API Example](https://github.com/voltaire321/sumologictoolbox/blob/screenshots/sumotoolbox_content_example.png "Search API")
 
 Known Issues:
 =============
