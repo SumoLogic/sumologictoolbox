@@ -75,8 +75,8 @@ Collector Source Copying:
     6. Select a destination collector
     7. Click "Copy".
 
-NOTE: You can use the same credentials for both source and destination to copy sources from one collector to another
-within the same org.
+    NOTE: You can use the same credentials for both source and destination to copy sources from one collector to another
+    within the same org.
 
 Collector Backup:
 
@@ -133,7 +133,7 @@ Search API:
     9. Click "Start"
     
     NOTE: The use case for this fuctionality is dumping to CSV. The Sumo Logic UI export feature is
-    currently limited to 100,000 log messages. This tool should reliable dump much more than that,
+    currently limited to 100,000 log messages. This tool should reliably dump much more than that,
     however the UI will "freeze" during the dump. This could take minutes or even hours depending 
     on the size of the dump. Please resist the temptation to rage quit because of an unresposive UI. 
 
