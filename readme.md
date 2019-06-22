@@ -33,33 +33,33 @@ path" checkbox in the installer (may be in advanced settings.)
 
 2. Open a new shell
 
-3. execute the following commands to install the module dependencies:
+3. execute the following command to install pipenv, which will manage all of the library dependencies for us:
 
-    pip3 install pyqt5   
-    pip3 install requests  
-    pip3 install tzlocal   
-    pip3 install pytz
-    
-    pip3 install logzero  !New Requirement!
+    pip3 install pipenv
  
 4. Download this repo (either as a zip from the main repo download link or using git.) Unzip if you downloaded the zip. 
-5. Change to the directory in which you installed sumotoolbox. Type the following to run the script:
+5. Change to the directory in which you installed sumotoolbox. Type the following to install all the package 
+    dependencies (this may take a while as this will download all of the libraries that sumotoolbox uses:
 
- python3 sumotoolbox.py
+    pipenv install
+    
+6. Finally, to run sumotoolbox type:
+
+    pipenv run python3 sumotoolbox.py
+
 
 Dependencies
 ============
 
 Sumotoolbox was created using python 3.6, pyqt5 and the Qt designer application. The following python modules are
- required:
+ required and can be found in the repository in the "pipfile":
 
 pyqt5  
 requests  
 tzlocal  
 pytz
-
-logzero     !New Dependency!
-
+pathlib
+logzero    
 
 
 Features and Usage
