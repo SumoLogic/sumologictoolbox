@@ -12,6 +12,7 @@ requests = "*"
 pyqt5-stubs = "*"
 pathlib = "*"
 pytz = "*"
+logzero = "*"
 
 [requires]
 #python_version = "3.6"
