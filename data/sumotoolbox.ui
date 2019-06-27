@@ -946,6 +946,58 @@ Copy</string>
 Copy</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="pushButtonContentBackupLeft">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>720</y>
+        <width>96</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Backup</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonContentRestoreLeft">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>720</y>
+        <width>96</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Restore</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonContentRestoreRight">
+      <property name="geometry">
+       <rect>
+        <x>1020</x>
+        <y>720</y>
+        <width>96</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Restore</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonContentBackupRight">
+      <property name="geometry">
+       <rect>
+        <x>910</x>
+        <y>720</y>
+        <width>96</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Backup</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="SearchAPI">
      <attribute name="title">
@@ -1632,8 +1684,8 @@ Copy</string>
   </property>
  </designerdata>
  <buttongroups>
-  <buttongroup name="buttonGroupOutputType"/>
   <buttongroup name="buttonGroupContentRight"/>
   <buttongroup name="buttonGroupContentLeft"/>
+  <buttongroup name="buttonGroupOutputType"/>
  </buttongroups>
 </ui>

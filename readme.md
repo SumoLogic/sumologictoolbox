@@ -47,20 +47,10 @@ path" checkbox in the installer (may be in advanced settings.)
 
     pipenv run python3 sumotoolbox.py
 
-
 Dependencies
 ============
 
-Sumotoolbox was created using python 3.6, pyqt5 and the Qt designer application. The following python modules are
- required and can be found in the repository in the "pipfile":
-
-pyqt5  
-requests  
-tzlocal  
-pytz
-pathlib
-logzero    
-
+See the contents of "pipfile"
 
 Features and Usage
 ==================
@@ -183,7 +173,7 @@ Content Copying:    !NEW!
     6. Click "Copy" (left to right or right to left). Your content will be copied to the current folder in the
     destination pane.
     
-Content Find/Replace/Copy:  !NEW!
+Content Find/Replace/Copy:  !EXPERIMENTAL!
 
     Copying content between orgs often requires that the sourceCategory tags be changed to match the new 
     environment. The Find/Replace/Copy feature is intended to lighten this burden by doing sourceCategory
@@ -205,6 +195,32 @@ Content Find/Replace/Copy:  !NEW!
     to rage quit, it's still a million times faster than doing this by hand.
     11. Once the pop-up window closes your content should be copied to the current folder in the destination pane.
     
+Content Backup: !New!
+
+    1.  Input Credentials for your source and destination orgs
+    2. Select your regions for source and destination orgs
+    3. Click "Update" for source and destination to populate the content lists
+    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
+    5. Select one or more items from the list
+    6. Click "Backup"
+    7. Choose a folder to save your backup files into
+    8. The selected content will be exported and written as JSON to the selected folder, one file per selected item. 
+    
+    Note: The filenames are created automatically from the item names that are selected for backup. 
+    
+Content Restore: !New!
+
+    1.  Input Credentials for your source and destination orgs
+    2. Select your regions for source and destination orgs
+    3. Click "Update" for source and destination to populate the content lists
+    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
+    5. Navigate to the folder you wish to restore into. 
+    6. Click "Restore"
+    7. Select one or more valid Sumo Logic exports files to restore. These must be valid JSON that has been 
+    previously exported from Sumo Logic, either using this tool, the API, or the Sumo Logic UI. 
+    8. Your content will be restored into the current directory. 
+    
+    Note: You cannot currently restore into the root admin folder. This will be fixed soon.     
 
 Logging:    !NEW!
 
@@ -230,28 +246,23 @@ Known Issues:
 =============
 
 * No status updates during searches/copy operations. When making API calls the UI becomes non-responsive
-until the calls complete. This is due to the requests library blocking Qt5 when REST calls are being used. One day this might be fixed by multithreading the app but currently this is expected behaviour. 
+until the calls complete. This is due to the requests library blocking Qt5 when REST calls are being used. One day this
+might be fixed by multithreading the app but currently this is expected behaviour. 
 
-* Entering an invalid search into the search box and executing may result in a "Bad Credentials" error rather than
+* Search API: Entering an invalid search into the search box and executing may result in a "Bad Credentials" error rather than
 indicating that the syntax was wrong. Test your searches in the Sumo Logic UI prior to using this tool to dump logs
 to CSV. 
 
-* Access to Globally Shared Content Folders is currently disabled as that code is refined. 
+* Access to Globally Shared Content Folders is currently disabled until that code is refined. 
 
 To Do:
 ======
 
 * Implement global folders in the content tab
 
-* Improve error handling
-
-* Implement non-blocking "Working" dialog box to indicate search progress for long searches.
-
 * Add "source restore" functionality
 
 * Add "source update" functionality (for instance to add filters)
-
-* Add "hosted collector create" functionality
 
 * Add encrypted keystore (so you don't have to type in creds each time)
 

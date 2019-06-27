@@ -151,6 +151,8 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.contentListWidgetRight.currentContent = {}
         self.contentListWidgetLeft.currentdirlist = []
         self.contentListWidgetRight.currentdirlist = []
+        self.contentListWidgetLeft.updated = False
+        self.contentListWidgetRight.updated = False
 
         self.initModels()  # load all the comboboxes and such with values
         self.loadcredentials()  # if a credential file exists populate the creds with values
@@ -433,6 +435,37 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             self.contentCurrentDirLabelLeft
         ))
 
+        self.pushButtonContentBackupLeft.clicked.connect(lambda: self.backupcontent(
+            self.contentListWidgetLeft,
+            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
+            str(self.LineEditLeftUserName.text()),
+            str(self.LineEditLeftPassword.text())
+        ))
+
+        self.pushButtonContentBackupRight.clicked.connect(lambda: self.backupcontent(
+            self.contentListWidgetRight,
+            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
+            str(self.LineEditRightUserName.text()),
+            str(self.LineEditRightPassword.text())
+        ))
+
+        self.pushButtonContentRestoreLeft.clicked.connect(lambda: self.restorecontent(
+            self.contentListWidgetLeft,
+            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
+            str(self.LineEditLeftUserName.text()),
+            str(self.LineEditLeftPassword.text()),
+            self.buttonGroupContentLeft.checkedId(),
+            self.contentCurrentDirLabelLeft
+        ))
+
+        self.pushButtonContentRestoreRight.clicked.connect(lambda: self.restorecontent(
+            self.contentListWidgetRight,
+            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
+            str(self.LineEditRightUserName.text()),
+            str(self.LineEditRightPassword.text()),
+            self.buttonGroupContentRight.checkedId(),
+            self.contentCurrentDirLabelRight
+        ))
     # Start methods for Content Tab
 
     def findreplacecopycontent(self, ContentListWidgetFrom, ContentListWidgetTo, fromurl, fromid, fromkey, tourl, toid, tokey,
@@ -581,38 +614,43 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
 
     def create_folder(self, ContentListWidget, url, id, key, radioselected, directorylabel):
-        message = '''
-    Please enter the name of the folder you wish to create:
-        
-                    '''
-        text, result = QtWidgets.QInputDialog.getText(self, 'Create Folder...', message)
-        for item in ContentListWidget.currentContent['children']:
-            if item['name'] == str(text):
-                self.errorbox('That Directory Name Already Exists!')
-                return
-        try:
-            if radioselected == -2:  # if "Personal Folder" radio button is selected
-                logger.info("Creating New Folder in Personal Folder Tree")
-                sumo = SumoLogic(id, key, endpoint=url)
-                error = sumo.create_folder(str(text), str(ContentListWidget.currentContent['id']))
+        if ContentListWidget.updated == True:
 
-                self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
-                return
-            elif radioselected == -4:  # "Admin Folders" is selected
-                logger.info("Creating New Folder in Admin Recommended Folder Tree")
-                currentdir = ContentListWidget.currentdirlist[-1]
-                if currentdir['id'] != 'TOP':
+            message = '''
+        Please enter the name of the folder you wish to create:
+            
+                        '''
+            text, result = QtWidgets.QInputDialog.getText(self, 'Create Folder...', message)
+            for item in ContentListWidget.currentContent['children']:
+                if item['name'] == str(text):
+                    self.errorbox('That Directory Name Already Exists!')
+                    return
+            try:
+                if radioselected == -2:  # if "Personal Folder" radio button is selected
+                    logger.info("Creating New Folder in Personal Folder Tree")
                     sumo = SumoLogic(id, key, endpoint=url)
-                    error = sumo.create_folder(str(text), str(ContentListWidget.currentContent['id']), adminmode=True)
+                    error = sumo.create_folder(str(text), str(ContentListWidget.currentContent['id']))
 
                     self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
                     return
-                else:
-                    self.errorbox('Sorry, this tool in not currently capable of creating a top-level directory in the Admin Recommended folder due to API limitations. Creating sub-folders works fine. Suggested workaround is to make the top level folder in the SumoLogic UI and then use this tool to copy content into it. This should be fixed soon!')
-                    return
-        except Exception as e:
-            logger.exception(e)
-            self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                elif radioselected == -4:  # "Admin Folders" is selected
+                    logger.info("Creating New Folder in Admin Recommended Folder Tree")
+                    currentdir = ContentListWidget.currentdirlist[-1]
+                    if currentdir['id'] != 'TOP':
+                        sumo = SumoLogic(id, key, endpoint=url)
+                        error = sumo.create_folder(str(text), str(ContentListWidget.currentContent['id']), adminmode=True)
+
+                        self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
+                        return
+                    else:
+                        self.errorbox('Sorry, this tool in not currently capable of creating a top-level directory in the Admin Recommended folder due to API limitations. Creating sub-folders works fine. Suggested workaround is to make the top level folder in the SumoLogic UI and then use this tool to copy content into it. This should be fixed soon!')
+                        return
+            except Exception as e:
+                logger.exception(e)
+                self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+
+        else:
+            self.errorbox("Please update the directory list before trying to create a new folder.")
 
     def delete_content(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         logger.info("Deleting Content")
@@ -663,6 +701,9 @@ If you are absolutely sure, type "DELETE" in the box below.
                 except Exception as e:
                     logger.exception(e)
                     self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+
+        else:
+            self.errorbox('You need to select something before you can delete it.')
 
     def contentradiobuttonchanged(self, ContentListWidget,url, id, key, radioselected, directorylabel, pushButtonContentDelete):
         ContentListWidget.currentdirlist = []
@@ -736,7 +777,6 @@ If you are absolutely sure, type "DELETE" in the box below.
             self.errorbox('Incorrect Credentials or Wrong Endpoint.')
             return
 
-
     def doubleclickedcontentlist(self, item, ContentListWidget, url, id, key, radioselected, directorylabel):
         logger.info("Going Down One Content Folder")
         sumo = SumoLogic(id, key, endpoint=url)
@@ -778,7 +818,6 @@ If you are absolutely sure, type "DELETE" in the box below.
             logger.exception(e)
             self.errorbox('Incorrect Credentials or Wrong Endpoint.')
 
-
     def updatecontentlistwidget(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         try:
             ContentListWidget.clear()
@@ -799,11 +838,78 @@ If you are absolutely sure, type "DELETE" in the box below.
             for dir in ContentListWidget.currentdirlist:
                 dirname = dirname + '/' + dir['name']
             directorylabel.setText(dirname)
+            ContentListWidget.updated = True
 
         except Exception as e:
             logger.exception(e)
 
+    def backupcontent(self, ContentListWidget, url, id, key):
+        logger.info("Backing Up Content")
+        selecteditems = ContentListWidget.selectedItems()
+        if len(selecteditems) > 0:  # make sure something was selected
+            savepath = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Backup Directory"))
+            if os.access(savepath, os.W_OK):
+                message = ''
+                sumo = SumoLogic(id, key, endpoint=url)
+                for selecteditem in selecteditems:
+                    for child in ContentListWidget.currentContent['children']:
+                        if child['name'] == str(selecteditem.text()):
+                            item_id = child['id']
+                            try:
+                                content = sumo.export_content_job_sync(item_id)
+                                savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.json')
+                                if savefilepath:
+                                    with savefilepath.open(mode='w') as filepointer:
+                                        json.dump(content, filepointer)
+                                    message = message + str(selecteditem.text()) + r'.json' + '\n'
+                            except Exception as e:
+                                logger.exception(e)
+                                self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                                return
+                self.infobox('Wrote files: \n\n' + message)
+            else:
+                self.errorbox("You don't have permissions to write to that directory")
 
+        else:
+            self.errorbox('No content selected.')
+
+    def restorecontent(self, ContentListWidget, url, id, key, radioselected, directorylabel):
+        logger.info("Restoring Content")
+        if ContentListWidget.updated == True:
+            if 'id' in ContentListWidget.currentContent:  # make sure the current folder has a folder id
+                filter = "JSON (*.json)"
+                filelist, status = QtWidgets.QFileDialog.getOpenFileNames(self, "Open file(s)...", os.getcwd(), filter)
+                if len(filelist) > 0:
+                    sumo = SumoLogic(id, key, endpoint=url)
+                    for file in filelist:
+                        try:
+                            with open(file) as filepointer:
+                                content = json.load(filepointer)
+
+
+                        except Exception as e:
+                            logger.exception(e)
+                            self.errorbox("Something went wrong reading the file. Do you have the right file permissions? Does it contain valid JSON?")
+                            return
+                        try:
+                            folder_id = ContentListWidget.currentContent['id']
+                            if radioselected == -4:  # Admin Recommended Folders Selected
+                                adminmode=True
+                            else:
+                                adminmode=False
+                            sumo.import_content_job_sync(folder_id, content, adminmode=adminmode)
+                        except Exception as e:
+                            logger.exception(e)
+                            self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                            return
+                    self.updatecontentlist(ContentListWidget,url, id, key, radioselected, directorylabel)
+
+
+            else:
+                self.errorbox("You can't currently restore to the root Admin folder. This should be fixed soon. Suggested workaround is to restore to a child folder and then move the content using the Sumo Logic UI")
+                return
+        else:
+            self.errorbox("Please update the directory list before restoring content")
     # End Methods for Content Tab
 
 
