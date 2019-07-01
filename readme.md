@@ -264,34 +264,21 @@ Credential Database: !NEW!
     Specs:
     
     1. Argon2 for main password hashing
-    2. AES 128 (cbc mode) for encrypt/decrypt of credentials
-    3. PBKDF2HMAC using SHA3_512 to create encryption/decryption hashes (500,000 iterations using a 16 byte random salt)
+    2. AES 256 (GCM) for encrypt/decrypt of credentials
+    3. PBKDF2HMAC using SHA3_512 to create 256 bit encryption/decryption keys 
+       (500,000 iterations using a 64 byte random salt)
     4. salts are generated randomly per set of credentials every time they are saved/updated in the database
 
     Credential DB FAQ:
 
     Q: I see a flaw in your imp[ementation. Can I send feedback?
     A: Please do! I have done my utmost to do this in the most secure fashion possible but any constructive feedback is
-       welcomed! Please read the rest of the FAQ first though before sending feedback.
+       welcome! Please read the rest of the FAQ first though before sending feedback.
        You can send feedback to: tmacdonald@sumologic.com
 
     Q: What is Argon2? I've never heard of it!
     A: At the time of writing argon2 was the recommended password hashing algoritm by the password hashing competititon
-       https://password-hashing.net/
-
-    Q: Why are you using AES 128?
-    A: Because it is sufficient for our purposes.
-
-       This website gives the current requirements from various governing agencies and bodies:
-       https://www.keylength.com/
-
-       It shows that NIST estimates data encrypted with AES-128 is good for at least 10 years
-       Honestly if you are worried about your SumoLogic accesskeys being decrypted in ten years then I humbly suggest
-       that you should be using your own credential store or none at all. Using mine would probably violate your 
-       corporate policies and/or possibly some laws if you are a govt. agency. Use at your own risk! (See License.)
-
-       If you need something stronger you are free to create your own version of this class using stronger encryption.
-       If you do (and know what you are doing) feel free to contribute it back to the project. 
+       https://password-hashing.net/ and it seems the crypto community in general.
 
     Q: I have my own keystore, can I use that instead?
     A: Yes! I have attempted to write sumologictoolbox in such a way that you can implement your own version of the
@@ -309,7 +296,7 @@ Credential Database: !NEW!
           implement the "required" methods for a read-only credential store.
 
     Q: I looked at your code. Why are you storing the salt in the open? Doesn't that make it worthless?
-    A: The salt is stored in "plain" text with the encrypted data as they must be used for decryption. This is an accepted
+    A: The salt is stored in "plain text" with the encrypted data as they must be used for decryption. This is an accepted
        practice. For more information on why that is the case I suggest the following reading:
        https://crackstation.net/hashing-security.htm
     

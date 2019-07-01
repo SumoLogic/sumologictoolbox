@@ -200,7 +200,7 @@ class NewPasswordDialog(QtWidgets.QDialog):
             self.labelNumeral.setStyleSheet('color: red')
             numeral = False
 
-        if re.search(r'[,\.!?#@]', password1):
+        if re.search(r'[,\.!?#@$]', password1):
             self.labelNonAlphaNumeric.setStyleSheet('color: green')
             nonalpha = True
         else:
@@ -233,5 +233,5 @@ class NewPasswordDialog(QtWidgets.QDialog):
         self.labelLowerCase.setText(_translate("Dialog", "-Contain at least 1 lowercase character"))
         self.labelUpperCase.setText(_translate("Dialog", "-Contain at least 1 uppercase character"))
         self.labelNumeral.setText(_translate("Dialog", "-Contain at least 1 numeral"))
-        self.labelNonAlphaNumeric.setText(_translate("Dialog", "-Contain at least 1 non-alphanumeric char"))
+        self.labelNonAlphaNumeric.setText(_translate("Dialog", "-Contain at least 1 of these ,.!?#@$"))
         self.labelMatch.setText(_translate("Dialog", "-Both entries must match"))

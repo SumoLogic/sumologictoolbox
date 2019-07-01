@@ -71,12 +71,13 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.reset_stateful_objects()
 
         self.initModels()  # load all the comboboxes and such with values
-
+        self.cred_db_authenticated = False # at startup we haven't authenticated against a credential database yet
         # load the config file and if it doesn't exist copy it from the template
         self.init_and_load_config_file()
 
         # Configure the creddb buttons according to the config file settings
-        self.initial_config_cred_db_buttons()
+        #self.initial_config_cred_db_buttons()
+        self.set_creddbbuttons()
 
 
         # connect all of the UI button elements to their respective methods
@@ -101,6 +102,18 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         ))
 
         self.comboBoxPresetLeft.currentIndexChanged.connect(lambda: self.load_preset(
+            str(self.comboBoxPresetLeft.currentText()),
+            self.comboBoxRegionLeft,
+            self.lineEditUserNameLeft,
+            self.lineEditPasswordLeft,
+            self.comboBoxPresetLeft,
+            'left'
+        ))
+
+        # This exists for an edge case. If there is only one entry in the preset list and the user edits/modifies
+        # the cred text then clicking on the preset will not reload the cred because the index hasn't changed.
+        # This solves this problem
+        self.comboBoxPresetLeft.activated.connect(lambda: self.preset_activated(
             str(self.comboBoxPresetLeft.currentText()),
             self.comboBoxRegionLeft,
             self.lineEditUserNameLeft,
@@ -142,6 +155,18 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             self.lineEditPasswordRight,
             self.comboBoxPresetRight,
             'right'
+        ))
+
+        # This exists for an edge case. If there is only one entry in the preset list and the user edits/modifies
+        # the cred text then clicking on the preset will not reload the cred because the index hasn't changed.
+        # This solves this problem
+        self.comboBoxPresetRight.activated.connect(lambda: self.preset_activated(
+            str(self.comboBoxPresetRight.currentText()),
+            self.comboBoxRegionRight,
+            self.lineEditUserNameRight,
+            self.lineEditPasswordRight,
+            self.comboBoxPresetRight,
+            'Right'
         ))
 
         self.pushButtonDeletePresetRight.clicked.connect(lambda: self.delete_preset(
@@ -504,6 +529,15 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
 
         return
 
+    def clear_creds(self):
+        self.lineEditUserNameLeft.clear()
+        self.lineEditUserNameRight.clear()
+        self.lineEditPasswordLeft.clear()
+        self.lineEditPasswordRight.clear()
+        self.comboBoxPresetLeft.clear()
+        self.comboBoxPresetRight.clear()
+
+
     # Start methods for Credential Database
 
     def createcredb(self):
@@ -581,6 +615,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                     logger.exception(e)
                     self.errorbox(str(e))
                     self.cred_db_authenticated = False
+                    del self.credentialstore
                     self.set_creddbbuttons()
                 return
             else:
@@ -602,6 +637,8 @@ If so type 'DELETE' in the box below:"
             if (result and (str(text) == 'DELETE')):
                 os.remove(str(db_file))
                 self.cred_db_authenticated = False
+                del self.credentialstore
+                self.clear_creds()
                 self.set_creddbbuttons()
 
     def populate_presets(self):
@@ -629,83 +666,122 @@ If so type 'DELETE' in the box below:"
         self.comboBoxPresetLeft.removeItem(index)
         index = self.comboBoxPresetRight.findText(preset)
         self.comboBoxPresetRight.removeItem(index)
+        if self.comboBoxPresetLeft.count() is 0:
+            self.clear_creds()
         return
 
     # This is only used to configure the initial state of the credential db buttons
-    def initial_config_cred_db_buttons(self):
-        db_file = pathlib.Path('credentials.db')
-        if db_file.is_file():
-            db_file_exists = True
-        else:
-            db_file_exists = False
-        config_value = self.config['Credential Store']['credential_store_implementation']
-        if (config_value == 'built_in') and db_file_exists:
-            self.pushButtonLoadCredentialDatabase.setEnabled(True)
-            self.pushButtonCreateCredentialDatabase.setEnabled(False)
-            self.pushButtonDeleteCredentialDatabase.setEnabled(True)
-        else:
-            self.pushButtonLoadCredentialDatabase.setEnabled(False)
-            self.pushButtonCreateCredentialDatabase.setEnabled(True)
-            self.pushButtonDeleteCredentialDatabase.setEnabled(False)
-        if config_value == 'read_only':
-            self.pushButtonCreateCredentialDatabase.setEnabled(False)
-            self.pushButtonLoadCredentialDatabase.setEnabled(True)
-        if config_value == 'none':
-            self.pushButtonCreateCredentialDatabase.setEnabled(False)
-            self.pushButtonLoadCredentialDatabase.setEnabled(False)
-        return
+    # deprecated
+    # def initial_config_cred_db_buttons(self):
+    #     db_file = pathlib.Path('credentials.db')
+    #     if db_file.is_file():
+    #         db_file_exists = True
+    #     else:
+    #         db_file_exists = False
+    #     config_value = self.config['Credential Store']['credential_store_implementation']
+    #     if (config_value == 'built_in') and db_file_exists:
+    #         self.pushButtonLoadCredentialDatabase.setEnabled(True)
+    #         self.pushButtonCreateCredentialDatabase.setEnabled(False)
+    #         self.pushButtonDeleteCredentialDatabase.setEnabled(True)
+    #     else:
+    #         self.pushButtonLoadCredentialDatabase.setEnabled(False)
+    #         self.pushButtonCreateCredentialDatabase.setEnabled(True)
+    #         self.pushButtonDeleteCredentialDatabase.setEnabled(False)
+    #     if config_value == 'read_only':
+    #         self.pushButtonCreateCredentialDatabase.setEnabled(False)
+    #         self.pushButtonLoadCredentialDatabase.setEnabled(True)
+    #     if config_value == 'none':
+    #         self.pushButtonCreateCredentialDatabase.setEnabled(False)
+    #         self.pushButtonLoadCredentialDatabase.setEnabled(False)
+    #     return
 
-    # call this anytime a cred db is created, opened, or deleted to set all the buttons appropriately
-    # (also looks at methods available in the cred db instance as well as config file settings.)
+    # call this at startup or cred db is created, opened, or deleted to set all the buttons appropriately
+    # (also looks config file settings and which tab is selected.)
+    # this works but it's a mess. There's gotta be a better way.
     def set_creddbbuttons(self):
         db_file = pathlib.Path('credentials.db')
         if db_file.is_file():
             db_file_exists = True
         else:
             db_file_exists = False
+        # The search tab only uses the left credentials, so don't enable the right ones if we are in the search tab
+        tab = self.tabWidget.currentIndex()
+        if tab is 2:  # Index 2 from the tab widget is the search tab
+            disable_right_cred__buttons = True
+        else:
+            disable_right_cred__buttons = False
+
         config_value = self.config['Credential Store']['credential_store_implementation']
 
+        # Turn the left and right create preset buttons on or off depending on
+        # 1. What our config file says
+        # 2. If we've authenticated against a credential store
+        # 3. For the right sight, whether we are in the search tab
         if (config_value == 'built_in') and \
-                (self.cred_db_authenticated is True) and\
-                (hasattr(self.credentialstore, 'add_creds')):
+                (self.cred_db_authenticated is True):
 
             self.pushButtonCreatePresetLeft.setEnabled(True)
-            self.pushButtonCreatePresetRight.setEnabled(True)
+            if disable_right_cred__buttons:
+                self.pushButtonCreatePresetRight.setEnabled(False)
+            else:
+                self.pushButtonCreatePresetRight.setEnabled(True)
 
         else:
             self.pushButtonCreatePresetLeft.setEnabled(False)
             self.pushButtonCreatePresetRight.setEnabled(False)
 
+        # Turn the left and right update preset buttons on or off depending on
+        # 1. What our config file says
+        # 2. If we've authenticated against a credential store
+        # 3. For the right sight, whether we are in the search tab
         if (config_value == 'built_in') and \
-                (self.cred_db_authenticated is True) and\
-                (hasattr(self.credentialstore, 'update_creds')):
+                (self.cred_db_authenticated is True):
 
             self.pushButtonUpdatePresetLeft.setEnabled(True)
-            self.pushButtonUpdatePresetRight.setEnabled(True)
+            if disable_right_cred__buttons:
+                self.pushButtonUpdatePresetRight.setEnabled(False)
+            else:
+                self.pushButtonUpdatePresetRight.setEnabled(True)
 
         else:
             self.pushButtonUpdatePresetLeft.setEnabled(False)
             self.pushButtonUpdatePresetRight.setEnabled(False)
 
-        if  (config_value == 'built_in') and \
-                (self.cred_db_authenticated is True) and\
-                (hasattr(self.credentialstore, 'delete_creds')):
+        # Turn the left and right delete preset buttons on or off depending on
+        # 1. What our config file says
+        # 2. If we've authenticated against a credential store
+        # 3. For the right sight, whether we are in the search tab
+        if (config_value == 'built_in') and \
+                (self.cred_db_authenticated is True):
 
             self.pushButtonDeletePresetLeft.setEnabled(True)
-            self.pushButtonDeletePresetRight.setEnabled(True)
+            if disable_right_cred__buttons:
+                self.pushButtonDeletePresetRight.setEnabled(False)
+            else:
+                self.pushButtonDeletePresetRight.setEnabled(True)
 
         else:
             self.pushButtonDeletePresetLeft.setEnabled(False)
             self.pushButtonDeletePresetRight.setEnabled(False)
 
+        # Turn the left and right preset dropdowns depending on
+        # 1. What our config file says
+        # 2. If we've authenticated against a credential store
+        # 3. For the right sight, whether we are in the search tab
         if (self.cred_db_authenticated is True) and\
                 (config_value != 'none'):
             self.comboBoxPresetLeft.setEnabled(True)
-            self.comboBoxPresetRight.setEnabled(True)
+            if disable_right_cred__buttons:
+                self.comboBoxPresetRight.setEnabled(False)
+            else:
+                self.comboBoxPresetRight.setEnabled(True)
         else:
             self.comboBoxPresetLeft.setEnabled(False)
             self.comboBoxPresetRight.setEnabled(False)
 
+        # Turn the create and delete cred DB buttons depending on
+        # 1. What the config file says
+        # 2. if a credentials.db file exists
         if (config_value == 'built_in'):
             if db_file_exists:
                 self.pushButtonCreateCredentialDatabase.setEnabled(False)
@@ -717,14 +793,19 @@ If so type 'DELETE' in the box below:"
             self.pushButtonCreateCredentialDatabase.setEnabled(False)
             self.pushButtonDeleteCredentialDatabase.setEnabled(False)
 
-        if db_file_exists or (config_value == 'read_only'):
+        if (db_file_exists and config_value == 'built_in') or (config_value == 'read_only'):
             self.pushButtonLoadCredentialDatabase.setEnabled(True)
         else:
             self.pushButtonLoadCredentialDatabase.setEnabled(False)
 
+        if config_value == 'none':
+            self.pushButtonCreateCredentialDatabase.setEnabled(False)
+            self.pushButtonLoadCredentialDatabase.setEnabled(False)
+            self.pushButtonDeleteCredentialDatabase.setEnabled(False)
 
         return
 
+    # called when the create preset button is clicked
     def create_preset(self, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side):
         logger.info('Creating preset in credential store.')
         sumoregion = str(comboBoxRegion.currentText())
@@ -749,9 +830,22 @@ If so type 'DELETE' in the box below:"
                 return
         return
 
+    # This exists for an edge case. If there is only one entry in the preset list and the user edits/modifies
+    # the cred text then clicking on the preset will not reload the cred because the index hasn't changed.
+    # This solves this problem
+    # called when the user selects an item from the preset dropdown
+    def preset_activated(self, preset, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side):
+        if comboBoxPreset.count() is 1:
+            self.load_preset(preset, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side)
+
+    # called when the preset combobox index changes
     def load_preset(self, preset, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side):
         logger.info('Loading preset from credential store.')
-        if preset:
+        # even though we're about to load a new preset we should still clear the boxes in the eventuality
+        # that the last preset was deleted and we've got nothing to load
+        lineEditUserName.clear()
+        lineEditPassword.clear()
+        if comboBoxPreset.count() > 0:
             try:
                 if self.credentialstore.name_exists(preset):
                     creds = self.credentialstore.get_creds(preset)
@@ -771,43 +865,46 @@ If so type 'DELETE' in the box below:"
             except Exception as e:
                 logger.exception(e)
                 self.errorbox('Something went wrong\n\n' + str(e))
-        else:
-            print('preset evaluated false')
 
+    # called when the delete preset button is clicked
     def delete_preset(self, preset, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side):
         logger.info('Deleting preset from credential store.')
-        if self.credentialstore.name_exists(preset):
-            try:
-                result = self.credentialstore.delete_creds(preset)
-                self.remove_preset_from_combobox(preset)
-                preset = comboBoxPreset.currentText()
-                # load the first preset in the list (if it's there)
-                if preset:
-                    self.load_preset(
-                        preset,
-                        comboBoxRegion,
-                        lineEditUserName,
-                        lineEditPassword,
-                        comboBoxPreset,
-                        side
-                    )
+        if preset:
+            if self.credentialstore.name_exists(preset):
+                try:
+                    result = self.credentialstore.delete_creds(preset)
+                    self.remove_preset_from_combobox(preset)
+                    preset = comboBoxPreset.currentText()
+                    # load the first preset in the list (if it's there)
+                    if preset:
+                        self.load_preset(
+                            preset,
+                            comboBoxRegion,
+                            lineEditUserName,
+                            lineEditPassword,
+                            comboBoxPreset,
+                            side
+                        )
 
-            except Exception as e:
-                logger.exception(e)
-                self.errorbox('Something went wrong\n\n' + str(e))
-        else:
-            self.errorbox('Something went wrong. That preset does not exist in the database.')
+                except Exception as e:
+                    logger.exception(e)
+                    self.errorbox('Something went wrong\n\n' + str(e))
+            else:
+                self.errorbox('Something went wrong. That preset does not exist in the database.')
 
+
+    # called when the update preset button is clicked
     def update_preset(self, preset, sumoregion, accesskeyid, accesskey):
         logger.info('Updating preset in credential store.')
-        if self.credentialstore.name_exists(preset):
-            try:
-                result = self.credentialstore.update_creds(preset, sumoregion, accesskeyid, accesskey)
-            except Exception as e:
-                logger.exception(e)
-                self.errorbox('Something went wrong\n\n' + str(e))
-        else:
-            self.errorbox('Something went wrong. That preset does not exist in the database.')
+        if preset:
+            if self.credentialstore.name_exists(preset):
+                try:
+                    result = self.credentialstore.update_creds(preset, sumoregion, accesskeyid, accesskey)
+                except Exception as e:
+                    logger.exception(e)
+                    self.errorbox('Something went wrong\n\n' + str(e))
+            else:
+                self.errorbox('Something went wrong. That preset does not exist in the database.')
         return
 
 
@@ -1701,14 +1798,41 @@ If you are absolutely sure, type "DELETE" in the box below.
             self.comboBoxRegionRight.setEnabled(True)
             self.lineEditUserNameRight.setEnabled(True)
             self.lineEditPasswordRight.setEnabled(True)
+            if self.cred_db_authenticated:
+                self.pushButtonCreatePresetRight.setEnabled(True)
+                self.pushButtonUpdatePresetRight.setEnabled(True)
+                self.pushButtonDeletePresetRight.setEnabled(True)
+                self.comboBoxPresetRight.setEnabled(True)
+            else:
+                self.pushButtonCreatePresetRight.setEnabled(False)
+                self.pushButtonUpdatePresetRight.setEnabled(False)
+                self.pushButtonDeletePresetRight.setEnabled(False)
+                self.comboBoxPresetRight.setEnabled(False)
+
+
         if index == 1:
             self.comboBoxRegionRight.setEnabled(True)
             self.lineEditUserNameRight.setEnabled(True)
             self.lineEditPasswordRight.setEnabled(True)
+            if self.cred_db_authenticated:
+                self.pushButtonCreatePresetRight.setEnabled(True)
+                self.pushButtonUpdatePresetRight.setEnabled(True)
+                self.pushButtonDeletePresetRight.setEnabled(True)
+                self.comboBoxPresetRight.setEnabled(True)
+            else:
+                self.pushButtonCreatePresetRight.setEnabled(False)
+                self.pushButtonUpdatePresetRight.setEnabled(False)
+                self.pushButtonDeletePresetRight.setEnabled(False)
+                self.comboBoxPresetRight.setEnabled(False)
         if index == 2:
             self.comboBoxRegionRight.setEnabled(False)
             self.lineEditUserNameRight.setEnabled(False)
             self.lineEditPasswordRight.setEnabled(False)
+            self.pushButtonCreatePresetRight.setEnabled(False)
+            self.pushButtonUpdatePresetRight.setEnabled(False)
+            self.pushButtonDeletePresetRight.setEnabled(False)
+            self.comboBoxPresetRight.setEnabled(False)
+
         return
 
     # no longer called by __init__ since the credential store has been implemented

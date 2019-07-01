@@ -12,8 +12,8 @@ __author__ = 'Tim MacDonald'
 # This is the built-in CredentialsDB class for sumologictoolbox. It has the following specifications:
 #
 # 1. argon2 for main password hashing
-# 2. AES 256 (GCM) for encrypt/decrypt of credentials
-# 3. PBKDF2HMAC using SHA3_512 to create encryption/decryption hashes (500,000 iterations using a 64 byte random salt)
+# 2. AES 128 (cbc mode) for encrypt/decrypt of credentials
+# 3. PBKDF2HMAC using SHA3_512 to create encryption/decryption hashes (500,000 iterations using a 16 byte random salt)
 # 4. salts are generated randomly per set of credentials every time they are saved/updated in the database
 #
 # FAQ:
@@ -26,6 +26,19 @@ __author__ = 'Tim MacDonald'
 # Q: What is Argon2? I've never heard of it!
 # A: At the time of writing argon2 was the recommended password hashing algoritm by the password hashing competititon
 #    https://password-hashing.net/
+#
+# Q: Why are you using AES 128?
+# A: Because it is sufficient for our purposes.
+#
+#    This website gives the current requirements from various governing agencies and bodies:
+#    https://www.keylength.com/
+#
+#    It shows that NIST estimates data encrypted with AES-128 is good for at least 10 years
+#    Honestly if you are worried about your SumoLogic accesskeys being decrypted in ten years then I humbly suggest that
+#    you should be using your own credential store, not mine, and using mine would probably violate your corporate
+#    policies and/or possibly some laws if you are a govt. agency. Use at your own risk! (See License.)
+#
+#    If you need something stronger you are free to create your own version of this class using stronger encryption.
 #
 # Q: I have my own keystore, can I use that instead?
 # A: Yes! I have attempted to write sumologictoolbox in such a way that you can implement your own version of this class
@@ -54,9 +67,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, LargeBinary
 import argon2
+from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import os
 import base64
@@ -79,7 +92,6 @@ class CredentialsDB:
         accesskeyid = Column(LargeBinary, nullable=False)
         accesskey = Column(LargeBinary, nullable=False)
         salt = Column(LargeBinary, nullable=False)
-        nonce = Column(LargeBinary, nullable=False)
 
         def __repr__(self):
             return f"SumoCredentials('{self.name}')"
@@ -137,7 +149,7 @@ class CredentialsDB:
     def __encrypt(self, name, sumoregion, accesskeyid, accesskey):
         # generate a salt for hash creation, which we pass back to be stored alongside the encrypted data
         # it'll be needed for decryption later
-        salt = os.urandom(64)
+        salt = os.urandom(16)
         # generate a hash from that salt. self.iterations is set in __init__
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA3_512(),
@@ -146,30 +158,25 @@ class CredentialsDB:
             iterations=self.iterations,
             backend=default_backend()
         )
-        # here's our encryption key
-        key = kdf.derive(self.password)
-        print(sys.getsizeof(key))
-        # we also need to generate a random initialization vector
-        nonce = os.urandom(12)
-        cipher = AESGCM(key)
+        encoded_hash = base64.urlsafe_b64encode(kdf.derive(self.password))
+        cipher = Fernet(encoded_hash)
         # the cipher requires bytes, not strings, so we're doing some encoding here
-        encrypted_sumoregion = cipher.encrypt(nonce, base64.urlsafe_b64encode(sumoregion.encode(self.system_encoding)), None)
-        encrypted_accesskeyid = cipher.encrypt(nonce, base64.urlsafe_b64encode(accesskeyid.encode(self.system_encoding)), None)
-        encrypted_accesskey = cipher.encrypt(nonce, base64.urlsafe_b64encode(accesskey.encode(self.system_encoding)), None)
+        encrypted_sumoregion = cipher.encrypt(base64.urlsafe_b64encode(sumoregion.encode(self.system_encoding)))
+        encrypted_accesskeyid = cipher.encrypt(base64.urlsafe_b64encode(accesskeyid.encode(self.system_encoding)))
+        encrypted_accesskey = cipher.encrypt(base64.urlsafe_b64encode(accesskey.encode(self.system_encoding)))
 
         # we return byte objects, not strings
         data = {'name': name,
                 'encrypted_sumoregion': encrypted_sumoregion,
                 'encrypted_accesskeyid': encrypted_accesskeyid,
                 'encrypted_accesskey': encrypted_accesskey,
-                'salt': salt,
-                'nonce': nonce
+                'salt': salt
                 }
         return data
 
     # all method params should be byte objects except for name, which should be a string
     # internal method
-    def __decrypt(self, salt, nonce, name, encrypted_sumoregion, encrypted_accesskeyid, encrypted_accesskey):
+    def __decrypt(self, salt, name, encrypted_sumoregion, encrypted_accesskeyid, encrypted_accesskey):
         # generate a hash from the salt we were sent to be used in decryption
         # self.iterations is set in __init__
         kdf = PBKDF2HMAC(
@@ -179,13 +186,12 @@ class CredentialsDB:
             iterations=self.iterations,
             backend=default_backend()
         )
-        # here's our encryption key
-        key = kdf.derive(self.password)
-        cipher = AESGCM(key)
+        encoded_hash = base64.urlsafe_b64encode(kdf.derive(self.password))
+        cipher = Fernet(encoded_hash)
         # these are returned as byte objects
-        sumoregion = cipher.decrypt(nonce, encrypted_sumoregion, None)
-        accesskeyid = cipher.decrypt(nonce, encrypted_accesskeyid, None)
-        accesskey = cipher.decrypt(nonce, encrypted_accesskey, None)
+        sumoregion = cipher.decrypt(encrypted_sumoregion)
+        accesskeyid = cipher.decrypt(encrypted_accesskeyid)
+        accesskey = cipher.decrypt(encrypted_accesskey)
         # This method should always return strings, so we have to decode the results from the cypher
         data = {'name': name,
                 'sumoregion': base64.urlsafe_b64decode(sumoregion).decode(self.system_encoding),
@@ -205,8 +211,7 @@ class CredentialsDB:
                                               sumoregion=encrypted_dict['encrypted_sumoregion'],
                                               accesskeyid=encrypted_dict['encrypted_accesskeyid'],
                                               accesskey=encrypted_dict['encrypted_accesskey'],
-                                              salt=encrypted_dict['salt'],
-                                              nonce=encrypted_dict['nonce'])
+                                              salt=encrypted_dict['salt'])
         self.session.add(new_cred_entry)
         # don't forget to commit the write!
         self.session.commit()
@@ -218,7 +223,6 @@ class CredentialsDB:
         encrypted_creds = self.session.query(self.SumoCredentials).filter(self.SumoCredentials.name == name).one()
         # decrypt them
         creds = self.__decrypt(encrypted_creds.salt,
-                               encrypted_creds.nonce,
                                name,
                                encrypted_creds.sumoregion,
                                encrypted_creds.accesskeyid,
@@ -260,8 +264,7 @@ class CredentialsDB:
             self.SumoCredentials.sumoregion: encrypted_dict['encrypted_sumoregion'],
             self.SumoCredentials.accesskeyid: encrypted_dict['encrypted_accesskeyid'],
             self.SumoCredentials.accesskey: encrypted_dict['encrypted_accesskey'],
-            self.SumoCredentials.salt: encrypted_dict['salt'],
-            self.SumoCredentials.nonce: encrypted_dict['nonce']
+            self.SumoCredentials.salt: encrypted_dict['salt']
         }
         status = self.session.query(self.SumoCredentials).filter(self.SumoCredentials.name == name).update(
             update_dict,
