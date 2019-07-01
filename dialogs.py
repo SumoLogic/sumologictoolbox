@@ -10,6 +10,7 @@ __author__ = 'Tim MacDonald'
 # specific language governing permissions and limitations under the License.
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import re
 
 class findReplaceCopyDialog(QtWidgets.QDialog):
 
@@ -99,3 +100,138 @@ class findReplaceCopyDialog(QtWidgets.QDialog):
                 results.append(objectdata)
         return results
 
+class NewPasswordDialog(QtWidgets.QDialog):
+
+    def __init__(self):
+        super(NewPasswordDialog, self).__init__()
+        self.objectlist = []
+        self.setupUi(self)
+
+    def setupUi(self, Dialog):
+
+        Dialog.setObjectName("EnterNewPassword")
+        Dialog.resize(320, 366)
+        self.setWindowTitle('Enter new password...')
+        self.okbutton = QtWidgets.QPushButton(Dialog)
+        self.okbutton.setText('OK')
+        self.okbutton.setGeometry(250, 320, 50, 32)
+        self.okbutton.setEnabled(False)
+
+        self.cancelbutton = QtWidgets.QPushButton(Dialog)
+        self.cancelbutton.setText('Cancel')
+        self.cancelbutton.setGeometry(190, 320, 50, 32)
+        self.cancelbutton.setEnabled(True)
+        self.label = QtWidgets.QLabel(Dialog)
+        self.label.setGeometry(QtCore.QRect(17, 7, 281, 81))
+        self.label.setFrameShape(QtWidgets.QFrame.Box)
+        self.label.setTextFormat(QtCore.Qt.PlainText)
+        self.label.setObjectName("label")
+        self.lineEditPassword1 = QtWidgets.QLineEdit(Dialog)
+        self.lineEditPassword1.setGeometry(QtCore.QRect(20, 240, 281, 31))
+        self.lineEditPassword1.setObjectName("lineEditPassword1")
+        self.lineEditPassword1.setEchoMode(2)
+        self.lineEditPassword2 = QtWidgets.QLineEdit(Dialog)
+        self.lineEditPassword2.setGeometry(QtCore.QRect(20, 280, 281, 34))
+        self.lineEditPassword2.setObjectName("lineEditPassword2")
+        self.lineEditPassword2.setEchoMode(2)
+        self.labelCount = QtWidgets.QLabel(Dialog)
+        self.labelCount.setGeometry(QtCore.QRect(20, 100, 281, 18))
+        self.labelCount.setObjectName("labelCount")
+        self.labelLowerCase = QtWidgets.QLabel(Dialog)
+        self.labelLowerCase.setGeometry(QtCore.QRect(20, 120, 281, 18))
+        self.labelLowerCase.setObjectName("labe1LowerCase")
+        self.labelUpperCase = QtWidgets.QLabel(Dialog)
+        self.labelUpperCase.setGeometry(QtCore.QRect(20, 140, 281, 18))
+        self.labelUpperCase.setObjectName("labelUpperCase")
+        self.labelNumeral = QtWidgets.QLabel(Dialog)
+        self.labelNumeral.setGeometry(QtCore.QRect(20, 160, 281, 18))
+        self.labelNumeral.setObjectName("labelNumeral")
+        self.labelNonAlphaNumeric = QtWidgets.QLabel(Dialog)
+        self.labelNonAlphaNumeric.setGeometry(QtCore.QRect(20, 180, 281, 18))
+        self.labelNonAlphaNumeric.setObjectName("labelNonAlphaNumeric")
+        self.labelMatch = QtWidgets.QLabel(Dialog)
+        self.labelMatch.setGeometry(QtCore.QRect(20, 200, 281, 18))
+        self.labelMatch.setObjectName("labelMatch")
+
+        self.retranslateUi(Dialog)
+        # self.buttonBox.accepted.connect(Dialog.accept)
+        # self.buttonBox.rejected.connect(Dialog.reject)
+        self.okbutton.clicked.connect(Dialog.accept)
+        self.cancelbutton.clicked.connect(Dialog.reject)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+        self.lineEditPassword1.textEdited.connect(self.check_password)
+        self.lineEditPassword2.textEdited.connect(self.check_password)
+        self.labelCount.setStyleSheet('color: red')
+        self.labelLowerCase.setStyleSheet('color: red')
+        self.labelUpperCase.setStyleSheet('color: red')
+        self.labelNumeral.setStyleSheet('color: red')
+        self.labelNonAlphaNumeric.setStyleSheet('color: red')
+        self.labelMatch.setStyleSheet('color: red')
+
+    def check_password(self):
+        password1 = self.lineEditPassword1.text()
+        password2 = self.lineEditPassword2.text()
+        if len(password1) > 9:
+            self.labelCount.setStyleSheet('color: green')
+            count = True
+        else:
+            self.labelCount.setStyleSheet('color: red')
+            count = False
+
+        if re.search(r'[a-z]', password1):
+            self.labelLowerCase.setStyleSheet('color: green')
+            lower = True
+        else:
+            self.labelLowerCase.setStyleSheet('color: red')
+            lower = False
+
+        if re.search(r'[A-Z]', password1):
+            self.labelUpperCase.setStyleSheet('color: green')
+            upper = True
+        else:
+            self.labelUpperCase.setStyleSheet('color: red')
+            upper = False
+
+        if re.search(r'[0-9]', password1):
+            self.labelNumeral.setStyleSheet('color: green')
+            numeral = True
+        else:
+            self.labelNumeral.setStyleSheet('color: red')
+            numeral = False
+
+        if re.search(r'[,\.!?#@]', password1):
+            self.labelNonAlphaNumeric.setStyleSheet('color: green')
+            nonalpha = True
+        else:
+            self.labelNonAlphaNumeric.setStyleSheet('color: red')
+            nonalpha = False
+
+        if password1 == password2:
+            self.labelMatch.setStyleSheet('color: green')
+            match = True
+        else:
+            self.labelMatch.setStyleSheet('color: red')
+            match = False
+
+        if count and lower and upper and numeral and nonalpha and match:
+            self.okbutton.setEnabled(True)
+        else:
+            self.okbutton.setEnabled(False)
+
+    def getresults(self):
+            return str(self.lineEditPassword1.text())
+
+    def retranslateUi(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        self.label.setText(_translate("Dialog", "Please enter a new password.\n"
+"Once entered your password cannot\n"
+"be retrieved. Remember it!\n"
+"It must meet the following conditions:"))
+        self.labelCount.setText(_translate("Dialog", "-Have 10 or more characters"))
+        self.labelLowerCase.setText(_translate("Dialog", "-Contain at least 1 lowercase character"))
+        self.labelUpperCase.setText(_translate("Dialog", "-Contain at least 1 uppercase character"))
+        self.labelNumeral.setText(_translate("Dialog", "-Contain at least 1 numeral"))
+        self.labelNonAlphaNumeric.setText(_translate("Dialog", "-Contain at least 1 non-alphanumeric char"))
+        self.labelMatch.setText(_translate("Dialog", "-Both entries must match"))

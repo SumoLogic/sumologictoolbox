@@ -518,24 +518,27 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 return
         # get the password that will be used for the new database
-        message = "Please enter the password you want to use for the new credential database. This will be used to encrypt the contents of the db. It must be at leas 10 characters long and contain at least 1 uppercase character, 1 lowercase, 1 number, and 1 symbol. Do not forget this password as it cannot be recovered."
-        password, result = QtWidgets.QInputDialog.getText(self, 'Enter New password', message)
-        if result:
-            try:
-                # We pass a username here (from the config file) just in case someone has written their own
-                # version of the CredentialDB class that requires both a username/id AND password
-                # however the version distributed with sumologictoolbox ignores the username.
-                self.credentialstore = CredentialsDB(password, username=self.config['Credential Store']['username'], create_new=True)
-                # restrict permissions on the db file to just the user. May not be effective on Windows
-                os.chmod(str(db_file), 0o600)
-                self.cred_db_authenticated = True
-            except Exception as e:
-                logger.exception(e)
-                self.errorbox("Something went wrong\n\n" + str(e))
-            self.set_creddbbuttons()
-            return
-        else:
-            return
+        dialog = NewPasswordDialog()
+        dialog.exec()
+        dialog.show()
+        if str(dialog.result()) == '1':
+            password = dialog.getresults()
+            if password:
+                try:
+                    # We pass a username here (from the config file) just in case someone has written their own
+                    # version of the CredentialDB class that requires both a username/id AND password
+                    # however the version distributed with sumologictoolbox ignores the username.
+                    self.credentialstore = CredentialsDB(password, username=self.config['Credential Store']['username'], create_new=True)
+                    # restrict permissions on the db file to just the user. May not be effective on Windows
+                    os.chmod(str(db_file), 0o600)
+                    self.cred_db_authenticated = True
+                except Exception as e:
+                    logger.exception(e)
+                    self.errorbox("Something went wrong\n\n" + str(e))
+                self.set_creddbbuttons()
+                return
+            else:
+                return
         return
 
     def loadcreddb(self):
@@ -543,7 +546,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         db_file = pathlib.Path('credentials.db')
         if db_file.is_file():
             message = "Please enter your credentials database password."
-            password, result = QtWidgets.QInputDialog.getText(self, 'Enter password', message)
+            password, result = QtWidgets.QInputDialog.getText(self, 'Enter password', message, QtWidgets.QLineEdit.Password)
             if result:
                 try:
                     # create the cred store instance
@@ -662,9 +665,9 @@ If so type 'DELETE' in the box below:"
             db_file_exists = False
         config_value = self.config['Credential Store']['credential_store_implementation']
 
-        if (hasattr(self.credentialstore, 'add_creds')) and \
-                (config_value == 'built_in') and \
-                (self.cred_db_authenticated is True):
+        if (config_value == 'built_in') and \
+                (self.cred_db_authenticated is True) and\
+                (hasattr(self.credentialstore, 'add_creds')):
 
             self.pushButtonCreatePresetLeft.setEnabled(True)
             self.pushButtonCreatePresetRight.setEnabled(True)
@@ -673,9 +676,9 @@ If so type 'DELETE' in the box below:"
             self.pushButtonCreatePresetLeft.setEnabled(False)
             self.pushButtonCreatePresetRight.setEnabled(False)
 
-        if (hasattr(self.credentialstore, 'update_creds')) and \
-                (config_value == 'built_in') and \
-                (self.cred_db_authenticated is True):
+        if (config_value == 'built_in') and \
+                (self.cred_db_authenticated is True) and\
+                (hasattr(self.credentialstore, 'update_creds')):
 
             self.pushButtonUpdatePresetLeft.setEnabled(True)
             self.pushButtonUpdatePresetRight.setEnabled(True)
@@ -684,9 +687,9 @@ If so type 'DELETE' in the box below:"
             self.pushButtonUpdatePresetLeft.setEnabled(False)
             self.pushButtonUpdatePresetRight.setEnabled(False)
 
-        if (hasattr(self.credentialstore, 'delete_creds')) and \
-                (config_value == 'built_in') and \
-                (self.cred_db_authenticated is True):
+        if  (config_value == 'built_in') and \
+                (self.cred_db_authenticated is True) and\
+                (hasattr(self.credentialstore, 'delete_creds')):
 
             self.pushButtonDeletePresetLeft.setEnabled(True)
             self.pushButtonDeletePresetRight.setEnabled(True)
@@ -1791,16 +1794,6 @@ If you are absolutely sure, type "DELETE" in the box below.
         self.config = configparser.ConfigParser()
         self.config.read(str(config_file))
         return
-
-
-
-
-
-
-
-
-
-
 
     # End Misc/Utility Methods
 
