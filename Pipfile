@@ -13,6 +13,9 @@ pyqt5-stubs = "*"
 pathlib = "*"
 pytz = "*"
 logzero = "*"
+SQLAlchemy = ">=1.3.0"
+cryptography = "*"
+argon2-cffi = "*"
 
 [requires]
-#python_version = "3.6"
+python_version = "3.6"

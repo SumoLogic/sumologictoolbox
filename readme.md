@@ -57,7 +57,7 @@ Features and Usage
 
 Collector Source Copying:
 
-    1. Input Credentials for your source and destination orgs
+    1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
     3. Click "Update" for source and destination to populate the collector lists
     4. Choose a source collector to populate the sources list.
@@ -70,7 +70,7 @@ Collector Source Copying:
 
 Collector Backup:
 
-    1. Input Credentials for your org
+    1. Input/select Credentials for your org
     2. Select your region for your org
     3. Click "Update" to populate the collector list
     4. Choose one or more collectors
@@ -80,7 +80,7 @@ Collector Backup:
 
 Collector Delete:
 
-    1. Input Credentials for your org
+    1. Input/select Credentials for your org
     2. Select your region for your org
     3. Click "Update" for destination to populate the collector list
     4. Choose one or more collectors
@@ -94,7 +94,7 @@ Collector Delete:
     
 Source Delete:
 
-    1. Input Credentials for your org
+    1. Input/select Credentials for your org
     2. Select your region for your org
     3. Click "Update" for destination to populate the collector list
     4. Choose a collector
@@ -108,7 +108,7 @@ Source Delete:
     
 Search API:
 
-    1. Input source credentials
+    1. Input/select source credentials
     2. Select your source region
     3. Select your timezone (defaults to local system timezone)
     4. Select your time range (defaults to a relative 15 minute window from the time
@@ -129,7 +129,7 @@ Search API:
 
 Content Folder Creation:    !NEW!
     
-    1. Input Credentials for your org
+    1. Input/select Credentials for your org
     2. Select your region for your org
     3. Click "Update" for destination to populate the collector list
     4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context
@@ -145,7 +145,7 @@ Content Folder Creation:    !NEW!
     
 Content Deletion:    !NEW!
     
-    1. Input Credentials for your org
+    1. Input/select Credentials for your org
     2. Select your region for your org
     3. Click "Update" for destination to populate the collector list
     4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context
@@ -165,7 +165,7 @@ Content Deletion:    !NEW!
 
 Content Copying:    !NEW!
 
-    1.  Input Credentials for your source and destination orgs
+    1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
     3. Click "Update" for source and destination to populate the content lists
     4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
@@ -181,7 +181,7 @@ Content Find/Replace/Copy:  !EXPERIMENTAL!
     them to you along with the sourceCategory tags in your destination environment allowing you to match them for
     replacement.
     
-    1.  Input Credentials for your source and destination orgs
+    1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
     3. Click "Update" for source and destination to populate the content lists
     4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
@@ -197,7 +197,7 @@ Content Find/Replace/Copy:  !EXPERIMENTAL!
     
 Content Backup: !New!
 
-    1.  Input Credentials for your source and destination orgs
+    1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
     3. Click "Update" for source and destination to populate the content lists
     4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
@@ -210,7 +210,7 @@ Content Backup: !New!
     
 Content Restore: !New!
 
-    1.  Input Credentials for your source and destination orgs
+    1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
     3. Click "Update" for source and destination to populate the content lists
     4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
@@ -229,9 +229,94 @@ Logging:    !NEW!
     description or what you were doing at the time. I can't promise an immediate fix but I will do my best.
     
     tmacdonald@sumologic.com
+    
+Config File:    !NEW!
+
+    sumologictoolbox now includes a sumologictoolbox.ini file to configure the tool. The ini file contains documetation
+    on each setting. 
+    
+    NOTE: If you downloaded the executables rather than the source then this file will be generated on your first
+    execution of the tool in the same directory as the tool. 
    
+Credential Database: !NEW!
+
+    The tool now includes an optional credential store. You can create a new credential database using the
+    "Create Cred Database" button. This will ask for you to enter a new password and will create a new, empty credential
+    database in the same directory as your sumologictoolbox script/executable. 
     
+    sumologictoolbox enforces a minimal complexity of 10 characters with upper/lower/numeric/non-alphanumeric characters. 
+    This password will be used as your master encryption key so longer/more complex is always better. 
+    You must REMEMBER this password. It cannot be retrieved once set. If you forget your password you must create a new
+    credential database. 
     
+    Once the credential database is created you can load it on subsequent executions of sumologictoolbox using the
+    "Load Cred DB" button. This will require the same password you entered when you initially created it. 
+    
+    Once the database is created/loaded you can then save/update/delete credentials in the database using the
+    Create/Update/Delete preset buttons. 
+    
+    Note: The credentials db functionality is optional. You can still use sumologictoolbox without it in the same way
+    as previous versions (by entering information manually into the appropriate fields.)
+    
+    Note: Before using the credential database functionality please ensure it complies with all policies/laws applicable
+    to your organization. 
+    
+    Specs:
+    
+    1. Argon2 for main password hashing
+    2. AES 128 (cbc mode) for encrypt/decrypt of credentials
+    3. PBKDF2HMAC using SHA3_512 to create encryption/decryption hashes (500,000 iterations using a 16 byte random salt)
+    4. salts are generated randomly per set of credentials every time they are saved/updated in the database
+
+    Credential DB FAQ:
+
+    Q: I see a flaw in your imp[ementation. Can I send feedback?
+    A: Please do! I have done my utmost to do this in the most secure fashion possible but any constructive feedback is
+       welcomed! Please read the rest of the FAQ first though before sending feedback.
+       You can send feedback to: tmacdonald@sumologic.com
+
+    Q: What is Argon2? I've never heard of it!
+    A: At the time of writing argon2 was the recommended password hashing algoritm by the password hashing competititon
+       https://password-hashing.net/
+
+    Q: Why are you using AES 128?
+    A: Because it is sufficient for our purposes.
+
+       This website gives the current requirements from various governing agencies and bodies:
+       https://www.keylength.com/
+
+       It shows that NIST estimates data encrypted with AES-128 is good for at least 10 years
+       Honestly if you are worried about your SumoLogic accesskeys being decrypted in ten years then I humbly suggest
+       that you should be using your own credential store or none at all. Using mine would probably violate your 
+       corporate policies and/or possibly some laws if you are a govt. agency. Use at your own risk! (See License.)
+
+       If you need something stronger you are free to create your own version of this class using stronger encryption.
+       If you do (and know what you are doing) feel free to contribute it back to the project. 
+
+    Q: I have my own keystore, can I use that instead?
+    A: Yes! I have attempted to write sumologictoolbox in such a way that you can implement your own version of the
+       CredentialDB class that calls or implements a different keystore. To this end I have done the following:
+
+       1. Sumologictoolbox will pass a username/id as well as a password to the CredentialDB class if one is set
+          in the sumologictoolbox ini file.
+       2. You can turn off the "create/delete cred database" button in sumologictoolbox with the appropriate setting in
+          the sumologictoolbox ini file. This will leave only the load button to be used in connecting to the external
+          credential store.
+       3. Sumologictoolbox will only activate the "create preset", 'update preset', and 'delete preset' buttons if the
+          "add_cred", "update_cred", and "delete_cred" methods exist in the CredentialDB class. This means you can 
+          implement a read-only version of this class that authenticates against an external credential store. I've
+          added comments to each method marking them as "required", "optional", and "internal". You only need to
+          implement the "required" methods for a read-only credential store.
+
+    Q: I looked at your code. Why are you storing the salt in the open? Doesn't that make it worthless?
+    A: The salt is stored in "plain" text with the encrypted data as they must be used for decryption. This is an accepted
+       practice. For more information on why that is the case I suggest the following reading:
+       https://crackstation.net/hashing-security.htm
+    
+    Q: Can I turn all of this off? I don't want my users using your/any credential store.
+    A: Yes! You can turn it off in the Sumologictoolbox ini file.
+    
+        
 
 Screen Shots:
 =============

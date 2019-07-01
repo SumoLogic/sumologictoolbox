@@ -1,6 +1,7 @@
 #app specific
 
 credentials.json
+credentials.db
 
 #python files
 

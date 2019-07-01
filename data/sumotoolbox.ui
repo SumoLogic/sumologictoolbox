@@ -30,7 +30,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>150</y>
+      <y>190</y>
       <width>1260</width>
       <height>801</height>
      </rect>
@@ -79,7 +79,7 @@
        <string>Update</string>
       </property>
      </widget>
-     <widget class="QListWidget" name="listWidgetLeftCollectors">
+     <widget class="QListWidget" name="listWidgetCollectorsLeft">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -113,7 +113,7 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QListWidget" name="listWidgetLeftSources">
+     <widget class="QListWidget" name="listWidgetSourcesLeft">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -141,7 +141,7 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="label_7">
+     <widget class="QLabel" name="labelCollectorsLeft">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -160,7 +160,7 @@
        <string>Collectors:</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_8">
+     <widget class="QLabel" name="labelSourcesLeft">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -179,7 +179,7 @@
        <string>Sources:</string>
       </property>
      </widget>
-     <widget class="QListWidget" name="listWidgetRightCollectors">
+     <widget class="QListWidget" name="listWidgetCollectorsRight">
       <property name="geometry">
        <rect>
         <x>690</x>
@@ -210,7 +210,7 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QListWidget" name="listWidgetRightSources">
+     <widget class="QListWidget" name="listWidgetSourcesRight">
       <property name="geometry">
        <rect>
         <x>689</x>
@@ -241,7 +241,7 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="label_9">
+     <widget class="QLabel" name="labelCollectorsRight">
       <property name="geometry">
        <rect>
         <x>690</x>
@@ -260,7 +260,7 @@
        <string>Collectors:</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_10">
+     <widget class="QLabel" name="labelSourcesRight">
       <property name="geometry">
        <rect>
         <x>690</x>
@@ -361,25 +361,6 @@
        <string>Delete Source(s)</string>
       </property>
      </widget>
-     <widget class="Line" name="line">
-      <property name="geometry">
-       <rect>
-        <x>589</x>
-        <y>580</y>
-        <width>81</width>
-        <height>181</height>
-       </rect>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Plain</enum>
-      </property>
-      <property name="lineWidth">
-       <number>3</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-     </widget>
      <widget class="QPushButton" name="pushButtonBackupCollectorRight">
       <property name="geometry">
        <rect>
@@ -478,7 +459,7 @@
        <string>Delete Source(s)</string>
       </property>
      </widget>
-     <widget class="QLabel" name="labelcollectorlegend">
+     <widget class="QLabel" name="labelCollectorLegend">
       <property name="geometry">
        <rect>
         <x>580</x>
@@ -618,7 +599,7 @@
       <property name="flat">
        <bool>true</bool>
       </property>
-      <widget class="QRadioButton" name="personalRadioButton">
+      <widget class="QRadioButton" name="radioButtonPersonalLeft">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -638,7 +619,7 @@ Folder</string>
         <string notr="true">buttonGroupContentLeft</string>
        </attribute>
       </widget>
-      <widget class="QRadioButton" name="globalRadioButton">
+      <widget class="QRadioButton" name="radioButtonGlobalLeft">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -658,7 +639,7 @@ Folders</string>
         <string notr="true">buttonGroupContentLeft</string>
        </attribute>
       </widget>
-      <widget class="QRadioButton" name="adminRadioButton">
+      <widget class="QRadioButton" name="radioButtonAdminLeft">
        <property name="geometry">
         <rect>
          <x>180</x>
@@ -676,7 +657,7 @@ Folders</string>
        </attribute>
       </widget>
      </widget>
-     <widget class="QLabel" name="labelcollectorlegend_2">
+     <widget class="QLabel" name="labelContentLegend">
       <property name="geometry">
        <rect>
         <x>580</x>
@@ -715,7 +696,7 @@ Folders</string>
       <property name="flat">
        <bool>true</bool>
       </property>
-      <widget class="QRadioButton" name="personalRadioButton_2">
+      <widget class="QRadioButton" name="radioButtonPersonalRight">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -735,7 +716,7 @@ Folder</string>
         <string notr="true">buttonGroupContentRight</string>
        </attribute>
       </widget>
-      <widget class="QRadioButton" name="globalRadioButton_2">
+      <widget class="QRadioButton" name="radioButtonGlobalRight">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -755,7 +736,7 @@ Folders</string>
         <string notr="true">buttonGroupContentRight</string>
        </attribute>
       </widget>
-      <widget class="QRadioButton" name="adminRadioButton_2">
+      <widget class="QRadioButton" name="radioButtonAdminRight">
        <property name="geometry">
         <rect>
          <x>180</x>
@@ -1003,7 +984,7 @@ Copy</string>
      <attribute name="title">
       <string>Search API</string>
      </attribute>
-     <widget class="QLabel" name="label_11">
+     <widget class="QLabel" name="labelSearch">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -1185,7 +1166,7 @@ Copy</string>
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="label_13">
+     <widget class="QLabel" name="labelEndTime">
       <property name="geometry">
        <rect>
         <x>980</x>
@@ -1223,7 +1204,7 @@ Copy</string>
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="label_14">
+     <widget class="QLabel" name="labelStartTime">
       <property name="geometry">
        <rect>
         <x>710</x>
@@ -1252,7 +1233,7 @@ Copy</string>
        </rect>
       </property>
      </widget>
-     <widget class="QLabel" name="label_15">
+     <widget class="QLabel" name="labelTimeZone">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -1271,7 +1252,7 @@ Copy</string>
        <string>Time Zone:</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_16">
+     <widget class="QLabel" name="labelMessagesReturned">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -1349,13 +1330,13 @@ Copy</string>
      </widget>
     </widget>
    </widget>
-   <widget class="QFrame" name="frame">
+   <widget class="QFrame" name="frameCredsLeft">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>620</width>
-      <height>131</height>
+      <width>571</width>
+      <height>171</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -1370,7 +1351,7 @@ Copy</string>
     <property name="midLineWidth">
      <number>2</number>
     </property>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="labelRegionLeft">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1389,7 +1370,7 @@ Copy</string>
       <string>Left Region:</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="ComboBoxLeftRegion">
+    <widget class="QComboBox" name="comboBoxRegionLeft">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1411,7 +1392,7 @@ Copy</string>
       <enum>QComboBox::InsertAfterCurrent</enum>
      </property>
     </widget>
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="labelAccessKeyIDLeft">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1430,7 +1411,7 @@ Copy</string>
       <string>Access Key ID:</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="LineEditLeftUserName">
+    <widget class="QLineEdit" name="lineEditUserNameLeft">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1452,7 +1433,7 @@ Copy</string>
       <string/>
      </property>
     </widget>
-    <widget class="QLabel" name="label_4">
+    <widget class="QLabel" name="labelAccessKeyLeft">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1471,7 +1452,7 @@ Copy</string>
       <string>Access Key :</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="LineEditLeftPassword">
+    <widget class="QLineEdit" name="lineEditPasswordLeft">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1496,14 +1477,109 @@ Copy</string>
       <enum>QLineEdit::Password</enum>
      </property>
     </widget>
+    <widget class="QComboBox" name="comboBoxPresetLeft">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>140</y>
+       <width>471</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="contextMenuPolicy">
+      <enum>Qt::NoContextMenu</enum>
+     </property>
+     <property name="insertPolicy">
+      <enum>QComboBox::InsertAfterCurrent</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelPresetLeft">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>91</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Preset:</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonCreatePresetLeft">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>490</x>
+       <y>10</y>
+       <width>71</width>
+       <height>34</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Create
+Preset</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonDeletePresetLeft">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>490</x>
+       <y>90</y>
+       <width>71</width>
+       <height>34</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Delete
+Preset</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonUpdatePresetLeft">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>490</x>
+       <y>50</y>
+       <width>71</width>
+       <height>34</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Update
+Preset</string>
+     </property>
+    </widget>
    </widget>
-   <widget class="QFrame" name="frame_2">
+   <widget class="QFrame" name="frameCredsRight">
     <property name="geometry">
      <rect>
-      <x>649</x>
+      <x>699</x>
       <y>10</y>
-      <width>611</width>
-      <height>131</height>
+      <width>571</width>
+      <height>171</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -1521,7 +1597,7 @@ Copy</string>
     <property name="midLineWidth">
      <number>2</number>
     </property>
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="labelRegionRight">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1540,7 +1616,7 @@ Copy</string>
       <string>Right Region:</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="ComboBoxRightRegion">
+    <widget class="QComboBox" name="comboBoxRegionRight">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1565,7 +1641,7 @@ Copy</string>
       <enum>QComboBox::InsertAfterCurrent</enum>
      </property>
     </widget>
-    <widget class="QLabel" name="label_5">
+    <widget class="QLabel" name="labelAccessKeyIDRight">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1584,7 +1660,7 @@ Copy</string>
       <string>Access Key ID:</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="LineEditRightUserName">
+    <widget class="QLineEdit" name="lineEditUserNameRight">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1606,7 +1682,7 @@ Copy</string>
       <string/>
      </property>
     </widget>
-    <widget class="QLabel" name="label_6">
+    <widget class="QLabel" name="labelAccessKeyRight">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1625,7 +1701,7 @@ Copy</string>
       <string>Access Key :</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="LineEditRightPassword">
+    <widget class="QLineEdit" name="lineEditPasswordRight">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -1650,6 +1726,146 @@ Copy</string>
       <enum>QLineEdit::Password</enum>
      </property>
     </widget>
+    <widget class="QComboBox" name="comboBoxPresetRight">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>140</y>
+       <width>471</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="contextMenuPolicy">
+      <enum>Qt::NoContextMenu</enum>
+     </property>
+     <property name="insertPolicy">
+      <enum>QComboBox::InsertAfterCurrent</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="labelPresetRight">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>91</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Preset:</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonDeletePresetRight">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>490</x>
+       <y>90</y>
+       <width>71</width>
+       <height>34</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Delete
+Preset</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonCreatePresetRight">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>490</x>
+       <y>10</y>
+       <width>71</width>
+       <height>34</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Create
+Preset</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonUpdatePresetRight">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>490</x>
+       <y>50</y>
+       <width>71</width>
+       <height>34</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Update
+Preset</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="pushButtonCreateCredentialDatabase">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>10</y>
+      <width>96</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Create Cred
+Database</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonLoadCredentialDatabase">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>60</y>
+      <width>96</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Load Cred
+Database</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonDeleteCredentialDatabase">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>110</y>
+      <width>96</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Delete Cred
+Database</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -1684,8 +1900,8 @@ Copy</string>
   </property>
  </designerdata>
  <buttongroups>
-  <buttongroup name="buttonGroupContentRight"/>
   <buttongroup name="buttonGroupContentLeft"/>
   <buttongroup name="buttonGroupOutputType"/>
+  <buttongroup name="buttonGroupContentRight"/>
  </buttongroups>
 </ui>

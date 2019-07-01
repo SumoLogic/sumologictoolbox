@@ -5,6 +5,7 @@ block_cipher = None
 added_files = [
     ( 'data/apiurls.json', 'data' ),
     ( 'data/sumotoolbox.ui', 'data' ),
+    ( 'data/sumotoolbox.ini', 'data')
     ]
 
 added_dlls = [

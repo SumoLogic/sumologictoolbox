@@ -1,4 +1,13 @@
 __author__ = 'Tim MacDonald'
+# Copyright 2015 Timothy MacDonald
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at:
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
 
 import sys
 import json
@@ -6,17 +15,20 @@ import re
 import csv
 import pytz
 import os.path
-from datetime import datetime, timezone
+from datetime import datetime
 from tzlocal import get_localzone
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
-from sumologic import SumoLogic
 import pathlib
 import os
-import traceback
 import logzero
 from logzero import logger
+import configparser
+import shutil
 
-
+#local imports
+from sumologic import SumoLogic
+from credentials import CredentialsDB
+from dialogs import *
 
 # detect if in Pyinstaller package and build appropriate base directory path
 if getattr(sys, 'frozen', False):
@@ -36,95 +48,6 @@ qtMainWindowUI = os.path.join(basedir, 'data/sumotoolbox.ui')
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtMainWindowUI)
 
 
-class findReplaceCopyDialog(QtWidgets.QDialog):
-
-    def __init__(self, fromcategories, tocategories, parent=None):
-        super(findReplaceCopyDialog, self).__init__(parent)
-        self.objectlist = []
-        self.setupUi(self, fromcategories, tocategories)
-
-    def setupUi(self, frcd, fromcategories, tocategories):
-
-        # setup static elements
-        frcd.setObjectName("FindReplaceCopy")
-        frcd.resize(1150, 640)
-        self.buttonBox = QtWidgets.QDialogButtonBox(frcd)
-        self.buttonBox.setGeometry(QtCore.QRect(10, 600, 1130, 35))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBoxOkCancel")
-        self.label = QtWidgets.QLabel(frcd)
-        self.label.setGeometry(QtCore.QRect(20, 10, 1120, 140))
-        self.label.setWordWrap(True)
-        self.label.setObjectName("labelInstructions")
-        self.scrollArea = QtWidgets.QScrollArea(frcd)
-        self.scrollArea.setGeometry(QtCore.QRect(10, 150, 1130, 440))
-        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setObjectName("scrollArea")
-        self.scrollAreaWidget = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents = QtWidgets.QFormLayout()
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-
-        # set up the list of destination categories to populate into the comboboxes
-        itemmodel = QtGui.QStandardItemModel()
-        for tocategory in tocategories:
-            text_item = QtGui.QStandardItem(str(tocategory))
-            itemmodel.appendRow(text_item)
-        itemmodel.sort(0)
-
-        # Create 1 set of (checkbox, label, combobox per fromcategory
-
-
-        for index, fromcategory in enumerate(fromcategories):
-
-            objectdict = {'checkbox': None, 'label': None, 'combobox': None}
-            layout = QtWidgets.QHBoxLayout()
-            objectdict['checkbox'] = QtWidgets.QCheckBox()
-            objectdict['checkbox'].setGeometry(QtCore.QRect(0, 0, 20, 20))
-            objectdict['checkbox'].setText("")
-            objectdict['checkbox'].setObjectName("checkBox" + str(index))
-            layout.addWidget(objectdict['checkbox'])
-            objectdict['label']= QtWidgets.QLabel()
-            objectdict['label'].setGeometry(QtCore.QRect(0, 0, 480, 25))
-            objectdict['label'].setObjectName("comboBox" + str(index))
-            objectdict['label'].setText(fromcategory)
-            layout.addWidget(objectdict['label'])
-            objectdict['combobox'] = QtWidgets.QComboBox()
-            objectdict['combobox'].setGeometry(QtCore.QRect(550, 0, 485, 25))
-            objectdict['combobox'].setObjectName("comboBox" + str(index))
-            objectdict['combobox'].setModel(itemmodel)
-            objectdict['combobox'].setEditable(True)
-            layout.addWidget(objectdict['combobox'])
-            self.objectlist.append(objectdict)
-            self.scrollAreaWidgetContents.addRow(layout)
-
-        self.scrollAreaWidget.setLayout(self.scrollAreaWidgetContents)
-        self.scrollArea.setWidget(self.scrollAreaWidget)
-        self.scrollArea.show()
-
-
-        self.retranslateUi(frcd)
-        self.buttonBox.accepted.connect(frcd.accept)
-        self.buttonBox.rejected.connect(frcd.reject)
-        QtCore.QMetaObject.connectSlotsByName(frcd)
-
-    def retranslateUi(self, FindReplaceCopy):
-        _translate = QtCore.QCoreApplication.translate
-        FindReplaceCopy.setWindowTitle(_translate("FindReplaceCopy", "Dialog"))
-        self.label.setText(_translate("FindReplaceCopy",
-                                      "<html><head/><body><p>Each entry on the left is one of the source categories present in your content. </p><p>From the drop downs on the right select the source categories you want to replace them with or type your own. These have been populated from your destination org/tenant. </p><p>Checked items will be replaced, unchecked items will not be modified. </p><p>Note: The query that populates the destination dropdowns only searches for source categories that have ingested something in the last hour. If you are sporadically ingesting data then some source categories may not show up. You can type those in manually.</p></body></html>"))
-
-    def getresults(self):
-        results = []
-        for object in self.objectlist:
-            if str(object['checkbox'].checkState()) == '2':
-                objectdata = { 'from': str(object['label'].text()), 'to': str(object['combobox'].currentText())}
-                results.append(objectdata)
-        return results
-
-
 
 class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
 
@@ -141,136 +64,218 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.setupUi(self)
 
-
-
-
-
+        # variable to hold whether we've authenticated the cred database
+        self.cred_db_authenticated = False
         # set up some variables we'll need later to do stuff. These are attached to the pyqt5 objects so they
         # persist through method calls (you can't return values from methods called with signals)
-        self.contentListWidgetLeft.currentContent = {}
-        self.contentListWidgetRight.currentContent = {}
-        self.contentListWidgetLeft.currentdirlist = []
-        self.contentListWidgetRight.currentdirlist = []
-        self.contentListWidgetLeft.updated = False
-        self.contentListWidgetRight.updated = False
+        self.reset_stateful_objects()
 
         self.initModels()  # load all the comboboxes and such with values
-        self.loadcredentials()  # if a credential file exists populate the creds with values
+
+        # load the config file and if it doesn't exist copy it from the template
+        self.init_and_load_config_file()
+
+        # Configure the creddb buttons according to the config file settings
+        self.initial_config_cred_db_buttons()
+
+
         # connect all of the UI button elements to their respective methods
 
         #Set up a signal if the tabs are clicked
         self.tabWidget.currentChanged.connect(self.tabchange)
 
+        #UI Buttons for Credential Store
+
+        self.pushButtonCreateCredentialDatabase.clicked.connect(self.createcredb)
+        self.pushButtonLoadCredentialDatabase.clicked.connect(self.loadcreddb)
+        self.pushButtonDeleteCredentialDatabase.clicked.connect(self.deletecreddb)
+
+        # Left Preset Buttons
+
+        self.pushButtonCreatePresetLeft.clicked.connect(lambda: self.create_preset(
+            self.comboBoxRegionLeft,
+            self.lineEditUserNameLeft,
+            self.lineEditPasswordLeft,
+            self.comboBoxPresetLeft,
+            'left'
+        ))
+
+        self.comboBoxPresetLeft.currentIndexChanged.connect(lambda: self.load_preset(
+            str(self.comboBoxPresetLeft.currentText()),
+            self.comboBoxRegionLeft,
+            self.lineEditUserNameLeft,
+            self.lineEditPasswordLeft,
+            self.comboBoxPresetLeft,
+            'left'
+        ))
+
+        self.pushButtonDeletePresetLeft.clicked.connect(lambda: self.delete_preset(
+            str(self.comboBoxPresetLeft.currentText()),
+            self.comboBoxRegionLeft,
+            self.lineEditUserNameLeft,
+            self.lineEditPasswordLeft,
+            self.comboBoxPresetLeft,
+            'left'
+        ))
+
+        self.pushButtonUpdatePresetLeft.clicked.connect(lambda: self.update_preset(
+            str(self.comboBoxPresetLeft.currentText()),
+            str(self.comboBoxRegionLeft.currentText()),
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
+        ))
+
+        # Right Preset Buttons
+
+        self.pushButtonCreatePresetRight.clicked.connect(lambda: self.create_preset(
+            self.comboBoxRegionRight,
+            self.lineEditUserNameRight,
+            self.lineEditPasswordRight,
+            self.comboBoxPresetRight,
+            'right'
+        ))
+
+        self.comboBoxPresetRight.currentIndexChanged.connect(lambda: self.load_preset(
+            str(self.comboBoxPresetRight.currentText()),
+            self.comboBoxRegionRight,
+            self.lineEditUserNameRight,
+            self.lineEditPasswordRight,
+            self.comboBoxPresetRight,
+            'right'
+        ))
+
+        self.pushButtonDeletePresetRight.clicked.connect(lambda: self.delete_preset(
+            str(self.comboBoxPresetRight.currentText()),
+            self.comboBoxRegionRight,
+            self.lineEditUserNameRight,
+            self.lineEditPasswordRight,
+            self.comboBoxPresetRight,
+            'right'
+        ))
+
+        self.pushButtonUpdatePresetRight.clicked.connect(lambda: self.update_preset(
+            str(self.comboBoxPresetRight.currentText()),
+            str(self.comboBoxRegionRight.currentText()),
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
+        ))
+
         # UI Buttons for Collection API tab
         self.pushButtonUpdateListLeft.clicked.connect(lambda: self.updatecollectorlist(
-            self.listWidgetLeftCollectors,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text())))
+            self.listWidgetCollectorsLeft,
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
+        ))
 
         self.pushButtonUpdateListRight.clicked.connect(lambda: self.updatecollectorlist(
-            self.listWidgetRightCollectors,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text())))
+            self.listWidgetCollectorsRight,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
+        ))
 
         self.pushButtonCopySourcesLeftToRight.clicked.connect(lambda: self.copysources(
-            self.listWidgetLeftCollectors,
-            self.listWidgetRightCollectors,
-            self.listWidgetLeftSources,
-            self.listWidgetRightSources,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()) ))
+            self.listWidgetCollectorsLeft,
+            self.listWidgetCollectorsRight,
+            self.listWidgetSourcesLeft,
+            self.listWidgetSourcesRight,
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
+        ))
 
         self.pushButtonCopySourcesRightToLeft.clicked.connect(lambda: self.copysources(
-            self.listWidgetRightCollectors,
-            self.listWidgetLeftCollectors,
-            self.listWidgetRightSources,
-            self.listWidgetLeftSources,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()) ))
+            self.listWidgetCollectorsRight,
+            self.listWidgetCollectorsLeft,
+            self.listWidgetSourcesRight,
+            self.listWidgetSourcesLeft,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
+        ))
 
         self.pushButtonBackupCollectorLeft.clicked.connect(lambda: self.backupcollector(
-            self.listWidgetLeftCollectors,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text())))
+            self.listWidgetCollectorsLeft,
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
+        ))
 
         self.pushButtonBackupCollectorRight.clicked.connect(lambda: self.backupcollector(
-            self.listWidgetRightCollectors,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text())))
+            self.listWidgetCollectorsRight,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
+        ))
 
         self.pushButtonDeleteCollectorLeft.clicked.connect(lambda: self.deletecollectors(
-            self.listWidgetLeftCollectors,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text())
+            self.listWidgetCollectorsLeft,
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
         ))
 
         self.pushButtonDeleteCollectorRight.clicked.connect(lambda: self.deletecollectors(
-            self.listWidgetRightCollectors,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text())
+            self.listWidgetCollectorsRight,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
         ))
 
         self.pushButtonDeleteSourcesLeft.clicked.connect(lambda: self.deletesources(
-            self.listWidgetLeftCollectors,
-            self.listWidgetLeftSources,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text())
+            self.listWidgetCollectorsLeft,
+            self.listWidgetSourcesLeft,
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
         ))
 
         self.pushButtonDeleteSourcesRight.clicked.connect(lambda: self.deletesources(
-            self.listWidgetRightCollectors,
-            self.listWidgetRightSources,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text())
+            self.listWidgetCollectorsRight,
+            self.listWidgetSourcesRight,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
         ))
 
         # set up a signal to update the source list if a new collector is set
-        self.listWidgetLeftCollectors.itemSelectionChanged.connect(lambda: self.updatesourcelist(
-            self.listWidgetLeftCollectors,
-            self.listWidgetLeftSources,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text())
+        self.listWidgetCollectorsLeft.itemSelectionChanged.connect(lambda: self.updatesourcelist(
+            self.listWidgetCollectorsLeft,
+            self.listWidgetSourcesLeft,
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
         ))
 
-        self.listWidgetRightCollectors.itemSelectionChanged.connect(lambda: self.updatesourcelist(
-            self.listWidgetRightCollectors,
-            self.listWidgetRightSources,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text())
+        self.listWidgetCollectorsRight.itemSelectionChanged.connect(lambda: self.updatesourcelist(
+            self.listWidgetCollectorsRight,
+            self.listWidgetSourcesRight,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
         ))
 
         # UI Buttons for Search API Tab
         self.pushButtonStartSearch.clicked.connect(lambda: self.runsearch(
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text())
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
         ))
 
         # Content Pane Signals
         # Left Side
         self.pushButtonUpdateContentLeft.clicked.connect(lambda: self.updatecontentlist(
             self.contentListWidgetLeft,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
             self.buttonGroupContentLeft.checkedId(),
             self.contentCurrentDirLabelLeft
         ))
@@ -278,27 +283,27 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.contentListWidgetLeft.itemDoubleClicked.connect(lambda item: self.doubleclickedcontentlist(
             item,
             self.contentListWidgetLeft,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
             self.buttonGroupContentLeft.checkedId(),
             self.contentCurrentDirLabelLeft
         ))
 
         self.pushButtonParentDirContentLeft.clicked.connect(lambda: self.parentdircontentlist(
             self.contentListWidgetLeft,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
             self.buttonGroupContentLeft.checkedId(),
             self.contentCurrentDirLabelLeft
         ))
 
         self.buttonGroupContentLeft.buttonClicked.connect(lambda: self.contentradiobuttonchanged(
             self.contentListWidgetLeft,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
             self.buttonGroupContentLeft.checkedId(),
             self.contentCurrentDirLabelLeft,
             self.pushButtonContentDeleteLeft
@@ -306,18 +311,18 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.pushButtonContentNewFolderLeft.clicked.connect(lambda: self.create_folder(
             self.contentListWidgetLeft,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
             self.buttonGroupContentLeft.checkedId(),
             self.contentCurrentDirLabelLeft
         ))
 
         self.pushButtonContentDeleteLeft.clicked.connect(lambda: self.delete_content(
             self.contentListWidgetLeft,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
             self.buttonGroupContentLeft.checkedId(),
             self.contentCurrentDirLabelLeft
         ))
@@ -325,12 +330,12 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButtonContentCopyLeftToRight.clicked.connect(lambda: self.copycontent(
             self.contentListWidgetLeft,
             self.contentListWidgetRight,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
             self.buttonGroupContentLeft.checkedId(),
             self.buttonGroupContentRight.checkedId(),
             self.contentCurrentDirLabelRight
@@ -339,12 +344,12 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButtonContentFindReplaceCopyLeftToRight.clicked.connect(lambda: self.findreplacecopycontent(
             self.contentListWidgetLeft,
             self.contentListWidgetRight,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
             self.buttonGroupContentLeft.checkedId(),
             self.buttonGroupContentRight.checkedId(),
             self.contentCurrentDirLabelRight
@@ -353,9 +358,9 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         # Right Side
         self.pushButtonUpdateContentRight.clicked.connect(lambda: self.updatecontentlist(
             self.contentListWidgetRight,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
             self.buttonGroupContentRight.checkedId(),
             self.contentCurrentDirLabelRight
         ))
@@ -363,27 +368,27 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.contentListWidgetRight.itemDoubleClicked.connect(lambda item: self.doubleclickedcontentlist(
             item,
             self.contentListWidgetRight,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
             self.buttonGroupContentRight.checkedId(),
             self.contentCurrentDirLabelRight
         ))
 
         self.pushButtonParentDirContentRight.clicked.connect(lambda: self.parentdircontentlist(
             self.contentListWidgetRight,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
             self.buttonGroupContentRight.checkedId(),
             self.contentCurrentDirLabelRight
         ))
 
         self.buttonGroupContentRight.buttonClicked.connect(lambda: self.contentradiobuttonchanged(
             self.contentListWidgetRight,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
             self.buttonGroupContentRight.checkedId(),
             self.contentCurrentDirLabelRight,
             self.pushButtonContentDeleteRight
@@ -391,18 +396,18 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.pushButtonContentNewFolderRight.clicked.connect(lambda: self.create_folder(
             self.contentListWidgetRight,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
             self.buttonGroupContentRight.checkedId(),
             self.contentCurrentDirLabelRight
         ))
 
         self.pushButtonContentDeleteRight.clicked.connect(lambda: self.delete_content(
             self.contentListWidgetRight,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
             self.buttonGroupContentRight.checkedId(),
             self.contentCurrentDirLabelRight
         ))
@@ -410,12 +415,12 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButtonContentCopyRightToLeft.clicked.connect(lambda: self.copycontent(
             self.contentListWidgetRight,
             self.contentListWidgetLeft,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
             self.buttonGroupContentRight.checkedId(),
             self.buttonGroupContentLeft.checkedId(),
             self.contentCurrentDirLabelLeft
@@ -424,12 +429,12 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButtonContentFindReplaceCopyRightToLeft.clicked.connect(lambda: self.findreplacecopycontent(
             self.contentListWidgetRight,
             self.contentListWidgetLeft,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
             self.buttonGroupContentRight.checkedId(),
             self.buttonGroupContentLeft.checkedId(),
             self.contentCurrentDirLabelLeft
@@ -437,35 +442,372 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.pushButtonContentBackupLeft.clicked.connect(lambda: self.backupcontent(
             self.contentListWidgetLeft,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text())
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
         ))
 
         self.pushButtonContentBackupRight.clicked.connect(lambda: self.backupcontent(
             self.contentListWidgetRight,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text())
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
         ))
 
         self.pushButtonContentRestoreLeft.clicked.connect(lambda: self.restorecontent(
             self.contentListWidgetLeft,
-            self.loadedapiurls[str(self.ComboBoxLeftRegion.currentText())],
-            str(self.LineEditLeftUserName.text()),
-            str(self.LineEditLeftPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
             self.buttonGroupContentLeft.checkedId(),
             self.contentCurrentDirLabelLeft
         ))
 
         self.pushButtonContentRestoreRight.clicked.connect(lambda: self.restorecontent(
             self.contentListWidgetRight,
-            self.loadedapiurls[str(self.ComboBoxRightRegion.currentText())],
-            str(self.LineEditRightUserName.text()),
-            str(self.LineEditRightPassword.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
             self.buttonGroupContentRight.checkedId(),
             self.contentCurrentDirLabelRight
         ))
+
+
+    # method to reset all objects that are dependent on creds (such as collectors and content lists)
+    def reset_stateful_objects(self, side='both'):
+
+        if side == 'both':
+            left = True
+            right = True
+        if side == 'left':
+            left = True
+            right = False
+        if side == 'right':
+            left = False
+            right = True
+
+        if left:
+            self.listWidgetCollectorsLeft.clear()
+            self.listWidgetSourcesLeft.clear()
+            self.contentListWidgetLeft.clear()
+            self.contentListWidgetLeft.currentcontent = {}
+            self.contentListWidgetLeft.currentdirlist = []
+            self.contentListWidgetLeft.updated = False
+
+        if right:
+            self.listWidgetCollectorsRight.clear()
+            self.listWidgetSourcesRight.clear()
+            self.contentListWidgetRight.clear()
+            self.contentListWidgetRight.currentcontent = {}
+            self.contentListWidgetRight.currentdirlist = []
+            self.contentListWidgetRight.updated = False
+
+        return
+
+    # Start methods for Credential Database
+
+    def createcredb(self):
+        logger.info('Creating credential store')
+        #check to see if there is already a dbfile and ask if it should be removed to create a new one
+        db_file = pathlib.Path('credentials.db')
+        if db_file.is_file():
+            message = "It looks like you already have a credential database. Do you want to delete it (and it's passwords) and create a new one? If so type 'DELETE' in the box below:"
+            text, result = QtWidgets.QInputDialog.getText(self, 'Warning!!', message)
+            if (result and (str(text) == 'DELETE')):
+                os.remove('credentials.db')
+            else:
+                return
+        # get the password that will be used for the new database
+        message = "Please enter the password you want to use for the new credential database. This will be used to encrypt the contents of the db. It must be at leas 10 characters long and contain at least 1 uppercase character, 1 lowercase, 1 number, and 1 symbol. Do not forget this password as it cannot be recovered."
+        password, result = QtWidgets.QInputDialog.getText(self, 'Enter New password', message)
+        if result:
+            try:
+                # We pass a username here (from the config file) just in case someone has written their own
+                # version of the CredentialDB class that requires both a username/id AND password
+                # however the version distributed with sumologictoolbox ignores the username.
+                self.credentialstore = CredentialsDB(password, username=self.config['Credential Store']['username'], create_new=True)
+                # restrict permissions on the db file to just the user. May not be effective on Windows
+                os.chmod(str(db_file), 0o600)
+                self.cred_db_authenticated = True
+            except Exception as e:
+                logger.exception(e)
+                self.errorbox("Something went wrong\n\n" + str(e))
+            self.set_creddbbuttons()
+            return
+        else:
+            return
+        return
+
+    def loadcreddb(self):
+        logger.info('Loading credential store')
+        db_file = pathlib.Path('credentials.db')
+        if db_file.is_file():
+            message = "Please enter your credentials database password."
+            password, result = QtWidgets.QInputDialog.getText(self, 'Enter password', message)
+            if result:
+                try:
+                    # create the cred store instance
+                    self.credentialstore = CredentialsDB(password)
+                    self.cred_db_authenticated = True
+                    # turn on the UI buttons
+                    self.set_creddbbuttons()
+                    # populate the preset dropdowns
+                    self.populate_presets()
+                    preset = self.comboBoxPresetLeft.currentText()
+                    # load the first preset in the list (if it's there)
+                    if preset:
+                        self.load_preset(
+                            preset,
+                            self.comboBoxRegionLeft,
+                            self.lineEditUserNameLeft,
+                            self.lineEditPasswordLeft,
+                            self.comboBoxPresetLeft,
+                            'left'
+                        )
+                        self.load_preset(
+                            preset,
+                            self.comboBoxRegionRight,
+                            self.lineEditUserNameRight,
+                            self.lineEditPasswordRight,
+                            self.comboBoxPresetLeft,
+                            'right'
+                        )
+
+                        
+                except Exception as e:
+                    logger.exception(e)
+                    self.errorbox(str(e))
+                    self.cred_db_authenticated = False
+                    self.set_creddbbuttons()
+                return
+            else:
+                return
+        else:
+            self.errorbox("You don't appear to have a credentials database. You must create one first.")
+            return
+        return
+
+    def deletecreddb(self):
+        db_file = pathlib.Path('credentials.db')
+        if db_file.is_file():
+            message = '''
+Do you really want to delete your credential database? 
+If so type 'DELETE' in the box below:"
+
+'''
+            text, result = QtWidgets.QInputDialog.getText(self, 'Warning!!', message)
+            if (result and (str(text) == 'DELETE')):
+                os.remove(str(db_file))
+                self.cred_db_authenticated = False
+                self.set_creddbbuttons()
+
+    def populate_presets(self):
+        logger.info('Populating presets')
+        self.comboBoxPresetLeft.clear()
+        self.comboBoxPresetRight.clear()
+        try:
+            names = self.credentialstore.list_names()
+            names = sorted(names,  key=str.lower)
+            for name in names:
+                self.comboBoxPresetLeft.addItem(name)
+                self.comboBoxPresetRight.addItem(name)
+        except Exception as e:
+            logger.exception(e)
+            self.errorbox('Something went wrong\n\n' + str(e))
+        return
+
+    def add_preset_to_combobox(self, preset):
+        self.comboBoxPresetLeft.addItem(preset)
+        self.comboBoxPresetRight.addItem(preset)
+        return
+
+    def remove_preset_from_combobox(self, preset):
+        index = self.comboBoxPresetLeft.findText(preset)
+        self.comboBoxPresetLeft.removeItem(index)
+        index = self.comboBoxPresetRight.findText(preset)
+        self.comboBoxPresetRight.removeItem(index)
+        return
+
+    # This is only used to configure the initial state of the credential db buttons
+    def initial_config_cred_db_buttons(self):
+        db_file = pathlib.Path('credentials.db')
+        if db_file.is_file():
+            db_file_exists = True
+        else:
+            db_file_exists = False
+        config_value = self.config['Credential Store']['credential_store_implementation']
+        if (config_value == 'built_in') and db_file_exists:
+            self.pushButtonLoadCredentialDatabase.setEnabled(True)
+            self.pushButtonCreateCredentialDatabase.setEnabled(False)
+            self.pushButtonDeleteCredentialDatabase.setEnabled(True)
+        else:
+            self.pushButtonLoadCredentialDatabase.setEnabled(False)
+            self.pushButtonCreateCredentialDatabase.setEnabled(True)
+            self.pushButtonDeleteCredentialDatabase.setEnabled(False)
+        if config_value == 'read_only':
+            self.pushButtonCreateCredentialDatabase.setEnabled(False)
+            self.pushButtonLoadCredentialDatabase.setEnabled(True)
+        if config_value == 'none':
+            self.pushButtonCreateCredentialDatabase.setEnabled(False)
+            self.pushButtonLoadCredentialDatabase.setEnabled(False)
+        return
+
+    # call this anytime a cred db is created, opened, or deleted to set all the buttons appropriately
+    # (also looks at methods available in the cred db instance as well as config file settings.)
+    def set_creddbbuttons(self):
+        db_file = pathlib.Path('credentials.db')
+        if db_file.is_file():
+            db_file_exists = True
+        else:
+            db_file_exists = False
+        config_value = self.config['Credential Store']['credential_store_implementation']
+
+        if (hasattr(self.credentialstore, 'add_creds')) and \
+                (config_value == 'built_in') and \
+                (self.cred_db_authenticated is True):
+
+            self.pushButtonCreatePresetLeft.setEnabled(True)
+            self.pushButtonCreatePresetRight.setEnabled(True)
+
+        else:
+            self.pushButtonCreatePresetLeft.setEnabled(False)
+            self.pushButtonCreatePresetRight.setEnabled(False)
+
+        if (hasattr(self.credentialstore, 'update_creds')) and \
+                (config_value == 'built_in') and \
+                (self.cred_db_authenticated is True):
+
+            self.pushButtonUpdatePresetLeft.setEnabled(True)
+            self.pushButtonUpdatePresetRight.setEnabled(True)
+
+        else:
+            self.pushButtonUpdatePresetLeft.setEnabled(False)
+            self.pushButtonUpdatePresetRight.setEnabled(False)
+
+        if (hasattr(self.credentialstore, 'delete_creds')) and \
+                (config_value == 'built_in') and \
+                (self.cred_db_authenticated is True):
+
+            self.pushButtonDeletePresetLeft.setEnabled(True)
+            self.pushButtonDeletePresetRight.setEnabled(True)
+
+        else:
+            self.pushButtonDeletePresetLeft.setEnabled(False)
+            self.pushButtonDeletePresetRight.setEnabled(False)
+
+        if (self.cred_db_authenticated is True) and\
+                (config_value != 'none'):
+            self.comboBoxPresetLeft.setEnabled(True)
+            self.comboBoxPresetRight.setEnabled(True)
+        else:
+            self.comboBoxPresetLeft.setEnabled(False)
+            self.comboBoxPresetRight.setEnabled(False)
+
+        if (config_value == 'built_in'):
+            if db_file_exists:
+                self.pushButtonCreateCredentialDatabase.setEnabled(False)
+                self.pushButtonDeleteCredentialDatabase.setEnabled(True)
+            else:
+                self.pushButtonCreateCredentialDatabase.setEnabled(True)
+                self.pushButtonDeleteCredentialDatabase.setEnabled(False)
+        else:
+            self.pushButtonCreateCredentialDatabase.setEnabled(False)
+            self.pushButtonDeleteCredentialDatabase.setEnabled(False)
+
+        if db_file_exists or (config_value == 'read_only'):
+            self.pushButtonLoadCredentialDatabase.setEnabled(True)
+        else:
+            self.pushButtonLoadCredentialDatabase.setEnabled(False)
+
+
+        return
+
+    def create_preset(self, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side):
+        logger.info('Creating preset in credential store.')
+        sumoregion = str(comboBoxRegion.currentText())
+        accesskeyid = str(lineEditUserName.text())
+        accesskey = str(lineEditPassword.text())
+        message = "Please type a name for the new preset."
+        preset, result = QtWidgets.QInputDialog.getText(self, 'Enter preset name', message)
+        if result:
+            if self.credentialstore.name_exists(preset):
+                self.errorbox('That name already exists in the credential database. Choose a new name or use "Update" to modify an existing entry.')
+                return
+            else:
+                try:
+                    self.credentialstore.add_creds(preset, sumoregion, accesskeyid, accesskey)
+                    self.add_preset_to_combobox(preset)
+                    # index = comboBoxRegion.findText(preset, QtCore.Qt.MatchFixedString)
+                    # if index >= 0:
+                    #     comboBoxRegion.setCurrentIndex(index)
+                    self.load_preset(preset, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side)
+                except Exception as e:
+                    logger.exception(e)
+                return
+        return
+
+    def load_preset(self, preset, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side):
+        logger.info('Loading preset from credential store.')
+        if preset:
+            try:
+                if self.credentialstore.name_exists(preset):
+                    creds = self.credentialstore.get_creds(preset)
+                    index = comboBoxPreset.findText(preset, QtCore.Qt.MatchFixedString)
+                    if index >=0:
+                        comboBoxPreset.setCurrentIndex(index)
+                    index = comboBoxRegion.findText(creds['sumoregion'], QtCore.Qt.MatchFixedString)
+                    if index >=0:
+                        comboBoxRegion.setCurrentIndex(index)
+                    lineEditUserName.setText(creds['accesskeyid'])
+                    lineEditPassword.setText(creds['accesskey'])
+                    # since we've changed the preset all of the stateful tabs need to be reset
+                    # otherwise they will still be showing items from the previous preset
+                    self.reset_stateful_objects(side=side)
+                else:
+                    raise Exception('That preset is not in the database.')
+            except Exception as e:
+                logger.exception(e)
+                self.errorbox('Something went wrong\n\n' + str(e))
+        else:
+            print('preset evaluated false')
+
+    def delete_preset(self, preset, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side):
+        logger.info('Deleting preset from credential store.')
+        if self.credentialstore.name_exists(preset):
+            try:
+                result = self.credentialstore.delete_creds(preset)
+                self.remove_preset_from_combobox(preset)
+                preset = comboBoxPreset.currentText()
+                # load the first preset in the list (if it's there)
+                if preset:
+                    self.load_preset(
+                        preset,
+                        comboBoxRegion,
+                        lineEditUserName,
+                        lineEditPassword,
+                        comboBoxPreset,
+                        side
+                    )
+
+            except Exception as e:
+                logger.exception(e)
+                self.errorbox('Something went wrong\n\n' + str(e))
+        else:
+            self.errorbox('Something went wrong. That preset does not exist in the database.')
+
+    def update_preset(self, preset, sumoregion, accesskeyid, accesskey):
+        logger.info('Updating preset in credential store.')
+        if self.credentialstore.name_exists(preset):
+            try:
+                result = self.credentialstore.update_creds(preset, sumoregion, accesskeyid, accesskey)
+            except Exception as e:
+                logger.exception(e)
+                self.errorbox('Something went wrong\n\n' + str(e))
+        else:
+            self.errorbox('Something went wrong. That preset does not exist in the database.')
+        return
+
+
     # Start methods for Content Tab
 
     def findreplacecopycontent(self, ContentListWidgetFrom, ContentListWidgetTo, fromurl, fromid, fromkey, tourl, toid, tokey,
@@ -482,7 +824,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                 if (toradioselected == -2):  # Personal Folder Selected
                     contents = []
                     for selecteditem in selecteditemsfrom:
-                        for child in ContentListWidgetFrom.currentContent['children']:
+                        for child in ContentListWidgetFrom.currentcontent['children']:
                             if child['name'] == str(selecteditem.text()):
                                 item_id = child['id']
                                 contents.append(fromsumo.export_content_job_sync(item_id))
@@ -492,7 +834,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                     if currentdir['id'] != 'TOP':
                         contents = []
                         for selecteditem in selecteditemsfrom:
-                            for child in ContentListWidgetFrom.currentContent['children']:
+                            for child in ContentListWidgetFrom.currentcontent['children']:
                                 if child['name'] == str(selecteditem.text()):
                                     item_id = child['id']
                                     contents.append(fromsumo.export_content_job_sync(item_id))
@@ -541,7 +883,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                         newcontents = contents
                     if (toradioselected == -2):  # Personal Folder Selected
                         try:
-                            tofolderid = ContentListWidgetTo.currentContent['id']
+                            tofolderid = ContentListWidgetTo.currentcontent['id']
                             for newcontent in newcontents:
                                 status = tosumo.import_content_job_sync(tofolderid, newcontent, adminmode=False)
                             self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected,
@@ -553,7 +895,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                             return
                     elif toradioselected == -4:  # Admin recommended Folder Selected
                         try:
-                            tofolderid = ContentListWidgetTo.currentContent['id']
+                            tofolderid = ContentListWidgetTo.currentcontent['id']
                             for newcontent in newcontents:
                                 status = tosumo.import_content_job_sync(tofolderid, newcontent, adminmode=True)
                             self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected,
@@ -570,6 +912,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.errorbox('You have not made any selections.')
             return
+        return
 
 
     def copycontent(self, ContentListWidgetFrom, ContentListWidgetTo, fromurl, fromid, fromkey, tourl, toid, tokey, fromradioselected, toradioselected, todirectorylabel):
@@ -581,11 +924,11 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl)
                 if (toradioselected == -2):  # Personal Folder Selected
                     for selecteditem in selecteditems:
-                        for child in ContentListWidgetFrom.currentContent['children']:
+                        for child in ContentListWidgetFrom.currentcontent['children']:
                             if child['name'] == str(selecteditem.text()):
                                 item_id = child['id']
                                 content = fromsumo.export_content_job_sync(item_id)
-                                tofolderid = ContentListWidgetTo.currentContent['id']
+                                tofolderid = ContentListWidgetTo.currentcontent['id']
                                 status = tosumo.import_content_job_sync(tofolderid, content)
                                 self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                     return
@@ -593,11 +936,11 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                     currentdir = ContentListWidgetTo.currentdirlist[-1]
                     if currentdir['id'] != 'TOP':
                         for selecteditem in selecteditems:
-                            for child in ContentListWidgetFrom.currentContent['children']:
+                            for child in ContentListWidgetFrom.currentcontent['children']:
                                 if child['name'] == str(selecteditem.text()):
                                     item_id = child['id']
                                     content = fromsumo.export_content_job_sync(item_id)
-                                    tofolderid = ContentListWidgetTo.currentContent['id']
+                                    tofolderid = ContentListWidgetTo.currentcontent['id']
                                     status = tosumo.import_content_job_sync(tofolderid, content, adminmode=True)
                                     self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                         return
@@ -612,6 +955,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         except Exception as e:
             logger.exception(e)
             self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+        return
 
     def create_folder(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         if ContentListWidget.updated == True:
@@ -621,7 +965,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             
                         '''
             text, result = QtWidgets.QInputDialog.getText(self, 'Create Folder...', message)
-            for item in ContentListWidget.currentContent['children']:
+            for item in ContentListWidget.currentcontent['children']:
                 if item['name'] == str(text):
                     self.errorbox('That Directory Name Already Exists!')
                     return
@@ -629,7 +973,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                 if radioselected == -2:  # if "Personal Folder" radio button is selected
                     logger.info("Creating New Folder in Personal Folder Tree")
                     sumo = SumoLogic(id, key, endpoint=url)
-                    error = sumo.create_folder(str(text), str(ContentListWidget.currentContent['id']))
+                    error = sumo.create_folder(str(text), str(ContentListWidget.currentcontent['id']))
 
                     self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
                     return
@@ -638,7 +982,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                     currentdir = ContentListWidget.currentdirlist[-1]
                     if currentdir['id'] != 'TOP':
                         sumo = SumoLogic(id, key, endpoint=url)
-                        error = sumo.create_folder(str(text), str(ContentListWidget.currentContent['id']), adminmode=True)
+                        error = sumo.create_folder(str(text), str(ContentListWidget.currentcontent['id']), adminmode=True)
 
                         self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
                         return
@@ -651,6 +995,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
 
         else:
             self.errorbox("Please update the directory list before trying to create a new folder.")
+        return
 
     def delete_content(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         logger.info("Deleting Content")
@@ -674,7 +1019,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                         sumo = SumoLogic(id, key, endpoint=url)
                         for selecteditem in selecteditems:
 
-                            for child in ContentListWidget.currentContent['children']:
+                            for child in ContentListWidget.currentcontent['children']:
                                 if child['name'] == str(selecteditem.text()):
                                     item_id = child['id']
 
@@ -686,7 +1031,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                         sumo = SumoLogic(id, key, endpoint=url)
                         for selecteditem in selecteditems:
 
-                            for child in ContentListWidget.currentContent['children']:
+                            for child in ContentListWidget.currentcontent['children']:
                                 if child['name'] == str(selecteditem.text()):
                                     item_id = child['id']
 
@@ -704,6 +1049,7 @@ If you are absolutely sure, type "DELETE" in the box below.
 
         else:
             self.errorbox('You need to select something before you can delete it.')
+        return
 
     def contentradiobuttonchanged(self, ContentListWidget,url, id, key, radioselected, directorylabel, pushButtonContentDelete):
         ContentListWidget.currentdirlist = []
@@ -714,6 +1060,7 @@ If you are absolutely sure, type "DELETE" in the box below.
         else:
             pushButtonContentDelete.setEnabled(True)
         self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
+        return
 
     def updatecontentlist(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         sumo = SumoLogic(id, key, endpoint=url)
@@ -722,15 +1069,15 @@ If you are absolutely sure, type "DELETE" in the box below.
         else:
             currentdir = {'name': None, 'id': 'TOP'}
         try:
-            if (not ContentListWidget.currentContent) or (currentdir['id'] == 'TOP'):
+            if (not ContentListWidget.currentcontent) or (currentdir['id'] == 'TOP'):
                 if radioselected == -2:  # if "Personal Folder" radio button is selected
                     logger.info("Updating Personal Folder List")
-                    ContentListWidget.currentContent = sumo.get_personal_folder()
+                    ContentListWidget.currentcontent = sumo.get_personal_folder()
 
                     ContentListWidget.currentdirlist = []
                     dir = {'name': 'Personal Folder', 'id': 'TOP'}
                     ContentListWidget.currentdirlist.append(dir)
-                    if 'children' in ContentListWidget.currentContent:
+                    if 'children' in ContentListWidget.currentcontent:
                         self.updatecontentlistwidget(ContentListWidget, url, id, key, radioselected, directorylabel)
                         return
                     else:
@@ -738,14 +1085,14 @@ If you are absolutely sure, type "DELETE" in the box below.
                         return
                 elif radioselected == -3:  # if "Global Folders" radio button is selected
                     logger.info("Updating Global Folder List")
-                    ContentListWidget.currentContent = sumo.get_global_folder_sync()
+                    ContentListWidget.currentcontent = sumo.get_global_folder_sync()
 
                     # Rename dict key from "data" to "children" for consistency
-                    ContentListWidget.currentContent['children'] = ContentListWidget.currentContent.pop('data')
+                    ContentListWidget.currentcontent['children'] = ContentListWidget.currentcontent.pop('data')
                     ContentListWidget.currentdirlist = []
                     dir = {'name': 'Global Folders', 'id': 'TOP'}
                     ContentListWidget.currentdirlist.append(dir)
-                    if 'children' in ContentListWidget.currentContent:
+                    if 'children' in ContentListWidget.currentcontent:
                         self.updatecontentlistwidget(ContentListWidget, url, id, key, radioselected, directorylabel)
                         return
                     else:
@@ -753,14 +1100,14 @@ If you are absolutely sure, type "DELETE" in the box below.
                         return
                 else:  # "Admin Folders" must be selected
                     logger.info("Updating Admin Folder List")
-                    ContentListWidget.currentContent = sumo.get_admin_folder_sync()
+                    ContentListWidget.currentcontent = sumo.get_admin_folder_sync()
 
                     # Rename dict key from "data" to "children" for consistency
-                    ContentListWidget.currentContent['children'] = ContentListWidget.currentContent.pop('data')
+                    ContentListWidget.currentcontent['children'] = ContentListWidget.currentcontent.pop('data')
                     ContentListWidget.currentdirlist = []
                     dir = {'name': 'Admin Recommended', 'id': 'TOP'}
                     ContentListWidget.currentdirlist.append(dir)
-                    if 'children' in ContentListWidget.currentContent:
+                    if 'children' in ContentListWidget.currentcontent:
                         self.updatecontentlistwidget(ContentListWidget, url, id, key, radioselected, directorylabel)
                         return
                     else:
@@ -768,7 +1115,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                         return
 
             else:
-                ContentListWidget.currentContent = sumo.get_folder(currentdir['id'])
+                ContentListWidget.currentcontent = sumo.get_folder(currentdir['id'])
                 self.updatecontentlistwidget(ContentListWidget, url, id, key, radioselected, directorylabel)
                 return
 
@@ -776,14 +1123,15 @@ If you are absolutely sure, type "DELETE" in the box below.
             logger.exception(e)
             self.errorbox('Incorrect Credentials or Wrong Endpoint.')
             return
+        return
 
     def doubleclickedcontentlist(self, item, ContentListWidget, url, id, key, radioselected, directorylabel):
         logger.info("Going Down One Content Folder")
         sumo = SumoLogic(id, key, endpoint=url)
         try:
-            for child in ContentListWidget.currentContent['children']:
+            for child in ContentListWidget.currentcontent['children']:
                 if (child['name'] == item.text()) and (child['itemType'] == 'Folder'):
-                    ContentListWidget.currentContent = sumo.get_folder(child['id'])
+                    ContentListWidget.currentcontent = sumo.get_folder(child['id'])
 
                     dir = {'name': item.text(), 'id': child['id']}
                     ContentListWidget.currentdirlist.append(dir)
@@ -792,6 +1140,7 @@ If you are absolutely sure, type "DELETE" in the box below.
             logger.exception(e)
             self.errorbox('Incorrect Credentials or Wrong Endpoint.')
         self.updatecontentlistwidget(ContentListWidget, url, id, key, radioselected, directorylabel)
+        return
 
     def parentdircontentlist(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         logger.info("Going Up One Content Folder")
@@ -810,19 +1159,20 @@ If you are absolutely sure, type "DELETE" in the box below.
 
             else:
                 ContentListWidget.currentdirlist.pop()
-                ContentListWidget.currentContent = sumo.get_folder(parentdir['id'])
+                ContentListWidget.currentcontent = sumo.get_folder(parentdir['id'])
 
                 self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
                 return
         except Exception as e:
             logger.exception(e)
             self.errorbox('Incorrect Credentials or Wrong Endpoint.')
+        return
 
     def updatecontentlistwidget(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         try:
             ContentListWidget.clear()
             sumo = SumoLogic(id, key, endpoint=url)
-            for object in ContentListWidget.currentContent['children']:
+            for object in ContentListWidget.currentcontent['children']:
                 item_name = ''
                 if radioselected == -3:
                     logger.info("Getting User info for Global Folder")
@@ -842,6 +1192,7 @@ If you are absolutely sure, type "DELETE" in the box below.
 
         except Exception as e:
             logger.exception(e)
+        return
 
     def backupcontent(self, ContentListWidget, url, id, key):
         logger.info("Backing Up Content")
@@ -852,7 +1203,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                 message = ''
                 sumo = SumoLogic(id, key, endpoint=url)
                 for selecteditem in selecteditems:
-                    for child in ContentListWidget.currentContent['children']:
+                    for child in ContentListWidget.currentcontent['children']:
                         if child['name'] == str(selecteditem.text()):
                             item_id = child['id']
                             try:
@@ -872,11 +1223,12 @@ If you are absolutely sure, type "DELETE" in the box below.
 
         else:
             self.errorbox('No content selected.')
+        return
 
     def restorecontent(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         logger.info("Restoring Content")
         if ContentListWidget.updated == True:
-            if 'id' in ContentListWidget.currentContent:  # make sure the current folder has a folder id
+            if 'id' in ContentListWidget.currentcontent:  # make sure the current folder has a folder id
                 filter = "JSON (*.json)"
                 filelist, status = QtWidgets.QFileDialog.getOpenFileNames(self, "Open file(s)...", os.getcwd(), filter)
                 if len(filelist) > 0:
@@ -892,7 +1244,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                             self.errorbox("Something went wrong reading the file. Do you have the right file permissions? Does it contain valid JSON?")
                             return
                         try:
-                            folder_id = ContentListWidget.currentContent['id']
+                            folder_id = ContentListWidget.currentcontent['id']
                             if radioselected == -4:  # Admin Recommended Folders Selected
                                 adminmode=True
                             else:
@@ -910,6 +1262,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                 return
         else:
             self.errorbox("Please update the directory list before restoring content")
+        return
     # End Methods for Content Tab
 
 
@@ -926,6 +1279,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                     return sumocollector['id']
         except Exception as e:
             logger.exception(e)
+        return
 
             
     def getsourceid(self, collectorid, sourcename, url, id, key):
@@ -940,6 +1294,7 @@ If you are absolutely sure, type "DELETE" in the box below.
             return False
         except Exception as e:
             logger.exception(e)
+        return
 
 
     def updatecollectorlist(self, CollectorListWidget, url, id, key):
@@ -967,6 +1322,7 @@ If you are absolutely sure, type "DELETE" in the box below.
 
         else:
             self.errorbox('No user and/or password.')
+        return
 
     def updatesourcelist(self, CollectorListWidget, SourceListWidget, url, id, key):
         logger.info("Updating Source List")
@@ -981,6 +1337,7 @@ If you are absolutely sure, type "DELETE" in the box below.
             sources = sumo.sources(collector)
             for source in sources:
                 SourceListWidget.addItem(source['name'])  # populate the display with sources
+        return
 
     def copysources(self, CollectorListWidgetFrom, CollectorListWidgetTo, SourceListWidgetFrom, SourceListWidgetTo,
                     fromurl, fromid, fromkey, tourl, toid, tokey):
@@ -1041,6 +1398,7 @@ If you are absolutely sure, type "DELETE" in the box below.
         except Exception as e:
             self.errorbox('Encountered a bug. Check the console output.')
             logger.exception(e)
+        return
 
     def backupcollector(self, CollectorListWidget, url, id, key):
         logger.info("Backing Up Collector")
@@ -1068,6 +1426,7 @@ If you are absolutely sure, type "DELETE" in the box below.
 
         else:
             self.errorbox('No Source Collector Selected.')
+        return
 
     def deletecollectors(self, CollectorListWidget, url, id, key):
         logger.info("Deleting Collectors")
@@ -1099,10 +1458,11 @@ If you are absolutely sure, type "DELETE" in the box below.
 
         else:
             self.errorbox('No Collector Selected')
+        return
 
     # This is broken and not connected to any button currently
     def restoresources(self):
-        destinationcollector = self.ListWidgetRightCollectors.selectedItems()
+        destinationcollector = self.listWidgetCollectorsRight.selectedItems()
         if len(destinationcollector) == 1:
             destinationcollectorqstring = destinationcollector[0]
             destinationcollector = str(destinationcollector[0].text())
@@ -1154,13 +1514,9 @@ If you are absolutely sure, type "DELETE" in the box below.
                             self.updatedestinationlistsource(destinationcollectorqstring, destinationcollectorqstring)
                     else:
                         self.errorbox('No sources selected for import.')
-
-
-
-
-
         else:
             self.errorbox('No Destination Collector Selected.')
+        return
 
     def deletesources(self, CollectorListWidget, SourceListWidget, url, id, key):
         logger.info("Deleting Sources")
@@ -1195,6 +1551,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                 self.errorbox('No Source(s) Selected')
         else:
             self.errorbox('You must select 1 and only 1 collector.')
+        return
     # End Methods for Collector Tab
 
     # Start Methods for Search Tab
@@ -1332,23 +1689,26 @@ If you are absolutely sure, type "DELETE" in the box below.
                 self.errorbox('Please enter a search.')
         else:
             self.errorbox('No user and/or password.')
+        return
     # End Methods for Search Tab
 
     # Start Misc/Utility Methods
     def tabchange(self, index):
         if index == 0:
-            self.ComboBoxRightRegion.setEnabled(True)
-            self.LineEditRightUserName.setEnabled(True)
-            self.LineEditRightPassword.setEnabled(True)
+            self.comboBoxRegionRight.setEnabled(True)
+            self.lineEditUserNameRight.setEnabled(True)
+            self.lineEditPasswordRight.setEnabled(True)
         if index == 1:
-            self.ComboBoxRightRegion.setEnabled(True)
-            self.LineEditRightUserName.setEnabled(True)
-            self.LineEditRightPassword.setEnabled(True)
+            self.comboBoxRegionRight.setEnabled(True)
+            self.lineEditUserNameRight.setEnabled(True)
+            self.lineEditPasswordRight.setEnabled(True)
         if index == 2:
-            self.ComboBoxRightRegion.setEnabled(False)
-            self.LineEditRightUserName.setEnabled(False)
-            self.LineEditRightPassword.setEnabled(False)
+            self.comboBoxRegionRight.setEnabled(False)
+            self.lineEditUserNameRight.setEnabled(False)
+            self.lineEditPasswordRight.setEnabled(False)
+        return
 
+    # no longer called by __init__ since the credential store has been implemented
     def loadcredentials(self):
         logger.info("Looking for Credential File")
         # look to see if the credential file exists and load credentials if it does
@@ -1357,16 +1717,17 @@ If you are absolutely sure, type "DELETE" in the box below.
             try:
                 with open(os.path.join(self.basedir, 'data/credentials.json'), 'r') as filepointer:
                     credentials = json.load(filepointer)
-                self.LineEditLeftUserName.setText(credentials['source']['user'])
-                self.LineEditLeftPassword.setText(credentials['source']['password'])
-                self.LineEditRightUserName.setText(credentials['destination']['user'])
-                self.LineEditRightPassword.setText(credentials['destination']['password'])
+                self.lineEditUserNameLeft.setText(credentials['source']['user'])
+                self.lineEditPasswordLeft.setText(credentials['source']['password'])
+                self.lineEditUserNameRight.setText(credentials['destination']['user'])
+                self.lineEditPasswordRight.setText(credentials['destination']['password'])
                 logger.info("Found it! Creds will be populated.")
             except Exception as e:
                 print("failed to load creds")
                 logger.exception(e)
         else:
             logger.info("Didn't find it. :(  Creds will be blank.")
+        return
 
 
     def errorbox(self, message):
@@ -1375,6 +1736,7 @@ If you are absolutely sure, type "DELETE" in the box below.
         msgBox.setText(message)
         msgBox.addButton(QtWidgets.QPushButton('OK'), QtWidgets.QMessageBox.RejectRole)
         ret = msgBox.exec_()
+        return
 
     def infobox(self, message):
         msgBox = QtWidgets.QMessageBox()
@@ -1382,6 +1744,7 @@ If you are absolutely sure, type "DELETE" in the box below.
         msgBox.setText(message)
         msgBox.addButton(QtWidgets.QPushButton('OK'), QtWidgets.QMessageBox.RejectRole)
         ret = msgBox.exec_()
+        return
 
     def initModels(self):
         # Load API Endpoint List from file and create model for the comboboxes
@@ -1393,8 +1756,8 @@ If you are absolutely sure, type "DELETE" in the box below.
             text_item = QtGui.QStandardItem(key)
             self.apiurlsmodel.appendRow(text_item)
 
-        self.ComboBoxLeftRegion.setModel(self.apiurlsmodel)
-        self.ComboBoxRightRegion.setModel(self.apiurlsmodel)
+        self.comboBoxRegionLeft.setModel(self.apiurlsmodel)
+        self.comboBoxRegionRight.setModel(self.apiurlsmodel)
 
         # Load Timezones and create model for timezone combobox
 
@@ -1414,6 +1777,31 @@ If you are absolutely sure, type "DELETE" in the box below.
         index = self.comboBoxTimeZone.findText(localtimezone, QtCore.Qt.MatchFixedString)
         if index >= 0:
             self.comboBoxTimeZone.setCurrentIndex(index)
+        return
+
+    def init_and_load_config_file(self):
+
+        config_file = pathlib.Path('sumotoolbox.ini')
+        if not config_file.is_file():
+            # If the config file doesn't exist then we need to create a new one. This should only happen
+            # when running the pyinstaller executable version.
+            # get the copy that's hidden inside the executable archive and copy it to the current dir
+            source_file = pathlib.Path(self.basedir + '/data/sumotoolbox.ini')
+            shutil.copy(str(source_file), str(config_file))
+        self.config = configparser.ConfigParser()
+        self.config.read(str(config_file))
+        return
+
+
+
+
+
+
+
+
+
+
+
     # End Misc/Utility Methods
 
 if __name__ == "__main__":
