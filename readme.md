@@ -317,7 +317,7 @@ Credential Database: !NEW!
 
     Credential DB FAQ:
 
-    Q: I see a flaw in your imp[ementation. Can I send feedback?
+    Q: I see a flaw in your implementation. Can I send feedback?
     A: Please do! I have done my utmost to do this in the most secure fashion possible but any constructive 
        feedback is welcome! Please read the rest of the FAQ first though before sending feedback.
        You can send feedback to: tmacdonald@sumologic.com
