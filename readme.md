@@ -34,19 +34,21 @@ in the dependency section.
 The steps are as follows: 
 
     1. Download and install python 3.6 or higher from python.org. 
-    Make sure to choose the "add python to the default "path" checkbox in the installer (may be in advanced settings.)
+       Make sure to choose the "add python to the default "path" checkbox in the installer (may be in 
+       advanced settings.)
 
-    Note: If you have Linux you can skip this step, but ensure you have python3 installed for your distro. 
+       Note: If you have Linux you can skip this step, but ensure you have python3 installed for your distro. 
 
-    Note: If you have OS X you cannot use the python that comes with the OS, it is too old.
+       Note: If you have OS X you cannot use the python that comes with the OS, it is too old.
 
     2. Download and install git for your platform if you don't already have it installed.
-    It can be downloaded from https://git-scm.com/downloads
+       It can be downloaded from https://git-scm.com/downloads
     
-    3. Open a new shell/command prompt. It must be new since only a new shell will include the new python path
-    that was created in step 1. Cd to the folder where you want to install sumotoolbox.
+    3. Open a new shell/command prompt. It must be new since only a new shell will include the new python 
+       path that was created in step 1. Cd to the folder where you want to install sumotoolbox.
     
-    4. Execute the following command to install pipenv, which will manage all of the library dependencies for us:
+    4. Execute the following command to install pipenv, which will manage all of the library dependencies 
+       for us:
 
     pip3 install pipenv
     
@@ -100,8 +102,8 @@ Collector Source Copying:
     6. Select a destination collector
     7. Click "Copy".
 
-    NOTE: You can use the same credentials for both source and destination to copy sources from one collector to another
-    within the same org.
+    NOTE: You can use the same credentials for both source and destination to copy sources from one 
+    collector to another within the same org.
 
 Collector Backup:
 
@@ -176,7 +178,8 @@ Content Folder Creation:    !NEW!
     NOTE: You cannot create top level folders when in the "Admin Recommeded" context. This
     should be fixed in the future. 
     
-    NOTE: Global folder browsing (other peoples shares) is currently disabled. Look for that in a future release. 
+    NOTE: Global folder browsing (other peoples shares) is currently disabled. Look for that in a 
+          future release. 
     
 Content Deletion:    !NEW!
     
@@ -193,53 +196,59 @@ Content Deletion:    !NEW!
     NOTE: You cannot delete top level folders when in the "Admin Recommeded" context. This
     should be fixed in the future. 
     
-    NOTE: This can be very dangerous. Accidentally deleting the wrong content could result in serious issues and
-    many hours of restoration work. Use with EXTREME caution. 
+    NOTE: This can be very dangerous. Accidentally deleting the wrong content could result in serious 
+          issues and many hours of restoration work. Use with EXTREME caution. 
     
-    NOTE: Global folder browsing (other peoples shares) is currently disabled. Look for that in a future release.   
+    NOTE: Global folder browsing (other peoples shares) is currently disabled. Look for that in a 
+          future release.   
 
 Content Copying:    !NEW!
 
     1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
     3. Click "Update" for source and destination to populate the content lists
-    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
+    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in 
+       either pane. 
     5. Select one or more items from the list
-    6. Click "Copy" (left to right or right to left). Your content will be copied to the current folder in the
-    destination pane.
+    6. Click "Copy" (left to right or right to left). Your content will be copied to the current folder 
+       in the destination pane.
     
 Content Find/Replace/Copy:  !EXPERIMENTAL!
 
     Copying content between orgs often requires that the sourceCategory tags be changed to match the new 
     environment. The Find/Replace/Copy feature is intended to lighten this burden by doing sourceCategory
-    tag replacement during the copy. It finds all of the sourceCategory tags in your original content and presents
-    them to you along with the sourceCategory tags in your destination environment allowing you to match them for
-    replacement.
+    tag replacement during the copy. It finds all of the sourceCategory tags in your original content and 
+    presents them to you along with the sourceCategory tags in your destination environment allowing you 
+    to match them for replacement.
     
     1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
     3. Click "Update" for source and destination to populate the content lists
-    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
+    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either
+       pane. 
     5. Select one or more items from the list
     6. Click "Find/Replace/Copy" (left to right or right to left). 
     7. Wait a bit (the REST calls involved can take a while)
     8. Choose what tags to replace. 
     9. Click "OK"
-    10. Wait a bit (lot) more. If you are copying large amounts of content the wait can be significant. The UI will
-    seem to freeze or lockup during the copy because the tool is not multithreaded. Have patience and resist the urge
-    to rage quit, it's still a million times faster than doing this by hand.
-    11. Once the pop-up window closes your content should be copied to the current folder in the destination pane.
+    10. Wait a bit (lot) more. If you are copying large amounts of content the wait can be significant. 
+        The UI will seem to freeze or lockup during the copy because the tool is not multithreaded. Have 
+        patience and resist the urge to rage quit, it's still a million times faster than doing this by hand.
+    11. Once the pop-up window closes your content should be copied to the current folder in the 
+        destination pane.
     
 Content Backup: !New!
 
     1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
     3. Click "Update" for source and destination to populate the content lists
-    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
+    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in 
+       either pane. 
     5. Select one or more items from the list
     6. Click "Backup"
     7. Choose a folder to save your backup files into
-    8. The selected content will be exported and written as JSON to the selected folder, one file per selected item. 
+    8. The selected content will be exported and written as JSON to the selected folder, one file per 
+       selected item. 
     
     Note: The filenames are created automatically from the item names that are selected for backup. 
     
@@ -248,53 +257,55 @@ Content Restore: !New!
     1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
     3. Click "Update" for source and destination to populate the content lists
-    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either pane. 
+    4. (Optional) Select "Personal Folder" or "Admin Recommended" radio button to switch context in either 
+       pane. 
     5. Navigate to the folder you wish to restore into. 
     6. Click "Restore"
     7. Select one or more valid Sumo Logic exports files to restore. These must be valid JSON that has been 
-    previously exported from Sumo Logic, either using this tool, the API, or the Sumo Logic UI. 
+       previously exported from Sumo Logic, either using this tool, the API, or the Sumo Logic UI. 
     8. Your content will be restored into the current directory. 
     
     Note: You cannot currently restore into the root admin folder. This will be fixed soon.     
 
 Logging:    !NEW!
 
-    The tool should now generate a "sumologic.log" file in the directory it lives in. If you experience a bug, which is
-    likely, please delete the log file, recreate the bug, and send me the new log file along with a screenshot and/or 
-    description or what you were doing at the time. I can't promise an immediate fix but I will do my best.
+    The tool should now generate a "sumologic.log" file in the directory it lives in. If you experience a
+    bug, please delete the log file, recreate the bug, and send me the new log file along with a screenshot
+    and/or description or what you were doing at the time. I can't promise an immediate fix but I will do my
+    best.
     
     tmacdonald@sumologic.com
     
 Config File:    !NEW!
 
-    sumologictoolbox now includes a sumologictoolbox.ini file to configure the tool. The ini file contains documetation
-    on each setting. 
+    sumologictoolbox now includes a sumologictoolbox.ini file to configure the tool. The ini file contains 
+    documetation on each setting. 
     
-    NOTE: If you downloaded the executables rather than the source then this file will be generated on your first
-    execution of the tool in the same directory as the tool. 
+    NOTE: If you downloaded the executables rather than the source then this file will be generated on your 
+    first execution of the tool in the same directory as the tool. 
    
 Credential Database: !NEW!
 
     The tool now includes an optional credential store. You can create a new credential database using the
-    "Create Cred Database" button. This will ask for you to enter a new password and will create a new, empty credential
-    database in the same directory as your sumologictoolbox script/executable. 
+    "Create Cred Database" button. This will ask for you to enter a new password and will create a new, 
+    empty credential database in the same directory as your sumologictoolbox script/executable. 
     
-    sumologictoolbox enforces a minimal complexity of 10 characters with upper/lower/numeric/non-alphanumeric characters. 
-    This password will be used as your master encryption key so longer/more complex is always better. 
-    You must REMEMBER this password. It cannot be retrieved once set. If you forget your password you must create a new
-    credential database. 
+    sumologictoolbox enforces a minimal complexity of 10 characters with upper/lower/numeric/non-alphanumeric
+    characters.This password will be used as your master encryption key so longer/more complex is always better. 
+    You must REMEMBER this password. It cannot be retrieved once set. If you forget your password you must 
+    create a new credential database. 
     
-    Once the credential database is created you can load it on subsequent executions of sumologictoolbox using the
-    "Load Cred DB" button. This will require the same password you entered when you initially created it. 
+    Once the credential database is created you can load it on subsequent executions of sumologictoolbox using
+    the "Load Cred DB" button. This will require the same password you entered when you initially created it. 
     
     Once the database is created/loaded you can then save/update/delete credentials in the database using the
     Create/Update/Delete preset buttons. 
     
-    Note: The credentials db functionality is optional. You can still use sumologictoolbox without it in the same way
-    as previous versions (by entering information manually into the appropriate fields.)
+    Note: The credentials db functionality is optional. You can still use sumologictoolbox without it in the 
+    same way as previous versions (by entering information manually into the appropriate fields.)
     
-    Note: Before using the credential database functionality please ensure it complies with all policies/laws applicable
-    to your organization. 
+    Note: Before using the credential database functionality please ensure it complies with all policies/laws
+    applicable to your organization. 
     
     Specs:
     
@@ -307,32 +318,35 @@ Credential Database: !NEW!
     Credential DB FAQ:
 
     Q: I see a flaw in your imp[ementation. Can I send feedback?
-    A: Please do! I have done my utmost to do this in the most secure fashion possible but any constructive feedback is
-       welcome! Please read the rest of the FAQ first though before sending feedback.
+    A: Please do! I have done my utmost to do this in the most secure fashion possible but any constructive 
+       feedback is welcome! Please read the rest of the FAQ first though before sending feedback.
        You can send feedback to: tmacdonald@sumologic.com
 
     Q: What is Argon2? I've never heard of it!
-    A: At the time of writing argon2 was the recommended password hashing algoritm by the password hashing competititon
-       https://password-hashing.net/ and it seems the crypto community in general.
+    A: At the time of writing argon2 was the recommended password hashing algoritm by the password hashing 
+       competititon.
+       https://password-hashing.net/ 
 
     Q: I have my own keystore, can I use that instead?
-    A: Yes! I have attempted to write sumologictoolbox in such a way that you can implement your own version of the
-       CredentialDB class that calls or implements a different keystore. To this end I have done the following:
+    A: Yes! I have attempted to write sumologictoolbox in such a way that you can implement your own version
+       of the CredentialDB class that calls or implements a different keystore. To this end I have done the
+       following:
 
-       1. Sumologictoolbox will pass a username/id as well as a password to the CredentialDB class if one is set
-          in the sumologictoolbox ini file.
-       2. You can turn off the "create/delete cred database" button in sumologictoolbox with the appropriate setting in
-          the sumologictoolbox ini file. This will leave only the load button to be used in connecting to the external
-          credential store.
-       3. Sumologictoolbox will only activate the "create preset", 'update preset', and 'delete preset' buttons if the
-          "add_cred", "update_cred", and "delete_cred" methods exist in the CredentialDB class. This means you can 
-          implement a read-only version of this class that authenticates against an external credential store. I've
-          added comments to each method marking them as "required", "optional", and "internal". You only need to
-          implement the "required" methods for a read-only credential store.
+       1. Sumologictoolbox will pass a username/id as well as a password to the CredentialDB class if one is
+          set in the sumologictoolbox ini file.
+       2. You can turn off the "create/delete cred database" button in sumologictoolbox with the appropriate
+          setting in the sumologictoolbox ini file. This will leave only the load button to be used in 
+          connecting to the external credential store.
+       3. Sumologictoolbox will only activate the "create preset", 'update preset', and 'delete preset' 
+          buttons if the "add_cred", "update_cred", and "delete_cred" methods exist in the CredentialDB class. 
+          This means you can implement a read-only version of this class that authenticates against an 
+          external credential store. I've added comments to each method marking them as "required", "optional",
+          and "internal". You only need to implement the "required" methods for a read-only credential store.
 
     Q: I looked at your code. Why are you storing the salt in the open? Doesn't that make it worthless?
-    A: The salt is stored in "plain text" with the encrypted data as they must be used for decryption. This is an accepted
-       practice. For more information on why that is the case I suggest the following reading:
+    A: The salt is stored in "plain text" with the encrypted data as they must be used for decryption. 
+       This is an accepted practice. For more information on why that is the case I suggest the following 
+       reading:
        https://crackstation.net/hashing-security.htm
     
     Q: Can I turn all of this off? I don't want my users using your/any credential store.
