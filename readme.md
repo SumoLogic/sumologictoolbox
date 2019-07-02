@@ -5,16 +5,25 @@ Sumotoolbox
  APIs.) The idea is to make it easier to perform common API tasks such as copying
  sources and generating CSV files from searches.
 
-Using Sumotoolbox
-=================
+Installing the Binaries
+=======================
 
-The easiest way to use sumotoolbox is to look in the "dist" directory of this repo and grab the executable for your 
-platform. Run the executable, pick your region, enter your creds, and start using the tool. 
+One way to use sumotoolbox is to look in the "dist" directory of this repo and grab the executable for your 
+platform. Make a new directory, copy the executable into it, and run the executable.
+
+The first time you run the executable it will create a "sumotoolbox.ini" file and if you choose to use the credential
+store feature it will also create a "credentials.db" file.
 
 Note: The executables are built for 64-bit only and may not run on less than current operating systems. 
 In the case of Windows my build is for a very recent version of Windows 10 and has failed to work on older versions.
 Unfortunately I do not have access to an older version of Windows 10 to build against. If it doesn't work your only
 option may be to install the source as described below. 
+
+Updating the Binaries
+=====================
+
+When it's time to upgrade to a new version of sumotoolbox simply download the new executable and use it to replace
+your old one, leaving your ini and db file in place. 
 
 Installing the Source
 =====================
@@ -24,26 +33,52 @@ in the dependency section.
 
 The steps are as follows: 
 
-1. Download and install python 3.6 or higher from python.org. Make sure to choose the "add python to the default 
-path" checkbox in the installer (may be in advanced settings.)
+    1. Download and install python 3.6 or higher from python.org. 
+    Make sure to choose the "add python to the default "path" checkbox in the installer (may be in advanced settings.)
 
-    If you have Linux you can skip this step, but ensure you have python3 installed for your distro. 
+    Note: If you have Linux you can skip this step, but ensure you have python3 installed for your distro. 
 
-    If you have OS X you cannot use the python that comes with the OS, it is too old.
+    Note: If you have OS X you cannot use the python that comes with the OS, it is too old.
 
-2. Open a new shell
-
-3. execute the following command to install pipenv, which will manage all of the library dependencies for us:
+    2. Download and install git for your platform if you don't already have it installed.
+    It can be downloaded from https://git-scm.com/downloads
+    
+    3. Open a new shell/command prompt. It must be new since only a new shell will include the new python path
+    that was created in step 1. Cd to the folder where you want to install sumotoolbox.
+    
+    4. Execute the following command to install pipenv, which will manage all of the library dependencies for us:
 
     pip3 install pipenv
+    
+    -or-
+    
+    sudo pip3 install pipenv 
  
-4. Download this repo (either as a zip from the main repo download link or using git.) Unzip if you downloaded the zip. 
-5. Change to the directory in which you installed sumotoolbox. Type the following to install all the package 
-    dependencies (this may take a while as this will download all of the libraries that sumotoolbox uses:
+    5. Clone this repo using the following command:
+    
+    git clone https://github.com/voltaire321/sumologictoolbox.git
+    
+    This will create a new folder called sumotoolbox. 
+    
+    6. Change into the sumotoolbox folder. Type the following to install all the package 
+    dependencies (this may take a while as this will download all of the libraries that sumotoolbox uses):
 
     pipenv install
     
-6. Finally, to run sumotoolbox type:
+To run sumotoolbox cd into the sumotoolbox directory and type:
+
+    pipenv run python3 sumotoolbox.py
+    
+Updating the Source
+===================
+
+When it's time to upgrade to a new version of sumotoolbox cd into the sumotoolbox directory and type:
+    
+    1. git pull https://github.com/voltaire321/sumologictoolbox.git
+    
+    2. pipenv install
+    
+To run sumotoolbox cd into the sumotoolbox directory and type:
 
     pipenv run python3 sumotoolbox.py
 

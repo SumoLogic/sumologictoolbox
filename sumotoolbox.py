@@ -1666,8 +1666,11 @@ If you are absolutely sure, type "DELETE" in the box below.
         jobsubmitted = False
         savetofile = self.checkBoxSaveSearch.isChecked()
         converttimefromepoch = self.checkBoxConvertTimeFromEpoch.isChecked()
-        self.jobmessages = []
-        self.jobrecords = []
+        jobmessages = []
+        jobrecords = []
+        if savetofile:
+            filenameqstring, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save CSV', '', filter='*.csv')
+            filename = str(filenameqstring)
 
         if (re.match(regexprog, id) != None) and (re.match(regexprog, key) != None):
             sumo = SumoLogic(id, key, endpoint=url)
@@ -1679,69 +1682,92 @@ If you are absolutely sure, type "DELETE" in the box below.
                 except Exception as e:
                     self.errorbox("Failed to submit search job. Check credentials, endpoint, and query.")
                     logger.exception(e)
+                    return
                 if jobsubmitted:
-                    self.labelSearchResultCount.setText('0')
-                    jobstatus = sumo.search_job_status(searchjob)
-                    nummessages = jobstatus['messageCount']
-                    numrecords = jobstatus['recordCount']
-                    self.labelSearchResultCount.setText(str(nummessages))
-                    while jobstatus['state'] == 'GATHERING RESULTS':
+                    try:
+                        self.labelSearchResultCount.setText('0')
                         jobstatus = sumo.search_job_status(searchjob)
-                        numrecords = jobstatus['recordCount']
                         nummessages = jobstatus['messageCount']
+                        numrecords = jobstatus['recordCount']
                         self.labelSearchResultCount.setText(str(nummessages))
+                        while jobstatus['state'] == 'GATHERING RESULTS':
+                            jobstatus = sumo.search_job_status(searchjob)
+                            numrecords = jobstatus['recordCount']
+                            nummessages = jobstatus['messageCount']
+                            self.labelSearchResultCount.setText(str(nummessages))
+                        logger.info('Search Job finished. Downloading Results.')
+                    except Exception as e:
+                        logger.exception(e)
+                        self.errorbox("Something went wrong\n\n" + str(e))
                     if nummessages is not 0:
 
                         # return messages
                         if self.buttonGroupOutputType.checkedId() == -2:
                             iterations = nummessages // 10000 + 1
-                            for iteration in range(1, iterations + 1):
-                                messages = sumo.search_job_messages(searchjob, limit=10000,
-                                                                               offset=((iteration - 1) * 10000))
-                                for message in messages['messages']:
-                                    self.jobmessages.append(message)
-                            self.tableWidgetSearchResults.setRowCount(len(self.jobmessages))
+                            try:
+                                for iteration in range(1, iterations + 1):
+                                    messages = sumo.search_job_messages(searchjob, limit=10000,
+                                                                                   offset=((iteration - 1) * 10000))
+                                    logger.info('Downloaded 1 block of messages.')
+                                    # jobmessages = jobmessages + list(messages['messages'].values())
+                                    for message in messages['messages']:
+                                         jobmessages.append(message)
+                            except Exception as e:
+                                logger.exception(e)
+                                self.errorbox("Something went wrong\n\n" + str(e))
+                            logger.info('Download complete.')
+                            self.tableWidgetSearchResults.setRowCount(len(jobmessages))
                             self.tableWidgetSearchResults.setColumnCount(2)
                             self.tableWidgetSearchResults.setHorizontalHeaderLabels(['time', '_raw'])
                             index = 0
-                            for message in self.jobmessages:
-                                if converttimefromepoch:
-                                    timezone = pytz.timezone(selectedtimezone)
-                                    converteddatetime = datetime.fromtimestamp(
-                                        float(message['map']['_messagetime']) / 1000, timezone)
-                                    timestring = str(converteddatetime.strftime('%Y-%m-%d %H:%M:%S'))
-                                    message['map']['_messagetime'] = timestring
-                                self.tableWidgetSearchResults.setItem(index, 0, QtWidgets.QTableWidgetItem(
-                                    message['map']['_messagetime']))
-                                self.tableWidgetSearchResults.setItem(index, 1,
-                                                                      QtWidgets.QTableWidgetItem(message['map']['_raw']))
-                                index += 1
-                            self.tableWidgetSearchResults.resizeRowsToContents()
-                            self.tableWidgetSearchResults.resizeColumnsToContents()
-                            if savetofile:
-                                filenameqstring, filter = QtWidgets.QFileDialog.getSaveFileName(self, 'Save CSV', 'logexport.csv', filter='*.csv')
-                                filename = str(filenameqstring)
-                                savefilepath = pathlib.Path(filename)
-                                if savefilepath:
-                                    try:
-                                        with savefilepath.open(mode='w') as csvfile:
-                                            messagecsv = csv.DictWriter(csvfile, self.jobmessages[0]['map'].keys())
-                                            messagecsv.writeheader()
-                                            for entry in self.jobmessages:
-                                                messagecsv.writerow(entry['map'])
-                                    except Exception as e:
-                                        self.errorbox("Failed writing. Check destination permissions.")
-                                        logger.exception(e)
-
+                            if len(jobmessages) > 0:
+                                for message in jobmessages:
+                                    if converttimefromepoch:
+                                        timezone = pytz.timezone(selectedtimezone)
+                                        converteddatetime = datetime.fromtimestamp(
+                                            float(message['map']['_messagetime']) / 1000, timezone)
+                                        timestring = str(converteddatetime.strftime('%Y-%m-%d %H:%M:%S'))
+                                        message['map']['_messagetime'] = timestring
+                                    self.tableWidgetSearchResults.setItem(index, 0, QtWidgets.QTableWidgetItem(
+                                        message['map']['_messagetime']))
+                                    self.tableWidgetSearchResults.setItem(index, 1,
+                                                                          QtWidgets.QTableWidgetItem(message['map']['_raw']))
+                                    index += 1
+                                self.tableWidgetSearchResults.resizeRowsToContents()
+                                self.tableWidgetSearchResults.resizeColumnsToContents()
+                                if savetofile:
+                                    logger.info('Saving messages to file.')
+                                    savefilepath = pathlib.Path(filename)
+                                    if savefilepath:
+                                        try:
+                                            with savefilepath.open(mode='w') as csvfile:
+                                                messagecsv = csv.DictWriter(csvfile, jobmessages[0]['map'].keys())
+                                                messagecsv.writeheader()
+                                                for entry in jobmessages:
+                                                    messagecsv.writerow(entry['map'])
+                                        except Exception as e:
+                                            self.errorbox("Failed writing. Check destination permissions.")
+                                            logger.exception(e)
+                                            return
+                            else:
+                                self.errorbox('Search did not return any messages.')
+                                return
                         # return records
                         if self.buttonGroupOutputType.checkedId() == -3:
                             iterations = numrecords // 10000 + 1
-                            for iteration in range(1, iterations + 1):
-                                records = sumo.search_job_records(searchjob, limit=10000,
-                                                                             offset=((iteration - 1) * 10000))
-                                for record in records['records']:
-                                    self.jobrecords.append(record)
-                            self.tableWidgetSearchResults.setRowCount(len(self.jobrecords))
+                            try:
+                                for iteration in range(1, iterations + 1):
+                                    records = sumo.search_job_records(searchjob, limit=10000,
+                                                                                 offset=((iteration - 1) * 10000))
+                                    logger.info('Downloaded 1 block of records.')
+                                    #jobrecords = jobrecords + list(records['records'].values())
+                                    for record in records['records']:
+                                         jobrecords.append(record)
+                            except Exception as e:
+                                logger.exception(e)
+                                self.errorbox("Something went wrong\n\n" + str(e))
+                            logger.info('Download complete.')
+                            self.tableWidgetSearchResults.setRowCount(len(jobrecords))
                             numfields = len(records['fields'])
                             self.tableWidgetSearchResults.setColumnCount(numfields)
                             fieldnames = []
@@ -1749,8 +1775,8 @@ If you are absolutely sure, type "DELETE" in the box below.
                                 fieldnames.append(field['name'])
                             self.tableWidgetSearchResults.setHorizontalHeaderLabels(fieldnames)
                             index = 0
-                            if len(self.jobrecords) > 0:
-                                for record in self.jobrecords:
+                            if len(jobrecords) > 0:
+                                for record in jobrecords:
                                     columnnum = 0
                                     for fieldname in fieldnames:
                                         if converttimefromepoch and (fieldname == '_timeslice'):
@@ -1766,27 +1792,30 @@ If you are absolutely sure, type "DELETE" in the box below.
                                 self.tableWidgetSearchResults.resizeRowsToContents()
                                 self.tableWidgetSearchResults.resizeColumnsToContents()
                                 if savetofile:
-                                    filenameqstring, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save CSV', '', filter='*.csv')
-                                    filename = str(filenameqstring)
+                                    logger.info('Saving records to file.')
                                     savefilepath = pathlib.Path(filename)
                                     if savefilepath:
                                         try:
                                             with savefilepath.open(mode='w') as csvfile:
-                                                recordcsv = csv.DictWriter(csvfile, self.jobrecords[0]['map'].keys())
+                                                recordcsv = csv.DictWriter(csvfile, jobrecords[0]['map'].keys())
                                                 recordcsv.writeheader()
-                                                for entry in self.jobrecords:
+                                                for entry in jobrecords:
                                                     recordcsv.writerow(entry['map'])
                                         except Exception as e:
                                             self.errorbox("Failed writing. Check destination permissions.")
                                             logger.exception(e)
+                                            return
 
                             else:
                                 self.errorbox('Search did not return any records.')
+                                return
                     else:
                         self.errorbox('Search did not return any messages.')
+                        return
 
             else:
                 self.errorbox('Please enter a search.')
+                return
         else:
             self.errorbox('No user and/or password.')
         return

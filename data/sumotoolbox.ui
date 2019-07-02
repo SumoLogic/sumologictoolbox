@@ -1530,7 +1530,7 @@ Copy</string>
        <x>490</x>
        <y>10</y>
        <width>71</width>
-       <height>34</height>
+       <height>41</height>
       </rect>
      </property>
      <property name="text">
@@ -1545,9 +1545,9 @@ Preset</string>
      <property name="geometry">
       <rect>
        <x>490</x>
-       <y>90</y>
+       <y>110</y>
        <width>71</width>
-       <height>34</height>
+       <height>41</height>
       </rect>
      </property>
      <property name="text">
@@ -1562,9 +1562,9 @@ Preset</string>
      <property name="geometry">
       <rect>
        <x>490</x>
-       <y>50</y>
+       <y>60</y>
        <width>71</width>
-       <height>34</height>
+       <height>41</height>
       </rect>
      </property>
      <property name="text">
@@ -1777,9 +1777,9 @@ Preset</string>
      <property name="geometry">
       <rect>
        <x>490</x>
-       <y>90</y>
+       <y>110</y>
        <width>71</width>
-       <height>34</height>
+       <height>41</height>
       </rect>
      </property>
      <property name="text">
@@ -1796,7 +1796,7 @@ Preset</string>
        <x>490</x>
        <y>10</y>
        <width>71</width>
-       <height>34</height>
+       <height>41</height>
       </rect>
      </property>
      <property name="text">
@@ -1811,9 +1811,9 @@ Preset</string>
      <property name="geometry">
       <rect>
        <x>490</x>
-       <y>50</y>
+       <y>60</y>
        <width>71</width>
-       <height>34</height>
+       <height>41</height>
       </rect>
      </property>
      <property name="text">
@@ -1900,8 +1900,8 @@ Database</string>
   </property>
  </designerdata>
  <buttongroups>
-  <buttongroup name="buttonGroupContentLeft"/>
   <buttongroup name="buttonGroupOutputType"/>
   <buttongroup name="buttonGroupContentRight"/>
+  <buttongroup name="buttonGroupContentLeft"/>
  </buttongroups>
 </ui>

@@ -17,6 +17,7 @@ logzero = "*"
 SQLAlchemy = ">=1.3.0"
 cryptography = "*"
 argon2-cffi = "*"
+pyinstaller = "*"
 
 [requires]
 python_version = "3.6"
