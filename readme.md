@@ -370,10 +370,6 @@ Known Issues:
 until the calls complete. This is due to the requests library blocking Qt5 when REST calls are being used. One day this
 might be fixed by multithreading the app but currently this is expected behaviour. 
 
-* Search API: Entering an invalid search into the search box and executing may result in a "Bad Credentials" error rather than
-indicating that the syntax was wrong. Test your searches in the Sumo Logic UI prior to using this tool to dump logs
-to CSV. 
-
 * Access to Globally Shared Content Folders is currently disabled until that code is refined. 
 
 To Do:
@@ -385,7 +381,19 @@ To Do:
 
 * Add "source update" functionality (for instance to add filters)
 
-* Add encrypted keystore (so you don't have to type in creds each time)
+* Refactor Search -> Save to CSV so that available RAM no longer limits the download size
+
+* Add Users/Roles API functionality
+
+* Add FER API functionality
+
+* Add Scheduled View functionality
+
+* Add Connections Functionality
+
+
+
+
 
 License
 =======
