@@ -24,6 +24,7 @@ import logzero
 from logzero import logger
 import configparser
 import shutil
+import qdarkstyle
 
 #local imports
 from sumologic import SumoLogic
@@ -1281,8 +1282,8 @@ If you are absolutely sure, type "DELETE" in the box below.
                 item_name = item_name + object['name']
                 item = ContentListWidget.addItem(item_name)  # populate the list widget in the GUI
                 items = ContentListWidget.findItems(item_name, QtCore.Qt.MatchExactly)
-                if object['itemType'] != 'Folder':
-                    items[0].setForeground(QtGui.QBrush(QtCore.Qt.blue))
+                if object['itemType'] == 'Folder':
+                    items[0].setData(6, QtGui.QFont("Waree",pointSize=10, weight=600))
 
             dirname = ''
             for dir in ContentListWidget.currentdirlist:
@@ -1411,10 +1412,10 @@ If you are absolutely sure, type "DELETE" in the box below.
                 for collector in collectors:
                     item = CollectorListWidget.addItem(collector['name'])  # populate the list widget in the GUI
                     items = CollectorListWidget.findItems(collector['name'], QtCore.Qt.MatchExactly)
-                    if collector['collectorType'] == 'Installable':
-                        items[0].setForeground(QtGui.QBrush(QtCore.Qt.blue))
+                    if collector['collectorType'] == 'Hosted':
+                        items[0].setData(6, QtGui.QFont("Waree",pointSize=10, weight=600))
                     if collector['alive'] == False:
-                        items[0].setData(6, QtGui.QFont("Arial",pointSize=10,italic=True))
+                        items[0].setData(6, QtGui.QFont("Waree",pointSize=10,italic=True))
 
             except Exception as e:
                 logger.exception(e)
@@ -1951,7 +1952,9 @@ If you are absolutely sure, type "DELETE" in the box below.
     # End Misc/Utility Methods
 
 if __name__ == "__main__":
+
     app = QtWidgets.QApplication(sys.argv)
     window = sumotoolbox()
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     window.show()
     sys.exit(app.exec_())

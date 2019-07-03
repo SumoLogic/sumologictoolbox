@@ -36,6 +36,9 @@
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
@@ -667,7 +670,7 @@ Preset</string>
        <enum>QTabWidget::Triangular</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="CollectorAPI">
        <attribute name="title">
@@ -929,7 +932,7 @@ Preset</string>
              <enum>QFrame::Box</enum>
             </property>
             <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Collector&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Legend:&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;------------&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Black: Hosted&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:400; color:#0000ff;&quot;&gt;Blue: Installed&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#0000ff;&quot;&gt;I&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#000000;&quot;&gt;t&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#0000ff;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#000000;&quot;&gt;l&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#0000ff;&quot;&gt;i&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#000000;&quot;&gt;c&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#0000ff;&quot;&gt;s&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#000000;&quot;&gt;:&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#0000ff;&quot;&gt; N&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#000000;&quot;&gt;o&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#0000ff;&quot;&gt;t&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#000000;&quot;&gt; A&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#0000ff;&quot;&gt;l&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#000000;&quot;&gt;iv&lt;/span&gt;&lt;span style=&quot; font-weight:400; font-style:italic; color:#0000ff;&quot;&gt;e&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Collector&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Legend:&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;------------&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Bold: Hosted&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Normal: Installed&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:400; font-style:italic;&quot;&gt;Italics: Disconnected&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
           </item>
@@ -1379,7 +1382,7 @@ Folders</string>
              <enum>QFrame::Box</enum>
             </property>
             <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Content&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Legend:&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;------------&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Black: Folder&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; color:#0000ff;&quot;&gt;Blue: Content&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Content&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Legend:&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;------------&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Bold: Folder&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Normal: Content&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
           </item>
@@ -1746,7 +1749,7 @@ Folders</string>
              </font>
             </property>
             <property name="calendarPopup">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -1796,7 +1799,7 @@ Folders</string>
              </font>
             </property>
             <property name="calendarPopup">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -1868,7 +1871,7 @@ Folders</string>
              </font>
             </property>
             <property name="title">
-             <string>Output Type</string>
+             <string/>
             </property>
             <widget class="QRadioButton" name="radioButtonMessages">
              <property name="geometry">
@@ -2095,7 +2098,7 @@ Folders</string>
  </designerdata>
  <buttongroups>
   <buttongroup name="buttonGroupOutputType"/>
-  <buttongroup name="buttonGroupContentLeft"/>
   <buttongroup name="buttonGroupContentRight"/>
+  <buttongroup name="buttonGroupContentLeft"/>
  </buttongroups>
 </ui>
