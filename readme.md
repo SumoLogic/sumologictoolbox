@@ -383,11 +383,7 @@ To Do:
 
 * Implement global folders in the content tab
 
-* Add "source restore" functionality
-
 * Add "source update" functionality (for instance to add filters)
-
-* Refactor Search -> Save to CSV so that available RAM no longer limits the download size
 
 * Add Users/Roles API functionality
 
