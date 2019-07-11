@@ -20,5 +20,3 @@ argon2-cffi = "*"
 pyinstaller = "*"
 qdarkstyle = "*"
 
-[requires]
-python_version = ">=3.6"

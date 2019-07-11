@@ -108,6 +108,7 @@
              <property name="font">
               <font>
                <family>Waree</family>
+               <pointsize>10</pointsize>
               </font>
              </property>
              <property name="contextMenuPolicy">
@@ -670,7 +671,7 @@ Preset</string>
        <enum>QTabWidget::Triangular</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="CollectorAPI">
        <attribute name="title">
@@ -877,6 +878,19 @@ Preset</string>
               </property>
               <property name="text">
                <string>Delete Source(s)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButtonRestoreSourcesLeft">
+              <property name="font">
+               <font>
+                <family>Noto Sans Gothic</family>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Restore Source(s)</string>
               </property>
              </widget>
             </item>
@@ -1200,6 +1214,19 @@ Preset</string>
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="pushButtonRestoreSourcesRight">
+              <property name="font">
+               <font>
+                <family>Noto Sans Gothic</family>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Restore Source(s)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="horizontalSpacer_10">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -1231,6 +1258,12 @@ Preset</string>
              <layout class="QHBoxLayout" name="horizontalLayoutContentTopPushButtonsLeft">
               <item>
                <widget class="QPushButton" name="pushButtonUpdateContentLeft">
+                <property name="maximumSize">
+                 <size>
+                  <width>85</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
                 <property name="font">
                  <font>
                   <family>Noto Sans Gothic</family>
@@ -1247,10 +1280,35 @@ Preset</string>
               </item>
               <item>
                <widget class="QPushButton" name="pushButtonParentDirContentLeft">
+                <property name="maximumSize">
+                 <size>
+                  <width>85</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Noto Sans Gothic</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Parent Dir</string>
                 </property>
                </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_19">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </item>
@@ -1295,6 +1353,19 @@ Folders</string>
                 </attribute>
                </widget>
               </item>
+              <item>
+               <spacer name="horizontalSpacer_17">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
              </layout>
             </item>
            </layout>
@@ -1323,6 +1394,12 @@ Folders</string>
            <layout class="QHBoxLayout" name="horizontalLayoutContentBottomButtonsLeft">
             <item>
              <widget class="QPushButton" name="pushButtonContentNewFolderLeft">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="text">
                <string>New Folder</string>
               </property>
@@ -1330,6 +1407,12 @@ Folders</string>
             </item>
             <item>
              <widget class="QPushButton" name="pushButtonContentDeleteLeft">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="text">
                <string>Delete</string>
               </property>
@@ -1337,6 +1420,12 @@ Folders</string>
             </item>
             <item>
              <widget class="QPushButton" name="pushButtonContentBackupLeft">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="text">
                <string>Backup</string>
               </property>
@@ -1344,10 +1433,29 @@ Folders</string>
             </item>
             <item>
              <widget class="QPushButton" name="pushButtonContentRestoreLeft">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="text">
                <string>Restore</string>
               </property>
              </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_15">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </item>
@@ -1503,6 +1611,12 @@ Copy</string>
              <layout class="QHBoxLayout" name="horizontalLayoutContentTopPushButtonsRight">
               <item>
                <widget class="QPushButton" name="pushButtonUpdateContentRight">
+                <property name="maximumSize">
+                 <size>
+                  <width>85</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
                 <property name="font">
                  <font>
                   <family>Noto Sans Gothic</family>
@@ -1519,10 +1633,35 @@ Copy</string>
               </item>
               <item>
                <widget class="QPushButton" name="pushButtonParentDirContentRight">
+                <property name="maximumSize">
+                 <size>
+                  <width>85</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Noto Sans Gothic</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Parent Dir</string>
                 </property>
                </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_20">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </item>
@@ -1567,6 +1706,19 @@ Folders</string>
                 </attribute>
                </widget>
               </item>
+              <item>
+               <spacer name="horizontalSpacer_18">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
              </layout>
             </item>
            </layout>
@@ -1598,6 +1750,12 @@ Folders</string>
            <layout class="QHBoxLayout" name="horizontalLayoutContentBottomButtonsRight">
             <item>
              <widget class="QPushButton" name="pushButtonContentNewFolderRight">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="text">
                <string>New Folder</string>
               </property>
@@ -1605,6 +1763,12 @@ Folders</string>
             </item>
             <item>
              <widget class="QPushButton" name="pushButtonContentDeleteRight">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="text">
                <string>Delete</string>
               </property>
@@ -1612,6 +1776,12 @@ Folders</string>
             </item>
             <item>
              <widget class="QPushButton" name="pushButtonContentBackupRight">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="text">
                <string>Backup</string>
               </property>
@@ -1619,10 +1789,29 @@ Folders</string>
             </item>
             <item>
              <widget class="QPushButton" name="pushButtonContentRestoreRight">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="text">
                <string>Restore</string>
               </property>
              </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_16">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </item>
@@ -1850,7 +2039,7 @@ Folders</string>
            </font>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Plain</enum>
+           <enum>QFrame::Sunken</enum>
           </property>
          </widget>
         </item>
@@ -2097,8 +2286,8 @@ Folders</string>
   </property>
  </designerdata>
  <buttongroups>
-  <buttongroup name="buttonGroupOutputType"/>
   <buttongroup name="buttonGroupContentRight"/>
+  <buttongroup name="buttonGroupOutputType"/>
   <buttongroup name="buttonGroupContentLeft"/>
  </buttongroups>
 </ui>

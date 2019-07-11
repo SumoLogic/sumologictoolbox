@@ -235,3 +235,82 @@ class NewPasswordDialog(QtWidgets.QDialog):
         self.labelNumeral.setText(_translate("Dialog", "-Contain at least 1 numeral"))
         self.labelNonAlphaNumeric.setText(_translate("Dialog", "-Contain at least 1 of these ,.!?#@$"))
         self.labelMatch.setText(_translate("Dialog", "-Both entries must match"))
+
+
+class restoreSourcesDialog(QtWidgets.QDialog):
+
+    def __init__(self, sources_json, parent=None):
+        super(restoreSourcesDialog, self).__init__(parent)
+        self.objectlist = []
+        self.setupUi(self, sources_json)
+
+    def setupUi(self, rsd, sources_json):
+
+        # setup static elements
+        rsd.setObjectName("Restore Sources")
+        rsd.resize(1150, 640)
+        self.buttonBox = QtWidgets.QDialogButtonBox(rsd)
+        self.buttonBox.setGeometry(QtCore.QRect(10, 600, 1130, 35))
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBoxOkCancel")
+        self.label = QtWidgets.QLabel(rsd)
+        self.label.setGeometry(QtCore.QRect(20, 10, 1120, 140))
+        self.label.setWordWrap(True)
+        self.label.setObjectName("labelInstructions")
+        self.scrollArea = QtWidgets.QScrollArea(rsd)
+        self.scrollArea.setGeometry(QtCore.QRect(10, 150, 1130, 440))
+        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setObjectName("scrollArea")
+        self.scrollAreaWidget = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents = QtWidgets.QFormLayout()
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+
+
+
+        # Create 1 set of (checkbox, label, combobox per fromcategory
+
+
+        for index, source in enumerate(sources_json):
+
+            objectdict = {'checkbox': None, 'label': None}
+            layout = QtWidgets.QHBoxLayout()
+            objectdict['checkbox'] = QtWidgets.QCheckBox()
+            objectdict['checkbox'].setGeometry(QtCore.QRect(0, 0, 20, 20))
+            objectdict['checkbox'].setText("")
+            objectdict['checkbox'].setObjectName("checkBox" + str(index))
+            objectdict['checkbox'].setCheckState(2)
+            layout.addWidget(objectdict['checkbox'])
+            objectdict['label']= QtWidgets.QLabel()
+            objectdict['label'].setGeometry(QtCore.QRect(0, 0, 480, 25))
+            objectdict['label'].setObjectName("label" + str(index))
+            objectdict['label'].setText(source['name'])
+            layout.addWidget(objectdict['label'])
+
+            self.objectlist.append(objectdict)
+            self.scrollAreaWidgetContents.addRow(layout)
+
+        self.scrollAreaWidget.setLayout(self.scrollAreaWidgetContents)
+        self.scrollArea.setWidget(self.scrollAreaWidget)
+        self.scrollArea.show()
+
+
+        self.retranslateUi(rsd)
+        self.buttonBox.accepted.connect(rsd.accept)
+        self.buttonBox.rejected.connect(rsd.reject)
+        QtCore.QMetaObject.connectSlotsByName(rsd)
+
+    def retranslateUi(self, restoreSourcesDialog):
+        _translate = QtCore.QCoreApplication.translate
+        restoreSourcesDialog.setWindowTitle(_translate("Restore Sources", "Dialog"))
+        self.label.setText(_translate("Restore Sources",
+                                      "<html><head/><body<p>Select the sources you wish to restore:</p></body></html>"))
+
+    def getresults(self):
+        results = []
+        for object in self.objectlist:
+            if str(object['checkbox'].checkState()) == '2':
+                results.append(object['label'].text())
+        return results

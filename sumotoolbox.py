@@ -271,6 +271,23 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             str(self.lineEditPasswordRight.text())
         ))
 
+        self.pushButtonRestoreSourcesLeft.clicked.connect(lambda: self.restoresources(
+            self.listWidgetCollectorsLeft,
+            self.listWidgetSourcesLeft,
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
+        ))
+
+        self.pushButtonRestoreSourcesRight.clicked.connect(lambda: self.restoresources(
+            self.listWidgetCollectorsRight,
+            self.listWidgetSourcesRight,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
+
+        ))
+
         # set up a signal to update the source list if a new collector is set
         self.listWidgetCollectorsLeft.itemSelectionChanged.connect(lambda: self.updatesourcelist(
             self.listWidgetCollectorsLeft,
@@ -610,6 +627,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                             self.comboBoxPresetLeft,
                             'right'
                         )
+                    self.set_creddbbuttons()
 
                         
                 except Exception as e:
@@ -933,13 +951,18 @@ If so type 'DELETE' in the box below:"
                 elif toradioselected == -4:  # Admin Recommended Folders Selected
                     currentdir = ContentListWidgetTo.currentdirlist[-1]
                     if currentdir['id'] != 'TOP':
-                        contents = []
-                        for selecteditem in selecteditemsfrom:
-                            for child in ContentListWidgetFrom.currentcontent['children']:
-                                if child['name'] == str(selecteditem.text()):
-                                    item_id = child['id']
-                                    contents.append(fromsumo.export_content_job_sync(item_id))
-                                    exportsuccessful = True
+                        tofolderid = ContentListWidgetTo.currentcontent['id']
+                    else:
+                        self.errorbox("Sorry you can't copy to the root admin folder currently.")
+                        return
+                        #tofolderid = ContentListWidgetTo.currentcontent['children'][0]['parentId']
+                    contents = []
+                    for selecteditem in selecteditemsfrom:
+                        for child in ContentListWidgetFrom.currentcontent['children']:
+                            if child['name'] == str(selecteditem.text()):
+                                item_id = child['id']
+                                contents.append(fromsumo.export_content_job_sync(item_id))
+                                exportsuccessful = True
             except Exception as e:
                 logger.exception(e)
                 self.errorbox('Source:Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
@@ -1036,18 +1059,21 @@ If so type 'DELETE' in the box below:"
                 elif toradioselected == -4:  # Admin Recommended Folders Selected
                     currentdir = ContentListWidgetTo.currentdirlist[-1]
                     if currentdir['id'] != 'TOP':
-                        for selecteditem in selecteditems:
-                            for child in ContentListWidgetFrom.currentcontent['children']:
-                                if child['name'] == str(selecteditem.text()):
-                                    item_id = child['id']
-                                    content = fromsumo.export_content_job_sync(item_id)
-                                    tofolderid = ContentListWidgetTo.currentcontent['id']
-                                    status = tosumo.import_content_job_sync(tofolderid, content, adminmode=True)
-                                    self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
-                        return
+                        tofolderid = ContentListWidgetTo.currentcontent['id']
                     else:
-                        self.errorbox(
-                            'Sorry, this tool in not currently capable of copying to the top-level directory in the Admin Recommended folder due to API limitations. Suggested workaround is to make the top level folder in the SumoLogic UI and then copy content into it. This should be fixed soon!')
+                        self.errorbox("Sorry you can't copy to the root admin folder currently.")
+                        return
+                        #tofolderid = ContentListWidgetTo.currentcontent['children'][0]['parentId']
+                    for selecteditem in selecteditems:
+                        for child in ContentListWidgetFrom.currentcontent['children']:
+                            if child['name'] == str(selecteditem.text()):
+                                item_id = child['id']
+                                content = fromsumo.export_content_job_sync(item_id)
+
+                                print(ContentListWidgetTo.currentcontent)
+                                status = tosumo.import_content_job_sync(tofolderid, content, adminmode='true')
+                                self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
+                    return
 
             else:
                 self.errorbox('You have not made any selections.')
@@ -1083,7 +1109,7 @@ If so type 'DELETE' in the box below:"
                     currentdir = ContentListWidget.currentdirlist[-1]
                     if currentdir['id'] != 'TOP':
                         sumo = SumoLogic(id, key, endpoint=url)
-                        error = sumo.create_folder(str(text), str(ContentListWidget.currentcontent['id']), adminmode=True)
+                        error = sumo.create_folder(str(text), str(ContentListWidget.currentcontent['id']), adminmode='true')
 
                         self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
                         return
@@ -1141,7 +1167,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                         self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
                         return
                     else:
-                        self.errorbox('This tool is not currently capableYou Cannot Delete The Shared Content of other Users.')
+                        self.errorbox('You Cannot Delete The Shared Content of other Users.')
                         return
 
                 except Exception as e:
@@ -1203,8 +1229,6 @@ If you are absolutely sure, type "DELETE" in the box below.
                     logger.info("Updating Admin Folder List")
                     ContentListWidget.currentcontent = sumo.get_admin_folder_sync()
 
-                    # Rename dict key from "data" to "children" for consistency
-                    ContentListWidget.currentcontent['children'] = ContentListWidget.currentcontent.pop('data')
                     ContentListWidget.currentdirlist = []
                     dir = {'name': 'Admin Recommended', 'id': 'TOP'}
                     ContentListWidget.currentdirlist.append(dir)
@@ -1359,7 +1383,7 @@ If you are absolutely sure, type "DELETE" in the box below.
 
 
             else:
-                self.errorbox("You can't currently restore to the root Admin folder. This should be fixed soon. Suggested workaround is to restore to a child folder and then move the content using the Sumo Logic UI")
+                self.errorbox("You can't restore content to this folder. Does it belong to another user?")
                 return
         else:
             self.errorbox("Please update the directory list before restoring content")
@@ -1562,12 +1586,17 @@ If you are absolutely sure, type "DELETE" in the box below.
         return
 
     # This is broken and not connected to any button currently
-    def restoresources(self):
-        destinationcollector = self.listWidgetCollectorsRight.selectedItems()
-        if len(destinationcollector) == 1:
-            destinationcollectorqstring = destinationcollector[0]
-            destinationcollector = str(destinationcollector[0].text())
-            restorefile = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Open Backup..', selectedFilter='*.json'))
+    def restoresources(self, CollectorListWidget, SourceListWidget, url, id, key):
+        destinationcollectors = CollectorListWidget.selectedItems()
+        if len(destinationcollectors) == 1:
+            destinationcollectorqstring = destinationcollectors[0].text()
+            destinationcollector = str(destinationcollectorqstring)
+            destinationcollectorid = self.getcollectorid(destinationcollector, url, id, key)
+            print(destinationcollector)
+            print(destinationcollectorid)
+            filter = "JSON (*.json)"
+            restorefile, status = QtWidgets.QFileDialog.getOpenFileName(self, "Open file(s)...", os.getcwd(), filter)
+
             sources = None
             try:
                 with open(restorefile) as data_file:
@@ -1577,46 +1606,31 @@ If you are absolutely sure, type "DELETE" in the box below.
                 logger.exception(e)
 
             if sources:
-                self.restoresourcesUI.dateTimeEdit.setMaximumDate(QtCore.QDate.currentDate())
-                self.restoresourcesUI.dateTimeEdit.setDate(QtCore.QDate.currentDate())
-                self.restoresourcesUI.listWidgetRestoreSources.clear()
-                sourcedict = {}
-                for source in sources:
-                    sourcedict[source['name']] = ''
-                for source in sourcedict:
-                    self.restoresourcesUI.listWidgetRestoreSources.addItem(source)
-                result = self.restoresourcesUI.exec_()
-                overridecollectiondate = self.restoresourcesUI.checkBoxOverrideCollectionStartTime.isChecked()
-                overridedate = self.restoresourcesUI.dateTimeEdit.dateTime()
-                overridedatemillis = long(overridedate.currentMSecsSinceEpoch())
-                if result:
-                    selectedsources = self.restoresourcesUI.listWidgetRestoreSources.selectedItems()
-                    if len(selectedsources) > 0:
-                        for selectedsource in selectedsources:
-                            for sumosource in sources:
-                                if sumosource['name'] == str(selectedsource.text()):
-                                    if 'id' in sumosource:
-                                        del sumosource['id']
-                                    if 'alive' in sumosource:
-                                        del sumosource['alive']
-                                    if overridecollectiondate:
-                                        sumosource['cutoffTimestamp'] = overridedatemillis
-                                    template = {}
-                                    template['source'] = sumosource
-                                    notduplicate = True
-                                    for sumodest in self.destinationsources:
-                                        if sumodest['name'] == source:
-                                            notduplicate = False
-                                    if notduplicate:
-                                        self.sumodestination.create_source(
-                                            self.destinationcollectordict[destinationcollector], template)
-                                    else:
-                                        self.errorbox(source + ' already exists, skipping.')
-                            self.updatedestinationlistsource(destinationcollectorqstring, destinationcollectorqstring)
-                    else:
-                        self.errorbox('No sources selected for import.')
+                dialog = restoreSourcesDialog(sources)
+                dialog.exec()
+                dialog.show()
+                if str(dialog.result()) == '1':
+                    selectedsources = dialog.getresults()
+                else:
+                    return
+                if len(selectedsources) > 0:
+                    sumo = SumoLogic(id, key, endpoint=url)
+                    for selectedsource in selectedsources:
+                        for sumosource in sources:
+                            if sumosource['name'] == str(selectedsource):
+                                if 'id' in sumosource:
+                                    del sumosource['id']
+                                if 'alive' in sumosource:
+                                    del sumosource['alive']
+                                template = {}
+                                template['source'] = sumosource
+                                sumo.create_source(
+                                        destinationcollectorid, template)
+                    self.updatesourcelist(CollectorListWidget, SourceListWidget, url, id, key )
+                else:
+                    self.errorbox('No sources selected for import.')
         else:
-            self.errorbox('No Destination Collector Selected.')
+            self.errorbox('Please select 1 and only 1 collector to restore sources to.')
         return
 
     def deletesources(self, CollectorListWidget, SourceListWidget, url, id, key):
@@ -1660,11 +1674,13 @@ If you are absolutely sure, type "DELETE" in the box below.
         logger.info("Running a Search")
         self.tableWidgetSearchResults.clear()
         selectedtimezone = str(self.comboBoxTimeZone.currentText())
+        timezone = pytz.timezone(selectedtimezone)
         starttime = str(self.dateTimeEditSearchStartTime.dateTime().toString(QtCore.Qt.ISODate))
         endtime = str(self.dateTimeEditSearchEndTime.dateTime().toString(QtCore.Qt.ISODate))
         searchstring = str(self.plainTextEditSearch.toPlainText())
         regexprog = re.compile(r'\S+')
         jobsubmitted = False
+        csvheaderwritten = False
         savetofile = self.checkBoxSaveSearch.isChecked()
         converttimefromepoch = self.checkBoxConvertTimeFromEpoch.isChecked()
         jobmessages = []
@@ -1672,6 +1688,7 @@ If you are absolutely sure, type "DELETE" in the box below.
         if savetofile:
             filenameqstring, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save CSV', '', filter='*.csv')
             filename = str(filenameqstring)
+            savefilepath = pathlib.Path(filename)
 
         if (re.match(regexprog, id) != None) and (re.match(regexprog, key) != None):
             sumo = SumoLogic(id, key, endpoint=url)
@@ -1710,25 +1727,51 @@ If you are absolutely sure, type "DELETE" in the box below.
                                     messages = sumo.search_job_messages(searchjob, limit=10000,
                                                                                    offset=((iteration - 1) * 10000))
                                     logger.info('Downloaded 1 block of messages.')
-                                    # jobmessages = jobmessages + list(messages['messages'].values())
+                                    if savetofile:
+                                        logger.info('Saving messages to file.')
                                     for message in messages['messages']:
-                                         jobmessages.append(message)
+                                        if converttimefromepoch:
+                                            converteddatetime = datetime.fromtimestamp(
+                                                float(message['map']['_messagetime']) / 1000, timezone)
+                                            timestring = str(converteddatetime.strftime('%Y-%m-%d %H:%M:%S'))
+                                            message['map']['_messagetime'] = timestring
+                                        if savetofile:  # If we save to file then append to output and let the messages
+                                                        # variable get overwritten with the next batch of messages
+                                                        # without saving them into the jobmessages variable
+                                                        # So that we can conceptually download arbitrary amounts of data
+                                                        # without running out of RAM
+                                            if savefilepath:
+                                                try:
+                                                    with savefilepath.open(mode='a') as csvfile:
+                                                        messagecsv = csv.DictWriter(csvfile,
+                                                                                    message['map'].keys())
+                                                        if csvheaderwritten == False:
+                                                            messagecsv.writeheader()
+                                                            csvheaderwritten = True
+                                                        messagecsv.writerow(message['map'])
+                                                except Exception as e:
+                                                    self.errorbox("Failed writing. Check destination permissions.")
+                                                    logger.exception(e)
+                                                    return
+
+
+
+                                        else:   # If we're not saving to file then keep the messages so that we can
+                                                # display them in the table widget
+                                            jobmessages.append(message)
                             except Exception as e:
                                 logger.exception(e)
                                 self.errorbox("Something went wrong\n\n" + str(e))
                             logger.info('Download complete.')
+                            if savetofile:
+                                self.infobox("Save to CSV complete.")
+                                return
                             self.tableWidgetSearchResults.setRowCount(len(jobmessages))
                             self.tableWidgetSearchResults.setColumnCount(2)
                             self.tableWidgetSearchResults.setHorizontalHeaderLabels(['time', '_raw'])
                             index = 0
                             if len(jobmessages) > 0:
                                 for message in jobmessages:
-                                    if converttimefromepoch:
-                                        timezone = pytz.timezone(selectedtimezone)
-                                        converteddatetime = datetime.fromtimestamp(
-                                            float(message['map']['_messagetime']) / 1000, timezone)
-                                        timestring = str(converteddatetime.strftime('%Y-%m-%d %H:%M:%S'))
-                                        message['map']['_messagetime'] = timestring
                                     self.tableWidgetSearchResults.setItem(index, 0, QtWidgets.QTableWidgetItem(
                                         message['map']['_messagetime']))
                                     self.tableWidgetSearchResults.setItem(index, 1,
@@ -1736,20 +1779,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                                     index += 1
                                 self.tableWidgetSearchResults.resizeRowsToContents()
                                 self.tableWidgetSearchResults.resizeColumnsToContents()
-                                if savetofile:
-                                    logger.info('Saving messages to file.')
-                                    savefilepath = pathlib.Path(filename)
-                                    if savefilepath:
-                                        try:
-                                            with savefilepath.open(mode='w') as csvfile:
-                                                messagecsv = csv.DictWriter(csvfile, jobmessages[0]['map'].keys())
-                                                messagecsv.writeheader()
-                                                for entry in jobmessages:
-                                                    messagecsv.writerow(entry['map'])
-                                        except Exception as e:
-                                            self.errorbox("Failed writing. Check destination permissions.")
-                                            logger.exception(e)
-                                            return
+
                             else:
                                 self.errorbox('Search did not return any messages.')
                                 return
@@ -1761,7 +1791,6 @@ If you are absolutely sure, type "DELETE" in the box below.
                                     records = sumo.search_job_records(searchjob, limit=10000,
                                                                                  offset=((iteration - 1) * 10000))
                                     logger.info('Downloaded 1 block of records.')
-                                    #jobrecords = jobrecords + list(records['records'].values())
                                     for record in records['records']:
                                          jobrecords.append(record)
                             except Exception as e:
@@ -1781,7 +1810,6 @@ If you are absolutely sure, type "DELETE" in the box below.
                                     columnnum = 0
                                     for fieldname in fieldnames:
                                         if converttimefromepoch and (fieldname == '_timeslice'):
-                                            timezone = pytz.timezone(selectedtimezone)
                                             converteddatetime = datetime.fromtimestamp(
                                                 float(record['map'][fieldname]) / 1000, timezone)
                                             timestring = str(converteddatetime.strftime('%Y-%m-%d %H:%M:%S'))
@@ -1794,7 +1822,6 @@ If you are absolutely sure, type "DELETE" in the box below.
                                 self.tableWidgetSearchResults.resizeColumnsToContents()
                                 if savetofile:
                                     logger.info('Saving records to file.')
-                                    savefilepath = pathlib.Path(filename)
                                     if savefilepath:
                                         try:
                                             with savefilepath.open(mode='w') as csvfile:

@@ -50,20 +50,20 @@ The steps are as follows:
     4. Execute the following command to install pipenv, which will manage all of the library dependencies 
        for us:
 
-    pip3 install pipenv
+        pip3 install pipenv
     
-    -or-
+        -or-
     
-    sudo pip3 install pipenv 
+        sudo pip3 install pipenv 
  
     5. Clone this repo using the following command:
     
-    git clone https://github.com/voltaire321/sumologictoolbox.git
+        git clone https://github.com/voltaire321/sumologictoolbox.git
     
     This will create a new folder called sumotoolbox. 
     
     6. Change into the sumotoolbox folder. Type the following to install all the package 
-    dependencies (this may take a while as this will download all of the libraries that sumotoolbox uses):
+       dependencies (this may take a while as this will download all of the libraries that sumotoolbox uses):
 
     pipenv install
     
@@ -103,7 +103,7 @@ Collector Source Copying:
     7. Click "Copy".
 
     NOTE: You can use the same credentials for both source and destination to copy sources from one 
-    collector to another within the same org.
+          collector to another within the same org.
 
 Collector Backup:
 
@@ -126,8 +126,8 @@ Collector Delete:
     8. Click "OK"
     
     NOTE: This can be very dangerous. Accidentally deleting the wrong collector(s) could result
-    in log collection interruption and many, many hours of restoration work. Use with EXTREME
-    caution. 
+          in log collection interruption and many, many hours of restoration work. Use with EXTREME
+          caution. 
     
 Source Delete:
 
@@ -141,7 +141,7 @@ Source Delete:
     8. Click "OK"
 
     NOTE: This can be very dangerous. Accidentally deleting the wrong sources(s) could result in log
-    collection interruption and many, many hours of restoration work. Use with EXTREME caution. 
+          collection interruption and many, many hours of restoration work. Use with EXTREME caution. 
     
 Search API:
 
@@ -160,9 +160,15 @@ Search API:
     9. Click "Start"
     
     NOTE: The use case for this fuctionality is dumping to CSV. The Sumo Logic UI export feature is
-    currently limited to 100,000 log messages. This tool should reliably dump much more than that,
-    however the UI will "freeze" during the dump. This could take minutes or even hours depending 
-    on the size of the dump. Please resist the temptation to rage quit because of an unresposive UI. 
+          currently limited to 100,000 log messages. This tool should reliably dump much more than that,
+          however the UI will "freeze" during the dump. This could take minutes or even hours depending 
+          on the size of the dump. Please resist the temptation to rage quit because of an unresposive UI.
+          If you want to check on the status of the download you can look in the console or log file to
+          see status messages. 
+    
+    NOTE: If you choose to save Raw messages to CSV they will no longer be displayed after the job finishes.
+          This change was made so that sumotoolbox can download an arbitrary number of messages without 
+          running out of RAM. 
 
 Content Folder Creation:    !NEW!
     
@@ -176,7 +182,7 @@ Content Folder Creation:    !NEW!
     8. Click "OK"
     
     NOTE: You cannot create top level folders when in the "Admin Recommeded" context. This
-    should be fixed in the future. 
+          should be fixed in the future. 
     
     NOTE: Global folder browsing (other peoples shares) is currently disabled. Look for that in a 
           future release. 
@@ -194,7 +200,7 @@ Content Deletion:    !NEW!
     8. Click "OK"
     
     NOTE: You cannot delete top level folders when in the "Admin Recommeded" context. This
-    should be fixed in the future. 
+          should be fixed in the future. 
     
     NOTE: This can be very dangerous. Accidentally deleting the wrong content could result in serious 
           issues and many hours of restoration work. Use with EXTREME caution. 
@@ -282,7 +288,7 @@ Config File:    !NEW!
     documetation on each setting. 
     
     NOTE: If you downloaded the executables rather than the source then this file will be generated on your 
-    first execution of the tool in the same directory as the tool. 
+          first execution of the tool in the same directory as the tool. 
    
 Credential Database: !NEW!
 
@@ -302,11 +308,11 @@ Credential Database: !NEW!
     Create/Update/Delete preset buttons. 
     
     Note: The credentials db functionality is optional. You can still use sumologictoolbox without it in the 
-    same way as previous versions (by entering information manually into the appropriate fields.)
+          same way as previous versions (by entering information manually into the appropriate fields.)
     
     Note: Before using the credential database functionality please ensure it complies with all policies/laws
-    applicable to your organization. 
-    
+          applicable to your organization. 
+         
     Specs:
     
     1. Argon2 for main password hashing
