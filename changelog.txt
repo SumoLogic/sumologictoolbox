@@ -1,0 +1,18 @@
+Changelog for SumoToolBox
+
+01-30-2020  0.5-beta
+
+*Added FER tab with support for Field Extraction Rule copy/backup/restore (find/replace/copy buttons are disabled and will be implemented in a future release.
+
+*Added splash screen logo
+
+*Added "Settings" menu with ability to change logging level for debugging purposes.
+
+*Added Icons to Content Pane
+
+*Added ability to copy multiple sources to multiple target collectors
+
+*Switched from Darkstyle Theme to qtmodern due to bugs in Darkstyle
+
+*Switched from pyqt5 to qtpy
+

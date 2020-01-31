@@ -31,7 +31,7 @@
    <enum>Qt::NoContextMenu</enum>
   </property>
   <property name="windowTitle">
-   <string>SumoLogicToolBox</string>
+   <string>SumoToolBox</string>
   </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
@@ -44,7 +44,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayoutCredBar">
       <property name="sizeConstraint">
-       <enum>QLayout::SetMinAndMaxSize</enum>
+       <enum>QLayout::SetMinimumSize</enum>
       </property>
       <item>
        <widget class="QFrame" name="frameCredsLeft">
@@ -88,8 +88,8 @@
              </property>
              <property name="font">
               <font>
-               <family>Noto Sans Gothic</family>
-               <pointsize>10</pointsize>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="text">
@@ -108,7 +108,7 @@
              <property name="font">
               <font>
                <family>Waree</family>
-               <pointsize>10</pointsize>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="contextMenuPolicy">
@@ -132,8 +132,8 @@
              </property>
              <property name="font">
               <font>
-               <family>Noto Sans Gothic</family>
-               <pointsize>10</pointsize>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="text">
@@ -152,7 +152,7 @@
              <property name="font">
               <font>
                <family>Waree</family>
-               <pointsize>10</pointsize>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="contextMenuPolicy">
@@ -173,8 +173,8 @@
              </property>
              <property name="font">
               <font>
-               <family>Noto Sans Gothic</family>
-               <pointsize>10</pointsize>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="text">
@@ -193,7 +193,7 @@
              <property name="font">
               <font>
                <family>Waree</family>
-               <pointsize>10</pointsize>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="contextMenuPolicy">
@@ -217,8 +217,8 @@
              </property>
              <property name="font">
               <font>
-               <family>Noto Sans Gothic</family>
-               <pointsize>10</pointsize>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="text">
@@ -240,7 +240,7 @@
              <property name="font">
               <font>
                <family>Waree</family>
-               <pointsize>10</pointsize>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="contextMenuPolicy">
@@ -263,6 +263,12 @@
              <property name="enabled">
               <bool>false</bool>
              </property>
+             <property name="font">
+              <font>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>Create
 Preset</string>
@@ -274,6 +280,12 @@ Preset</string>
              <property name="enabled">
               <bool>false</bool>
              </property>
+             <property name="font">
+              <font>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>Update
 Preset</string>
@@ -284,6 +296,12 @@ Preset</string>
             <widget class="QPushButton" name="pushButtonDeletePresetLeft">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="font">
+              <font>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
+              </font>
              </property>
              <property name="text">
               <string>Delete
@@ -313,17 +331,42 @@ Preset</string>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <widget class="QPushButton" name="pushButtonCreateCredentialDatabase">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>60</height>
+            </size>
+           </property>
            <property name="maximumSize">
             <size>
              <width>100</width>
              <height>50</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <family>Waree</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>Create Cred
 Database</string>
            </property>
           </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_10">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
          </item>
          <item>
           <widget class="QPushButton" name="pushButtonLoadCredentialDatabase">
@@ -333,17 +376,42 @@ Database</string>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>60</height>
+            </size>
+           </property>
            <property name="maximumSize">
             <size>
              <width>100</width>
              <height>50</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <family>Waree</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>Load Cred
 Database</string>
            </property>
           </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_11">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
          </item>
          <item>
           <widget class="QPushButton" name="pushButtonDeleteCredentialDatabase">
@@ -356,11 +424,23 @@ Database</string>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>60</height>
+            </size>
+           </property>
            <property name="maximumSize">
             <size>
              <width>100</width>
              <height>50</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>Waree</family>
+             <pointsize>12</pointsize>
+            </font>
            </property>
            <property name="text">
             <string>Delete Cred
@@ -422,8 +502,8 @@ Database</string>
              </property>
              <property name="font">
               <font>
-               <family>Noto Sans Gothic</family>
-               <pointsize>10</pointsize>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="text">
@@ -442,7 +522,7 @@ Database</string>
              <property name="font">
               <font>
                <family>Waree</family>
-               <pointsize>10</pointsize>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="contextMenuPolicy">
@@ -466,8 +546,8 @@ Database</string>
              </property>
              <property name="font">
               <font>
-               <family>Noto Sans Gothic</family>
-               <pointsize>10</pointsize>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="text">
@@ -486,7 +566,7 @@ Database</string>
              <property name="font">
               <font>
                <family>Waree</family>
-               <pointsize>10</pointsize>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="contextMenuPolicy">
@@ -507,8 +587,8 @@ Database</string>
              </property>
              <property name="font">
               <font>
-               <family>Noto Sans Gothic</family>
-               <pointsize>10</pointsize>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="text">
@@ -527,7 +607,7 @@ Database</string>
              <property name="font">
               <font>
                <family>Waree</family>
-               <pointsize>10</pointsize>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="contextMenuPolicy">
@@ -551,8 +631,8 @@ Database</string>
              </property>
              <property name="font">
               <font>
-               <family>Noto Sans Gothic</family>
-               <pointsize>10</pointsize>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="text">
@@ -574,7 +654,7 @@ Database</string>
              <property name="font">
               <font>
                <family>Waree</family>
-               <pointsize>10</pointsize>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="contextMenuPolicy">
@@ -600,6 +680,12 @@ Database</string>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="font">
+              <font>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>Create
 Preset</string>
@@ -616,6 +702,12 @@ Preset</string>
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
+              </font>
              </property>
              <property name="text">
               <string>Update
@@ -634,6 +726,12 @@ Preset</string>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="font">
+              <font>
+               <family>Waree</family>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>Delete
 Preset</string>
@@ -649,6 +747,9 @@ Preset</string>
     </item>
     <item>
      <widget class="QTabWidget" name="tabWidget">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
         <horstretch>0</horstretch>
@@ -663,8 +764,8 @@ Preset</string>
       </property>
       <property name="font">
        <font>
-        <family>Noto Sans Gothic</family>
-        <pointsize>10</pointsize>
+        <family>Waree</family>
+        <pointsize>12</pointsize>
        </font>
       </property>
       <property name="tabShape">
@@ -687,7 +788,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="contextMenuPolicy">
@@ -720,7 +821,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -748,7 +849,7 @@ Preset</string>
             <property name="font">
              <font>
               <family>Waree</family>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="contextMenuPolicy">
@@ -778,7 +879,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -791,7 +892,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -821,7 +922,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -849,7 +950,7 @@ Preset</string>
             <property name="font">
              <font>
               <family>Waree</family>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="editTriggers">
@@ -873,7 +974,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -886,7 +987,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -968,7 +1069,7 @@ Preset</string>
             <property name="font">
              <font>
               <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="contextMenuPolicy">
@@ -984,7 +1085,7 @@ Preset</string>
             <property name="font">
              <font>
               <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="contextMenuPolicy">
@@ -1019,7 +1120,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="contextMenuPolicy">
@@ -1052,7 +1153,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1080,7 +1181,7 @@ Preset</string>
             <property name="font">
              <font>
               <family>Waree</family>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="contextMenuPolicy">
@@ -1107,7 +1208,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1120,7 +1221,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1150,7 +1251,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1178,7 +1279,7 @@ Preset</string>
             <property name="font">
              <font>
               <family>Waree</family>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="contextMenuPolicy">
@@ -1205,7 +1306,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1218,7 +1319,7 @@ Preset</string>
               <property name="font">
                <font>
                 <family>Noto Sans Gothic</family>
-                <pointsize>10</pointsize>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="text">
@@ -1266,8 +1367,8 @@ Preset</string>
                 </property>
                 <property name="font">
                  <font>
-                  <family>Noto Sans Gothic</family>
-                  <pointsize>10</pointsize>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
                  </font>
                 </property>
                 <property name="contextMenuPolicy">
@@ -1280,6 +1381,18 @@ Preset</string>
               </item>
               <item>
                <widget class="QPushButton" name="pushButtonParentDirContentLeft">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>110</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="maximumSize">
                  <size>
                   <width>85</width>
@@ -1288,8 +1401,8 @@ Preset</string>
                 </property>
                 <property name="font">
                  <font>
-                  <family>Noto Sans Gothic</family>
-                  <pointsize>10</pointsize>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
                  </font>
                 </property>
                 <property name="text">
@@ -1314,8 +1427,14 @@ Preset</string>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayoutContentRadioButtonsLeft">
-              <item>
+              <item alignment="Qt::AlignVCenter">
                <widget class="QRadioButton" name="radioButtonPersonalLeft">
+                <property name="font">
+                 <font>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Personal
 Folder</string>
@@ -1328,10 +1447,16 @@ Folder</string>
                 </attribute>
                </widget>
               </item>
-              <item>
+              <item alignment="Qt::AlignVCenter">
                <widget class="QRadioButton" name="radioButtonGlobalLeft">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Global
@@ -1342,8 +1467,14 @@ Folders</string>
                 </attribute>
                </widget>
               </item>
-              <item>
+              <item alignment="Qt::AlignVCenter">
                <widget class="QRadioButton" name="radioButtonAdminLeft">
+                <property name="font">
+                 <font>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Admin Recommended
 Folders</string>
@@ -1382,11 +1513,14 @@ Folders</string>
             <property name="font">
              <font>
               <family>Waree</family>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="selectionMode">
              <enum>QAbstractItemView::ExtendedSelection</enum>
+            </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -1394,11 +1528,23 @@ Folders</string>
            <layout class="QHBoxLayout" name="horizontalLayoutContentBottomButtonsLeft">
             <item>
              <widget class="QPushButton" name="pushButtonContentNewFolderLeft">
+              <property name="minimumSize">
+               <size>
+                <width>115</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>85</width>
                 <height>16777215</height>
                </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
               </property>
               <property name="text">
                <string>New Folder</string>
@@ -1413,6 +1559,12 @@ Folders</string>
                 <height>16777215</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="text">
                <string>Delete</string>
               </property>
@@ -1426,6 +1578,12 @@ Folders</string>
                 <height>16777215</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="text">
                <string>Backup</string>
               </property>
@@ -1438,6 +1596,12 @@ Folders</string>
                 <width>85</width>
                 <height>16777215</height>
                </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
               </property>
               <property name="text">
                <string>Restore</string>
@@ -1477,42 +1641,11 @@ Folders</string>
            </spacer>
           </item>
           <item>
-           <widget class="QLabel" name="labelContentLegend">
-            <property name="font">
-             <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::Box</enum>
-            </property>
-            <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Content&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Legend:&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;------------&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Bold: Folder&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Normal: Content&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
            <widget class="QPushButton" name="pushButtonContentCopyLeftToRight">
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="contextMenuPolicy">
@@ -1527,8 +1660,8 @@ Folders</string>
            <widget class="QPushButton" name="pushButtonContentCopyRightToLeft">
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="contextMenuPolicy">
@@ -1556,8 +1689,8 @@ Folders</string>
            <widget class="QPushButton" name="pushButtonContentFindReplaceCopyLeftToRight">
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="contextMenuPolicy">
@@ -1574,8 +1707,8 @@ Copy</string>
            <widget class="QPushButton" name="pushButtonContentFindReplaceCopyRightToLeft">
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="contextMenuPolicy">
@@ -1619,8 +1752,8 @@ Copy</string>
                 </property>
                 <property name="font">
                  <font>
-                  <family>Noto Sans Gothic</family>
-                  <pointsize>10</pointsize>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
                  </font>
                 </property>
                 <property name="contextMenuPolicy">
@@ -1633,6 +1766,12 @@ Copy</string>
               </item>
               <item>
                <widget class="QPushButton" name="pushButtonParentDirContentRight">
+                <property name="minimumSize">
+                 <size>
+                  <width>110</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="maximumSize">
                  <size>
                   <width>85</width>
@@ -1641,8 +1780,8 @@ Copy</string>
                 </property>
                 <property name="font">
                  <font>
-                  <family>Noto Sans Gothic</family>
-                  <pointsize>10</pointsize>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
                  </font>
                 </property>
                 <property name="text">
@@ -1669,6 +1808,12 @@ Copy</string>
              <layout class="QHBoxLayout" name="horizontalLayoutContentRadioButtonsRight">
               <item>
                <widget class="QRadioButton" name="radioButtonPersonalRight">
+                <property name="font">
+                 <font>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Personal
 Folder</string>
@@ -1684,7 +1829,13 @@ Folder</string>
               <item>
                <widget class="QRadioButton" name="radioButtonGlobalRight">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Global
@@ -1697,6 +1848,12 @@ Folders</string>
               </item>
               <item>
                <widget class="QRadioButton" name="radioButtonAdminRight">
+                <property name="font">
+                 <font>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Admin Recommended
 Folders</string>
@@ -1738,11 +1895,14 @@ Folders</string>
             <property name="font">
              <font>
               <family>Waree</family>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="selectionMode">
              <enum>QAbstractItemView::ExtendedSelection</enum>
+            </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -1750,11 +1910,23 @@ Folders</string>
            <layout class="QHBoxLayout" name="horizontalLayoutContentBottomButtonsRight">
             <item>
              <widget class="QPushButton" name="pushButtonContentNewFolderRight">
+              <property name="minimumSize">
+               <size>
+                <width>115</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>85</width>
                 <height>16777215</height>
                </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
               </property>
               <property name="text">
                <string>New Folder</string>
@@ -1769,6 +1941,12 @@ Folders</string>
                 <height>16777215</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="text">
                <string>Delete</string>
               </property>
@@ -1782,6 +1960,12 @@ Folders</string>
                 <height>16777215</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
               <property name="text">
                <string>Backup</string>
               </property>
@@ -1794,6 +1978,12 @@ Folders</string>
                 <width>85</width>
                 <height>16777215</height>
                </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
               </property>
               <property name="text">
                <string>Restore</string>
@@ -1842,8 +2032,8 @@ Folders</string>
             </property>
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="text">
@@ -1868,7 +2058,7 @@ Folders</string>
             <property name="font">
              <font>
               <family>Waree</family>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
            </widget>
@@ -1908,8 +2098,8 @@ Folders</string>
             </property>
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="text">
@@ -1934,7 +2124,7 @@ Folders</string>
             <property name="font">
              <font>
               <family>Waree</family>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="calendarPopup">
@@ -1958,8 +2148,8 @@ Folders</string>
             </property>
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="text">
@@ -1984,7 +2174,7 @@ Folders</string>
             <property name="font">
              <font>
               <family>Waree</family>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="calendarPopup">
@@ -2000,8 +2190,8 @@ Folders</string>
            <widget class="QLabel" name="labelSearch">
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="text">
@@ -2035,7 +2225,7 @@ Folders</string>
           <property name="font">
            <font>
             <family>Waree</family>
-            <pointsize>10</pointsize>
+            <pointsize>12</pointsize>
            </font>
           </property>
           <property name="frameShadow">
@@ -2049,74 +2239,80 @@ Folders</string>
            <widget class="QGroupBox" name="groupBoxSearchType">
             <property name="minimumSize">
              <size>
-              <width>250</width>
+              <width>260</width>
               <height>50</height>
              </size>
             </property>
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="title">
              <string/>
             </property>
-            <widget class="QRadioButton" name="radioButtonMessages">
+            <widget class="QWidget" name="">
              <property name="geometry">
               <rect>
                <x>10</x>
-               <y>20</y>
-               <width>82</width>
-               <height>17</height>
+               <y>0</y>
+               <width>242</width>
+               <height>51</height>
               </rect>
              </property>
-             <property name="font">
-              <font>
-               <family>Noto Sans Gothic</family>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Messages</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-             <attribute name="buttonGroup">
-              <string notr="true">buttonGroupOutputType</string>
-             </attribute>
-            </widget>
-            <widget class="QRadioButton" name="radioButton_2">
-             <property name="geometry">
-              <rect>
-               <x>120</x>
-               <y>20</y>
-               <width>82</width>
-               <height>17</height>
-              </rect>
-             </property>
-             <property name="font">
-              <font>
-               <family>Noto Sans Gothic</family>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Records</string>
-             </property>
-             <attribute name="buttonGroup">
-              <string notr="true">buttonGroupOutputType</string>
-             </attribute>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QRadioButton" name="radioButtonMessages">
+                <property name="font">
+                 <font>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Messages</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+                <attribute name="buttonGroup">
+                 <string notr="true">buttonGroupOutputType</string>
+                </attribute>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="radioButton_2">
+                <property name="font">
+                 <font>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Records</string>
+                </property>
+                <attribute name="buttonGroup">
+                 <string notr="true">buttonGroupOutputType</string>
+                </attribute>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="checkBoxSaveSearch">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="text">
@@ -2126,10 +2322,16 @@ Folders</string>
           </item>
           <item>
            <widget class="QCheckBox" name="checkBoxConvertTimeFromEpoch">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="text">
@@ -2154,8 +2356,8 @@ Folders</string>
            <widget class="QPushButton" name="pushButtonStartSearch">
             <property name="font">
              <font>
-              <family>Arial</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="text">
@@ -2170,7 +2372,7 @@ Folders</string>
           <property name="font">
            <font>
             <family>Waree</family>
-            <pointsize>10</pointsize>
+            <pointsize>12</pointsize>
            </font>
           </property>
           <property name="editTriggers">
@@ -2211,8 +2413,8 @@ Folders</string>
            <widget class="QLabel" name="labelMessagesReturned">
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="text">
@@ -2224,8 +2426,8 @@ Folders</string>
            <widget class="QLabel" name="labelSearchResultCount">
             <property name="font">
              <font>
-              <family>Noto Sans Gothic</family>
-              <pointsize>10</pointsize>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
              </font>
             </property>
             <property name="text">
@@ -2250,6 +2452,410 @@ Folders</string>
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="FERAPI">
+       <attribute name="title">
+        <string>FER API</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayoutFERAllLeft">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalFERTopButtonsLeft">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayoutFERTopPushButtonsLeft">
+              <item>
+               <widget class="QPushButton" name="pushButtonUpdateFERLeft">
+                <property name="maximumSize">
+                 <size>
+                  <width>85</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="contextMenuPolicy">
+                 <enum>Qt::NoContextMenu</enum>
+                </property>
+                <property name="text">
+                 <string>Update</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_33">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QListWidget" name="FERListWidgetLeft">
+            <property name="font">
+             <font>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::ExtendedSelection</enum>
+            </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayoutFERBottomButtonsLeft">
+            <item>
+             <widget class="QPushButton" name="pushButtonFERDeleteLeft">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Delete</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButtonFERBackupLeft">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Backup</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButtonFERRestoreLeft">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Restore</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_35">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayoutFERCenterButtons">
+          <item>
+           <spacer name="verticalSpacer_16">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>80</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonFERCopyLeftToRight">
+            <property name="font">
+             <font>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="contextMenuPolicy">
+             <enum>Qt::NoContextMenu</enum>
+            </property>
+            <property name="text">
+             <string>Copy -&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonFERCopyRightToLeft">
+            <property name="font">
+             <font>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="contextMenuPolicy">
+             <enum>Qt::NoContextMenu</enum>
+            </property>
+            <property name="text">
+             <string>&lt;- Copy</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_17">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonFERFindReplaceCopyLeftToRight">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="font">
+             <font>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="contextMenuPolicy">
+             <enum>Qt::NoContextMenu</enum>
+            </property>
+            <property name="toolTip">
+             <string>Coming Soon!</string>
+            </property>
+            <property name="text">
+             <string>Find 
+Replace-&gt;
+Copy</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonFERFindReplaceCopyRightToLeft">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="font">
+             <font>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="contextMenuPolicy">
+             <enum>Qt::NoContextMenu</enum>
+            </property>
+            <property name="toolTip">
+             <string>Coming Soon!</string>
+            </property>
+            <property name="text">
+             <string>Find 
+&lt;-Replace
+Copy</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_18">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayoutFERAllRight">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalFERTopButtonsRight">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayoutFERTopPushButtonsRight">
+              <item>
+               <widget class="QPushButton" name="pushButtonUpdateFERRight">
+                <property name="maximumSize">
+                 <size>
+                  <width>85</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Waree</family>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="contextMenuPolicy">
+                 <enum>Qt::NoContextMenu</enum>
+                </property>
+                <property name="text">
+                 <string>Update</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_36">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QListWidget" name="FERListWidgetRight">
+            <property name="font">
+             <font>
+              <family>Waree</family>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::ExtendedSelection</enum>
+            </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayoutFERBottomButtonsRight">
+            <item>
+             <widget class="QPushButton" name="pushButtonFERDeleteRight">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Delete</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButtonFERBackupRight">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Backup</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButtonFERRestoreRight">
+              <property name="maximumSize">
+               <size>
+                <width>85</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Waree</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Restore</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_38">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -2260,11 +2866,71 @@ Folders</string>
      <x>0</x>
      <y>0</y>
      <width>1175</width>
-     <height>24</height>
+     <height>29</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <widget class="QMenu" name="menuLogging_Level">
+     <property name="title">
+      <string>Logging Level</string>
+     </property>
+     <addaction name="actionInformational"/>
+     <addaction name="actionDebug"/>
+    </widget>
+    <widget class="QMenu" name="menuUI_Theme">
+     <property name="title">
+      <string>UI Theme</string>
+     </property>
+     <addaction name="actionLight"/>
+     <addaction name="actionDark"/>
+    </widget>
+    <addaction name="menuLogging_Level"/>
+    <addaction name="menuUI_Theme"/>
+   </widget>
+   <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionInformational">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Informational</string>
+   </property>
+  </action>
+  <action name="actionDebug">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Debug</string>
+   </property>
+  </action>
+  <action name="actionLight">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Light</string>
+   </property>
+  </action>
+  <action name="actionDark">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Dark</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
@@ -2287,7 +2953,7 @@ Folders</string>
  </designerdata>
  <buttongroups>
   <buttongroup name="buttonGroupContentRight"/>
-  <buttongroup name="buttonGroupOutputType"/>
   <buttongroup name="buttonGroupContentLeft"/>
+  <buttongroup name="buttonGroupOutputType"/>
  </buttongroups>
 </ui>

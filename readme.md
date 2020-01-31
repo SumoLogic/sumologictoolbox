@@ -173,7 +173,7 @@ Search API:
           This change was made so that sumotoolbox can download an arbitrary number of messages without 
           running out of RAM. 
 
-Content Folder Creation:    !NEW!
+Content Folder Creation:    
     
     1. Input/select Credentials for your org
     2. Select your region for your org
@@ -187,10 +187,8 @@ Content Folder Creation:    !NEW!
     NOTE: You cannot create top level folders when in the "Admin Recommeded" context. This
           should be fixed in the future. 
     
-    NOTE: Global folder browsing (other peoples shares) is currently disabled. Look for that in a 
-          future release. 
-    
-Content Deletion:    !NEW!
+
+Content Deletion:    
     
     1. Input/select Credentials for your org
     2. Select your region for your org
@@ -202,16 +200,12 @@ Content Deletion:    !NEW!
     7. Verify that you really want to delete the source(s) by typing "DELETE"
     8. Click "OK"
     
-    NOTE: You cannot delete top level folders when in the "Admin Recommeded" context. This
-          should be fixed in the future. 
     
     NOTE: This can be very dangerous. Accidentally deleting the wrong content could result in serious 
           issues and many hours of restoration work. Use with EXTREME caution. 
     
-    NOTE: Global folder browsing (other peoples shares) is currently disabled. Look for that in a 
-          future release.   
 
-Content Copying:    !NEW!
+Content Copying:    
 
     1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
@@ -221,6 +215,13 @@ Content Copying:    !NEW!
     5. Select one or more items from the list
     6. Click "Copy" (left to right or right to left). Your content will be copied to the current folder 
        in the destination pane.
+    
+FER copy/import/export: !New!
+
+    1. Input/select Credentials for your source and destination orgs
+    2. Select your regions for source and destination orgs
+    3. Click "Update" for source and destination to populate the FER lists
+    4. Click "Copy" or "Backup" or "Restore".
     
 Content Find/Replace/Copy:  !EXPERIMENTAL!
 
@@ -246,7 +247,7 @@ Content Find/Replace/Copy:  !EXPERIMENTAL!
     11. Once the pop-up window closes your content should be copied to the current folder in the 
         destination pane.
     
-Content Backup: !New!
+Content Backup: 
 
     1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
@@ -261,7 +262,7 @@ Content Backup: !New!
     
     Note: The filenames are created automatically from the item names that are selected for backup. 
     
-Content Restore: !New!
+Content Restore: 
 
     1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
@@ -276,7 +277,7 @@ Content Restore: !New!
     
     Note: You cannot currently restore into the root admin folder. This will be fixed soon.     
 
-Logging:    !NEW!
+Logging:   
 
     The tool should now generate a "sumologic.log" file in the directory it lives in. If you experience a
     bug, please delete the log file, recreate the bug, and send me the new log file along with a screenshot
@@ -285,7 +286,7 @@ Logging:    !NEW!
     
     tmacdonald@sumologic.com
     
-Config File:    !NEW!
+Config File:    
 
     sumologictoolbox now includes a sumologictoolbox.ini file to configure the tool. The ini file contains 
     documetation on each setting. 
@@ -293,7 +294,7 @@ Config File:    !NEW!
     NOTE: If you downloaded the executables rather than the source then this file will be generated on your 
           first execution of the tool in the same directory as the tool. 
    
-Credential Database: !NEW!
+Credential Database: 
 
     The tool now includes an optional credential store. You can create a new credential database using the
     "Create Cred Database" button. This will ask for you to enter a new password and will create a new, 
@@ -379,18 +380,15 @@ Known Issues:
 until the calls complete. This is due to the requests library blocking Qt5 when REST calls are being used. One day this
 might be fixed by multithreading the app but currently this is expected behaviour. 
 
-* Access to Globally Shared Content Folders is currently disabled until that code is refined. 
+* When copying content to Admin Recommended folders the content will be copied but not visible in this tool until it is shared in the
+SumoLogic UI. This will be resolved in a future release. 
 
 To Do:
 ======
 
-* Implement global folders in the content tab
-
 * Add "source update" functionality (for instance to add filters)
 
 * Add Users/Roles API functionality
-
-* Add FER API functionality
 
 * Add Scheduled View functionality
 

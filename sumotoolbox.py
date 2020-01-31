@@ -17,14 +17,16 @@ import pytz
 import os.path
 from datetime import datetime
 from tzlocal import get_localzone
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
+from qtpy import QtCore, QtGui, QtWidgets, uic
 import pathlib
 import os
 import logzero
 from logzero import logger
 import configparser
 import shutil
-import qdarkstyle
+import qtmodern.styles
+import qtmodern.windows
+import time
 
 #local imports
 from sumologic import SumoLogic
@@ -35,7 +37,7 @@ from dialogs import *
 if getattr(sys, 'frozen', False):
     basedir = sys._MEIPASS
 else:
-    basedir = os.path.dirname(__file__)
+    basedir = os.path.dirname(os.path.abspath(__file__))
 
 # Setup logging
 logzero.logfile("sumotoolbox.log")
@@ -61,20 +63,29 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         if getattr(sys, 'frozen', False):
             self.basedir = sys._MEIPASS
         else:
-            self.basedir = os.path.dirname(__file__)
+            self.basedir = os.path.dirname(os.path.abspath(__file__))
 
         self.setupUi(self)
-
+        # load icons used in content listviews
+        self.load_icons()
+        self.font = "Waree"
+        self.font_size = 12
         # variable to hold whether we've authenticated the cred database
         self.cred_db_authenticated = False
         # set up some variables we'll need later to do stuff. These are attached to the pyqt5 objects so they
         # persist through method calls (you can't return values from methods called with signals)
         self.reset_stateful_objects()
-
+        self.init_and_load_config_file()
         self.initModels()  # load all the comboboxes and such with values
+        # Configure the menu actions
+        self.setup_menus()
+        # Initially set logging level to match what is checked in the logging menu
+        self.change_logging_level()
         self.cred_db_authenticated = False # at startup we haven't authenticated against a credential database yet
         # load the config file and if it doesn't exist copy it from the template
-        self.init_and_load_config_file()
+        self.contentListWidgetLeft.side = 'left'
+        self.contentListWidgetRight.side = 'right'
+
 
         # Configure the creddb buttons according to the config file settings
         #self.initial_config_cred_db_buttons()
@@ -487,14 +498,16 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             self.contentListWidgetLeft,
             self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
             str(self.lineEditUserNameLeft.text()),
-            str(self.lineEditPasswordLeft.text())
+            str(self.lineEditPasswordLeft.text()),
+            self.buttonGroupContentLeft.checkedId()
         ))
 
         self.pushButtonContentBackupRight.clicked.connect(lambda: self.backupcontent(
             self.contentListWidgetRight,
             self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
             str(self.lineEditUserNameRight.text()),
-            str(self.lineEditPasswordRight.text())
+            str(self.lineEditPasswordRight.text()),
+            self.buttonGroupContentRight.checkedId()
         ))
 
         self.pushButtonContentRestoreLeft.clicked.connect(lambda: self.restorecontent(
@@ -515,6 +528,86 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             self.contentCurrentDirLabelRight
         ))
 
+
+        # FER Pane Section
+
+        self.pushButtonUpdateFERLeft.clicked.connect(lambda: self.update_FER_list(
+            self.FERListWidgetLeft,
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
+        ))
+
+        self.pushButtonUpdateFERRight.clicked.connect(lambda: self.update_FER_list(
+            self.FERListWidgetRight,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
+        ))
+        
+        self.pushButtonFERDeleteLeft.clicked.connect(lambda: self.delete_fer(
+            self.FERListWidgetLeft,
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())           
+        ))
+
+        self.pushButtonFERDeleteRight.clicked.connect(lambda: self.delete_fer(
+            self.FERListWidgetRight,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
+        ))
+
+        self.pushButtonFERCopyLeftToRight.clicked.connect(lambda: self.copy_fers(
+            self.FERListWidgetLeft,
+            self.FERListWidgetRight,
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text()),
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
+        ))
+        
+        self.pushButtonFERCopyRightToLeft.clicked.connect(lambda: self.copy_fers(
+            self.FERListWidgetRight,
+            self.FERListWidgetLeft,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text()),
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
+        ))
+        
+        self.pushButtonFERBackupLeft.clicked.connect(lambda: self.backup_fer(
+            self.FERListWidgetLeft, 
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
+        ))
+
+        self.pushButtonFERBackupRight.clicked.connect(lambda: self.backup_fer(
+            self.FERListWidgetRight,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
+        ))
+
+        self.pushButtonFERRestoreLeft.clicked.connect(lambda: self.restore_fer(
+            self.FERListWidgetLeft,
+            self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
+            str(self.lineEditUserNameLeft.text()),
+            str(self.lineEditPasswordLeft.text())
+        ))
+
+        self.pushButtonFERRestoreRight.clicked.connect(lambda: self.restore_fer(
+            self.FERListWidgetRight,
+            self.loadedapiurls[str(self.comboBoxRegionRight.currentText())],
+            str(self.lineEditUserNameRight.text()),
+            str(self.lineEditPasswordRight.text())
+        ))
 
     # method to reset all objects that are dependent on creds (such as collectors and content lists)
     def reset_stateful_objects(self, side='both'):
@@ -537,6 +630,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             self.contentListWidgetLeft.currentdirlist = []
             self.contentListWidgetLeft.updated = False
 
+
         if right:
             self.listWidgetCollectorsRight.clear()
             self.listWidgetSourcesRight.clear()
@@ -544,6 +638,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             self.contentListWidgetRight.currentcontent = {}
             self.contentListWidgetRight.currentdirlist = []
             self.contentListWidgetRight.updated = False
+
 
         return
 
@@ -634,8 +729,11 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                     logger.exception(e)
                     self.errorbox(str(e))
                     self.cred_db_authenticated = False
-                    del self.credentialstore
+                    if hasattr(self, 'credentialstore'):
+                        print('deleting credstore var')
+                        del self.credentialstore
                     self.set_creddbbuttons()
+                    self.reset_stateful_objects()
                 return
             else:
                 return
@@ -668,8 +766,8 @@ If so type 'DELETE' in the box below:"
             names = self.credentialstore.list_names()
             names = sorted(names,  key=str.lower)
             for name in names:
-                self.comboBoxPresetLeft.addItem(name)
-                self.comboBoxPresetRight.addItem(name)
+                self.comboBoxPresetLeft.addItem(name.strip())
+                self.comboBoxPresetRight.addItem(name.strip())
         except Exception as e:
             logger.exception(e)
             self.errorbox('Something went wrong\n\n' + str(e))
@@ -688,31 +786,6 @@ If so type 'DELETE' in the box below:"
         if self.comboBoxPresetLeft.count() is 0:
             self.clear_creds()
         return
-
-    # This is only used to configure the initial state of the credential db buttons
-    # deprecated
-    # def initial_config_cred_db_buttons(self):
-    #     db_file = pathlib.Path('credentials.db')
-    #     if db_file.is_file():
-    #         db_file_exists = True
-    #     else:
-    #         db_file_exists = False
-    #     config_value = self.config['Credential Store']['credential_store_implementation']
-    #     if (config_value == 'built_in') and db_file_exists:
-    #         self.pushButtonLoadCredentialDatabase.setEnabled(True)
-    #         self.pushButtonCreateCredentialDatabase.setEnabled(False)
-    #         self.pushButtonDeleteCredentialDatabase.setEnabled(True)
-    #     else:
-    #         self.pushButtonLoadCredentialDatabase.setEnabled(False)
-    #         self.pushButtonCreateCredentialDatabase.setEnabled(True)
-    #         self.pushButtonDeleteCredentialDatabase.setEnabled(False)
-    #     if config_value == 'read_only':
-    #         self.pushButtonCreateCredentialDatabase.setEnabled(False)
-    #         self.pushButtonLoadCredentialDatabase.setEnabled(True)
-    #     if config_value == 'none':
-    #         self.pushButtonCreateCredentialDatabase.setEnabled(False)
-    #         self.pushButtonLoadCredentialDatabase.setEnabled(False)
-    #     return
 
     # call this at startup or cred db is created, opened, or deleted to set all the buttons appropriately
     # (also looks config file settings and which tab is selected.)
@@ -935,37 +1008,30 @@ If so type 'DELETE' in the box below:"
         logger.info("Copying Content")
 
         selecteditemsfrom = ContentListWidgetFrom.selectedItems()
+        if toradioselected == -3 or toradioselected == -4:   #Admin or Global folders selected
+            toadminmode=True
+        else:
+            toadminmode=False
+        if fromradioselected == -3 or fromradioselected == -4:   #Admin or Global folders selected
+            fromadminmode=True
+        else:
+            fromadminmode=False
         if len(selecteditemsfrom) > 0:  # make sure something was selected
             try:
                 exportsuccessful = False
                 fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl)
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl)
-                if (toradioselected == -2):  # Personal Folder Selected
-                    contents = []
-                    for selecteditem in selecteditemsfrom:
-                        for child in ContentListWidgetFrom.currentcontent['children']:
-                            if child['name'] == str(selecteditem.text()):
-                                item_id = child['id']
-                                contents.append(fromsumo.export_content_job_sync(item_id))
-                                exportsuccessful = True
-                elif toradioselected == -4:  # Admin Recommended Folders Selected
-                    currentdir = ContentListWidgetTo.currentdirlist[-1]
-                    if currentdir['id'] != 'TOP':
-                        tofolderid = ContentListWidgetTo.currentcontent['id']
-                    else:
-                        self.errorbox("Sorry you can't copy to the root admin folder currently.")
-                        return
-                        #tofolderid = ContentListWidgetTo.currentcontent['children'][0]['parentId']
-                    contents = []
-                    for selecteditem in selecteditemsfrom:
-                        for child in ContentListWidgetFrom.currentcontent['children']:
-                            if child['name'] == str(selecteditem.text()):
-                                item_id = child['id']
-                                contents.append(fromsumo.export_content_job_sync(item_id))
-                                exportsuccessful = True
+
+                contents = []
+                for selecteditem in selecteditemsfrom:
+                    for child in ContentListWidgetFrom.currentcontent['children']:
+                        if child['name'] == str(selecteditem.text()):
+                            item_id = child['id']
+                            contents.append(fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode))
+                            exportsuccessful = True
             except Exception as e:
                 logger.exception(e)
-                self.errorbox('Source:Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                self.errorbox('Something went wrong with the Source:\n\n' + str(e))
                 return
             if exportsuccessful:
                 categoriesfrom=[]
@@ -980,13 +1046,13 @@ If so type 'DELETE' in the box below:"
                     query = r'* | count by _sourceCategory | fields _sourceCategory'
                     searchresults = tosumo.search_job_records_sync(query, fromTime=fromtime, toTime=totime, timeZone='UTC', byReceiptTime='false' )
                     categoriesto = []
-                    for record in searchresults['records']:
+                    for record in searchresults:
                         categoriesto.append(record['map']['_sourcecategory'])
                     uniquecategoriesto = list(set(categoriesto))
 
                 except Exception as e:
                     logger.exception(e)
-                    self.errorbox('Destination:Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                    self.errorbox('Something went wrong with the Destination:\n\n' + str(e))
                     return
                 dialog = findReplaceCopyDialog(uniquecategoriesfrom, uniquecategoriesto)
                 dialog.exec()
@@ -1005,29 +1071,18 @@ If so type 'DELETE' in the box below:"
                                 newcontents.append(json.loads(contentstring))
                     else:
                         newcontents = contents
-                    if (toradioselected == -2):  # Personal Folder Selected
-                        try:
-                            tofolderid = ContentListWidgetTo.currentcontent['id']
-                            for newcontent in newcontents:
-                                status = tosumo.import_content_job_sync(tofolderid, newcontent, adminmode=False)
-                            self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected,
-                                                       todirectorylabel)
-                            return
-                        except Exception as e:
-                            logger.exception(e)
-                            self.errorbox('Destination:Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
-                            return
-                    elif toradioselected == -4:  # Admin recommended Folder Selected
-                        try:
-                            tofolderid = ContentListWidgetTo.currentcontent['id']
-                            for newcontent in newcontents:
-                                status = tosumo.import_content_job_sync(tofolderid, newcontent, adminmode=True)
-                            self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected,
-                                                       todirectorylabel)
-                        except Exception as e:
-                            logger.exception(e)
-                            self.errorbox('Destination:Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
-                            return
+
+                    try:
+                        tofolderid = ContentListWidgetTo.currentcontent['id']
+                        for newcontent in newcontents:
+                            status = tosumo.import_content_job_sync(tofolderid, newcontent, adminmode=toadminmode)
+                        self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected,
+                                                   todirectorylabel)
+                        return
+                    except Exception as e:
+                        logger.exception(e)
+                        self.errorbox('Something went wrong with the Destination:\n\n' + str(e))
+                        return
                 else:
                     return
 
@@ -1041,38 +1096,29 @@ If so type 'DELETE' in the box below:"
 
     def copycontent(self, ContentListWidgetFrom, ContentListWidgetTo, fromurl, fromid, fromkey, tourl, toid, tokey, fromradioselected, toradioselected, todirectorylabel):
         logger.info("Copying Content")
+        if toradioselected == -3 or toradioselected == -4:   #Admin or Global folders selected
+            toadminmode=True
+        else:
+            toadminmode=False
+        if fromradioselected == -3 or fromradioselected == -4:   #Admin or Global folders selected
+            fromadminmode=True
+        else:
+            fromadminmode=False
+
         try:
             selecteditems = ContentListWidgetFrom.selectedItems()
             if len(selecteditems) > 0:  # make sure something was selected
                 fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl)
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl)
-                if (toradioselected == -2):  # Personal Folder Selected
-                    for selecteditem in selecteditems:
-                        for child in ContentListWidgetFrom.currentcontent['children']:
-                            if child['name'] == str(selecteditem.text()):
-                                item_id = child['id']
-                                content = fromsumo.export_content_job_sync(item_id)
-                                tofolderid = ContentListWidgetTo.currentcontent['id']
-                                status = tosumo.import_content_job_sync(tofolderid, content)
-                                self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
-                    return
-                elif toradioselected == -4:  # Admin Recommended Folders Selected
-                    currentdir = ContentListWidgetTo.currentdirlist[-1]
-                    if currentdir['id'] != 'TOP':
-                        tofolderid = ContentListWidgetTo.currentcontent['id']
-                    else:
-                        self.errorbox("Sorry you can't copy to the root admin folder currently.")
-                        return
-                        #tofolderid = ContentListWidgetTo.currentcontent['children'][0]['parentId']
-                    for selecteditem in selecteditems:
-                        for child in ContentListWidgetFrom.currentcontent['children']:
-                            if child['name'] == str(selecteditem.text()):
-                                item_id = child['id']
-                                content = fromsumo.export_content_job_sync(item_id)
-
-                                print(ContentListWidgetTo.currentcontent)
-                                status = tosumo.import_content_job_sync(tofolderid, content, adminmode='true')
-                                self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
+                currentdir = ContentListWidgetTo.currentdirlist[-1]
+                tofolderid = ContentListWidgetTo.currentcontent['id']
+                for selecteditem in selecteditems:
+                    for child in ContentListWidgetFrom.currentcontent['children']:
+                        if child['name'] == str(selecteditem.text()):
+                            item_id = child['id']
+                            content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
+                            status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
+                            self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                     return
 
             else:
@@ -1081,44 +1127,38 @@ If so type 'DELETE' in the box below:"
 
         except Exception as e:
             logger.exception(e)
-            self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+            self.errorbox('Something went wrong:\n\n' + str(e))
         return
 
     def create_folder(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         if ContentListWidget.updated == True:
+            if radioselected == -3 or radioselected == -4:  # Admin or Global folders selected
+                adminmode = True
+            else:
+                adminmode = False
 
             message = '''
         Please enter the name of the folder you wish to create:
             
                         '''
             text, result = QtWidgets.QInputDialog.getText(self, 'Create Folder...', message)
-            for item in ContentListWidget.currentcontent['children']:
-                if item['name'] == str(text):
-                    self.errorbox('That Directory Name Already Exists!')
-                    return
-            try:
-                if radioselected == -2:  # if "Personal Folder" radio button is selected
+            if result:
+                for item in ContentListWidget.currentcontent['children']:
+                    if item['name'] == str(text):
+                        self.errorbox('That Directory Name Already Exists!')
+                        return
+                try:
+
                     logger.info("Creating New Folder in Personal Folder Tree")
                     sumo = SumoLogic(id, key, endpoint=url)
-                    error = sumo.create_folder(str(text), str(ContentListWidget.currentcontent['id']))
+                    error = sumo.create_folder(str(text), str(ContentListWidget.currentcontent['id']), adminmode=adminmode)
 
                     self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
                     return
-                elif radioselected == -4:  # "Admin Folders" is selected
-                    logger.info("Creating New Folder in Admin Recommended Folder Tree")
-                    currentdir = ContentListWidget.currentdirlist[-1]
-                    if currentdir['id'] != 'TOP':
-                        sumo = SumoLogic(id, key, endpoint=url)
-                        error = sumo.create_folder(str(text), str(ContentListWidget.currentcontent['id']), adminmode='true')
 
-                        self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
-                        return
-                    else:
-                        self.errorbox('Sorry, this tool in not currently capable of creating a top-level directory in the Admin Recommended folder due to API limitations. Creating sub-folders works fine. Suggested workaround is to make the top level folder in the SumoLogic UI and then use this tool to copy content into it. This should be fixed soon!')
-                        return
-            except Exception as e:
-                logger.exception(e)
-                self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                except Exception as e:
+                    logger.exception(e)
+                    self.errorbox('Something went wrong:\n\n' + str(e))
 
         else:
             self.errorbox("Please update the directory list before trying to create a new folder.")
@@ -1126,6 +1166,11 @@ If so type 'DELETE' in the box below:"
 
     def delete_content(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         logger.info("Deleting Content")
+        if radioselected == -3 or radioselected == -4:   #Admin or Global folders selected
+            adminmode=True
+        else:
+            adminmode=False
+
         selecteditems = ContentListWidget.selectedItems()
         if len(selecteditems) > 0:  # make sure something was selected
             message = "You are about to delete the following item(s):\n\n"
@@ -1142,37 +1187,22 @@ If you are absolutely sure, type "DELETE" in the box below.
             text, result = QtWidgets.QInputDialog.getText(self, 'Warning!!', message)
             if (result and (str(text) == 'DELETE')):
                 try:
-                    if radioselected == -2:  # if "Personal Folder" radio button is selected
-                        sumo = SumoLogic(id, key, endpoint=url)
-                        for selecteditem in selecteditems:
+                    sumo = SumoLogic(id, key, endpoint=url)
+                    for selecteditem in selecteditems:
 
-                            for child in ContentListWidget.currentcontent['children']:
-                                if child['name'] == str(selecteditem.text()):
-                                    item_id = child['id']
+                        for child in ContentListWidget.currentcontent['children']:
+                            if child['name'] == str(selecteditem.text()):
+                                item_id = child['id']
 
-                            result = sumo.delete_content_job_sync(item_id)
+                        result = sumo.delete_content_job_sync(item_id, adminmode=adminmode)
 
-                        self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
-                        return
-                    elif radioselected == -4:  # "Admin Folders" is selected
-                        sumo = SumoLogic(id, key, endpoint=url)
-                        for selecteditem in selecteditems:
+                    self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
+                    return
 
-                            for child in ContentListWidget.currentcontent['children']:
-                                if child['name'] == str(selecteditem.text()):
-                                    item_id = child['id']
-
-                            result = sumo.delete_content_job_sync(item_id)
-
-                        self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
-                        return
-                    else:
-                        self.errorbox('You Cannot Delete The Shared Content of other Users.')
-                        return
 
                 except Exception as e:
                     logger.exception(e)
-                    self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                    self.errorbox('Something went wrong:\n\n' + str(e))
 
         else:
             self.errorbox('You need to select something before you can delete it.')
@@ -1180,14 +1210,28 @@ If you are absolutely sure, type "DELETE" in the box below.
 
     def contentradiobuttonchanged(self, ContentListWidget,url, id, key, radioselected, directorylabel, pushButtonContentDelete):
         ContentListWidget.currentdirlist = []
-        if radioselected == -2:
-            pushButtonContentDelete.setEnabled(True)
-        elif radioselected == -3:
-            pushButtonContentDelete.setEnabled(False)
-        else:
-            pushButtonContentDelete.setEnabled(True)
         self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
         return
+
+    def togglecontentbuttons(self, side, state):
+        if side == 'left':
+            self.pushButtonContentCopyRightToLeft.setEnabled(state)
+            self.pushButtonContentFindReplaceCopyRightToLeft.setEnabled(state)
+            self.pushButtonContentNewFolderLeft.setEnabled(state)
+            self.pushButtonContentDeleteLeft.setEnabled(state)
+            self.pushButtonContentBackupLeft.setEnabled(state)
+            self.pushButtonContentRestoreLeft.setEnabled(state)
+        elif side == 'right':
+            self.pushButtonContentCopyLeftToRight.setEnabled(state)
+            self.pushButtonContentFindReplaceCopyLeftToRight.setEnabled(state)
+            self.pushButtonContentNewFolderRight.setEnabled(state)
+            self.pushButtonContentDeleteRight.setEnabled(state)
+            self.pushButtonContentBackupRight.setEnabled(state)
+            self.pushButtonContentRestoreRight.setEnabled(state)
+
+
+
+
 
     def updatecontentlist(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         sumo = SumoLogic(id, key, endpoint=url)
@@ -1195,6 +1239,9 @@ If you are absolutely sure, type "DELETE" in the box below.
             currentdir = ContentListWidget.currentdirlist[-1]
         else:
             currentdir = {'name': None, 'id': 'TOP'}
+
+
+
         try:
             if (not ContentListWidget.currentcontent) or (currentdir['id'] == 'TOP'):
                 if radioselected == -2:  # if "Personal Folder" radio button is selected
@@ -1206,13 +1253,13 @@ If you are absolutely sure, type "DELETE" in the box below.
                     ContentListWidget.currentdirlist.append(dir)
                     if 'children' in ContentListWidget.currentcontent:
                         self.updatecontentlistwidget(ContentListWidget, url, id, key, radioselected, directorylabel)
-                        return
+
                     else:
                         self.errorbox('Incorrect Credentials or Wrong Endpoint.')
-                        return
+
                 elif radioselected == -3:  # if "Global Folders" radio button is selected
                     logger.info("Updating Global Folder List")
-                    ContentListWidget.currentcontent = sumo.get_global_folder_sync()
+                    ContentListWidget.currentcontent = sumo.get_global_folder_sync(adminmode=True)
 
                     # Rename dict key from "data" to "children" for consistency
                     ContentListWidget.currentcontent['children'] = ContentListWidget.currentcontent.pop('data')
@@ -1221,77 +1268,87 @@ If you are absolutely sure, type "DELETE" in the box below.
                     ContentListWidget.currentdirlist.append(dir)
                     if 'children' in ContentListWidget.currentcontent:
                         self.updatecontentlistwidget(ContentListWidget, url, id, key, radioselected, directorylabel)
-                        return
+
                     else:
                         self.errorbox('Incorrect Credentials or Wrong Endpoint.')
-                        return
+
                 else:  # "Admin Folders" must be selected
                     logger.info("Updating Admin Folder List")
-                    ContentListWidget.currentcontent = sumo.get_admin_folder_sync()
+                    ContentListWidget.currentcontent = sumo.get_admin_folder_sync(adminmode=False)
 
                     ContentListWidget.currentdirlist = []
                     dir = {'name': 'Admin Recommended', 'id': 'TOP'}
                     ContentListWidget.currentdirlist.append(dir)
                     if 'children' in ContentListWidget.currentcontent:
                         self.updatecontentlistwidget(ContentListWidget, url, id, key, radioselected, directorylabel)
-                        return
+
                     else:
                         self.errorbox('Incorrect Credentials or Wrong Endpoint.')
-                        return
+
+
 
             else:
                 ContentListWidget.currentcontent = sumo.get_folder(currentdir['id'])
                 self.updatecontentlistwidget(ContentListWidget, url, id, key, radioselected, directorylabel)
-                return
+
+
 
         except Exception as e:
             logger.exception(e)
-            self.errorbox('Incorrect Credentials or Wrong Endpoint.')
+            self.errorbox('Something went wrong:\n\n' + str(e))
             return
+
         return
 
     def doubleclickedcontentlist(self, item, ContentListWidget, url, id, key, radioselected, directorylabel):
         logger.info("Going Down One Content Folder")
         sumo = SumoLogic(id, key, endpoint=url)
+        currentdir = ContentListWidget.currentdirlist[-1]
+        if radioselected == -3:
+            adminmode=True
+        else:
+            adminmode=False
         try:
             for child in ContentListWidget.currentcontent['children']:
                 if (child['name'] == item.text()) and (child['itemType'] == 'Folder'):
-                    ContentListWidget.currentcontent = sumo.get_folder(child['id'])
+                    ContentListWidget.currentcontent = sumo.get_folder(child['id'], adminmode=adminmode)
 
                     dir = {'name': item.text(), 'id': child['id']}
                     ContentListWidget.currentdirlist.append(dir)
 
         except Exception as e:
             logger.exception(e)
-            self.errorbox('Incorrect Credentials or Wrong Endpoint.')
+            self.errorbox('Something went wrong:\n\n' + str(e))
         self.updatecontentlistwidget(ContentListWidget, url, id, key, radioselected, directorylabel)
-        return
 
     def parentdircontentlist(self, ContentListWidget, url, id, key, radioselected, directorylabel):
-        logger.info("Going Up One Content Folder")
-        sumo = SumoLogic(id, key, endpoint=url)
-        currentdir = ContentListWidget.currentdirlist[-1]
-        if currentdir['id'] != 'TOP':
-            parentdir = ContentListWidget.currentdirlist[-2]
-        else:
-            return
-        try:
-
-            if parentdir['id'] == 'TOP':
-                ContentListWidget.currentdirlist = []
-                self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
-                return
-
+        if ContentListWidget.updated:
+            logger.info("Going Up One Content Folder")
+            sumo = SumoLogic(id, key, endpoint=url)
+            currentdir = ContentListWidget.currentdirlist[-1]
+            if currentdir['id'] != 'TOP':
+                parentdir = ContentListWidget.currentdirlist[-2]
             else:
-                ContentListWidget.currentdirlist.pop()
-                ContentListWidget.currentcontent = sumo.get_folder(parentdir['id'])
-
-                self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
                 return
-        except Exception as e:
-            logger.exception(e)
-            self.errorbox('Incorrect Credentials or Wrong Endpoint.')
-        return
+            try:
+
+                if parentdir['id'] == 'TOP':
+                    ContentListWidget.currentdirlist = []
+                    self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
+                    return
+
+                else:
+                    ContentListWidget.currentdirlist.pop()
+                    ContentListWidget.currentcontent = sumo.get_folder(parentdir['id'])
+
+                    self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
+                    return
+            except Exception as e:
+                logger.exception(e)
+                self.errorbox('Something went wrong:\n\n' + str(e))
+
+
+            return
 
     def updatecontentlistwidget(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         try:
@@ -1299,28 +1356,53 @@ If you are absolutely sure, type "DELETE" in the box below.
             sumo = SumoLogic(id, key, endpoint=url)
             for object in ContentListWidget.currentcontent['children']:
                 item_name = ''
-                if radioselected == -3:
-                    logger.info("Getting User info for Global Folder")
-                    user_info = sumo.get_user(object['createdBy'])
-                    item_name = '[' + user_info['firstName'] + ' ' + user_info['lastName'] + ']'
+                # if radioselected == -3:
+                #     logger.info("Getting User info for Global Folder")
+                #     user_info = sumo.get_user(object['createdBy'])
+                #     item_name = '[' + user_info['firstName'] + ' ' + user_info['lastName'] + ']'
                 item_name = item_name + object['name']
-                item = ContentListWidget.addItem(item_name)  # populate the list widget in the GUI
-                items = ContentListWidget.findItems(item_name, QtCore.Qt.MatchExactly)
                 if object['itemType'] == 'Folder':
-                    items[0].setData(6, QtGui.QFont("Waree",pointSize=10, weight=600))
+                    item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
+                    item.setIcon(self.icons['Folder'])
+                    ContentListWidget.addItem(item)  # populate the list widget in the GUI
+                elif object['itemType'] == 'Search':
+                    item = QtWidgets.QListWidgetItem(self.icons['Search'], item_name)
+                    item.setIcon(self.icons['Search'])
+                    ContentListWidget.addItem(item)  # populate the list widget in the GUI
+                elif object['itemType'] == 'Dashboard':
+                    item = QtWidgets.QListWidgetItem(self.icons['Dashboard'], item_name)
+                    item.setIcon(self.icons['Dashboard'])
+                    ContentListWidget.addItem(item)  # populate the list widget in the GUI
+                elif object['itemType'] == 'Lookups':
+                    item = QtWidgets.QListWidgetItem(self.icons['Dashboard'], item_name)
+                    item.setIcon(self.icons['Lookups'])
+                    ContentListWidget.addItem(item)  # populate the list widget in the GUI
+                else:
+                    ContentListWidget.addItem(item_name)  # populate the list widget in the GUI with no icon (fallthrough)
 
             dirname = ''
             for dir in ContentListWidget.currentdirlist:
                 dirname = dirname + '/' + dir['name']
             directorylabel.setText(dirname)
             ContentListWidget.updated = True
+            # if we are in the root (Top) of the global folders then we can't manipulate stuff as the entries are actually users, not content
+            # so turn off the buttons until we change folder type or move down a level
+            currentdir = ContentListWidget.currentdirlist[-1]
+            if currentdir['id'] == 'TOP' and radioselected == -3:
+                self.togglecontentbuttons(ContentListWidget.side, False)
+            else:
+                self.togglecontentbuttons(ContentListWidget.side, True)
 
         except Exception as e:
             logger.exception(e)
         return
 
-    def backupcontent(self, ContentListWidget, url, id, key):
+    def backupcontent(self, ContentListWidget, url, id, key, radioselected):
         logger.info("Backing Up Content")
+        if radioselected == -3 or radioselected == -4:   #Admin or Global folders selected
+            adminmode=True
+        else:
+            adminmode=False
         selecteditems = ContentListWidget.selectedItems()
         if len(selecteditems) > 0:  # make sure something was selected
             savepath = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Backup Directory"))
@@ -1332,7 +1414,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                         if child['name'] == str(selecteditem.text()):
                             item_id = child['id']
                             try:
-                                content = sumo.export_content_job_sync(item_id)
+                                content = sumo.export_content_job_sync(item_id, adminmode=adminmode)
                                 savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.json')
                                 if savefilepath:
                                     with savefilepath.open(mode='w') as filepointer:
@@ -1340,7 +1422,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                                     message = message + str(selecteditem.text()) + r'.json' + '\n'
                             except Exception as e:
                                 logger.exception(e)
-                                self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                                self.errorbox('Something went wrong:\n\n' + str(e))
                                 return
                 self.infobox('Wrote files: \n\n' + message)
             else:
@@ -1370,14 +1452,14 @@ If you are absolutely sure, type "DELETE" in the box below.
                             return
                         try:
                             folder_id = ContentListWidget.currentcontent['id']
-                            if radioselected == -4:  # Admin Recommended Folders Selected
+                            if radioselected == -4 or radioselected == -3 :  # Admin Recommended Folders or Global folders Selected
                                 adminmode=True
                             else:
                                 adminmode=False
                             sumo.import_content_job_sync(folder_id, content, adminmode=adminmode)
                         except Exception as e:
                             logger.exception(e)
-                            self.errorbox('Incorrect Credentials, Wrong Endpoint, or Insufficient Privileges.')
+                            self.errorbox('Something went wrong:\n\n' + str(e))
                             return
                     self.updatecontentlist(ContentListWidget,url, id, key, radioselected, directorylabel)
 
@@ -1388,9 +1470,6 @@ If you are absolutely sure, type "DELETE" in the box below.
         else:
             self.errorbox("Please update the directory list before restoring content")
         return
-    # End Methods for Content Tab
-
-
 
     # Start Methods for Collector Tab
     def getcollectorid(self, collectorname, url, id, key):
@@ -1437,13 +1516,13 @@ If you are absolutely sure, type "DELETE" in the box below.
                     item = CollectorListWidget.addItem(collector['name'])  # populate the list widget in the GUI
                     items = CollectorListWidget.findItems(collector['name'], QtCore.Qt.MatchExactly)
                     if collector['collectorType'] == 'Hosted':
-                        items[0].setData(6, QtGui.QFont("Waree",pointSize=10, weight=600))
+                        items[0].setData(6, QtGui.QFont(self.font,pointSize=self.font_size, weight=600))
                     if collector['alive'] == False:
-                        items[0].setData(6, QtGui.QFont("Waree",pointSize=10,italic=True))
+                        items[0].setData(6, QtGui.QFont(self.font,pointSize=self.font_size,italic=True))
 
             except Exception as e:
                 logger.exception(e)
-                self.errorbox('Incorrect Credentials or Wrong Endpoint.')
+                self.errorbox('Something went wrong:\n\n' + str(e))
 
         else:
             self.errorbox('No user and/or password.')
@@ -1474,21 +1553,30 @@ If you are absolutely sure, type "DELETE" in the box below.
                 sourcecollector = sourcecollectorlist[0].text()  # qstring to string conversion
                 sourcecollectorid = self.getcollectorid(sourcecollector, fromurl, fromid, fromkey)
                 destinationcollectorlist = CollectorListWidgetTo.selectedItems()  # get the selected dest collector
-                if len(destinationcollectorlist) == 1:  # make sure there is a collector selected, otherwise bail
-                    destinationcollectorname = destinationcollectorlist[0].text()
-                    destinationcollectorid = self.getcollectorid(destinationcollectorname, tourl, toid,
-                                                                 tokey)  # qstring to string conversion
-                    tosumo = SumoLogic(toid, tokey, endpoint=tourl)
+                if len(destinationcollectorlist) > 0:  # make sure there is a collector selected, otherwise bail
                     fromsources = SourceListWidgetFrom.selectedItems()  # get the selected sources
                     if len(fromsources) > 0:  # make sure at least one source is selected
                         fromsourcelist = []
                         for fromsource in fromsources:  # iterate through source names to build a warning message
                             fromsourcelist.append(fromsource.text())
-                        message = "You are about to copy the following sources from collector \"" + sourcecollector + "\" to \"" + destinationcollectorname + "\". Is this correct? \n\n"
-                        for source in fromsourcelist:
-                            message = message + source + "\n"
-                        result = QtWidgets.QMessageBox.question(self, 'Really Copy?', message, QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)# bring up the copy dialog
-                        if result:  # If they clicked "OK" rather than cancel
+                    else:
+                        self.errorbox('No Sources Selected.')
+                        return
+                    destinationcollectorstring = ''
+                    for destinationcollector in destinationcollectorlist:
+                        destinationcollectorstring = destinationcollectorstring + destinationcollector.text() + ", "
+                    message = "You are about to copy the following sources from collector \"" + sourcecollector + "\" to \"" + destinationcollectorstring + "\". Is this correct? \n\n"
+                    for source in fromsourcelist:
+                        message = message + source + "\n"
+                    result = QtWidgets.QMessageBox.question(self, 'Really Copy?', message,
+                                                            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                                            QtWidgets.QMessageBox.No)  # bring up the copy dialog
+                    if result:  # If they clicked "OK" rather than cancel
+                        tosumo = SumoLogic(toid, tokey, endpoint=tourl)
+                        for destinationcollector in destinationcollectorlist:
+                            destinationcollectorname = destinationcollector.text()
+                            destinationcollectorid = self.getcollectorid(destinationcollectorname, tourl, toid,
+                                                                         tokey)  # qstring to string conversion
                             sumosources = fromsumo.sources(sourcecollectorid)
                             for source in fromsourcelist:  # iterate through the selected sources and copy them
                                 for sumosource in sumosources:
@@ -1499,25 +1587,27 @@ If you are absolutely sure, type "DELETE" in the box below.
                                             del sumosource[
                                                 'alive']  # the API sets this itself so this must be deleted before sending
                                         template = {}
-                                        template[
-                                            'source'] = sumosource  # the API expects a dict with a key called 'source'
+                                        template['source'] = sumosource  # the API expects a dict with a key called 'source'
                                         notduplicate = True
                                         sumotosourcelist = tosumo.sources(destinationcollectorid)
                                         for sumotosource in sumotosourcelist:
-                                            if sumotosource[
-                                                'name'] == source:  # make sure the source doesn't already exist in the destination
+                                            if sumotosource['name'] == source:  # make sure the source doesn't already exist in the destination
                                                 notduplicate = False
                                         if notduplicate:  # finally lets copy this thing
                                             tosumo.create_source(destinationcollectorid, template)
                                         else:
                                             self.errorbox(source + ' already exists, skipping.')
-                            # call the update method for the dest sources since they have changed after the copy
-                            self.updatesourcelist(CollectorListWidgetTo, SourceListWidgetTo, tourl, toid, tokey)
+                            # call the update method for the dest collector since they have changed after the copy
+                            print(len(destinationcollectorlist))
+                            if len(destinationcollectorlist) > 1:
+                                self.errorbox("Copy Complete. Please select an individual destination collector to see an updated source list.")
 
-                    else:
-                        self.errorbox('No Sources Selected.')
+                            else:
+                                self.updatesourcelist(CollectorListWidgetTo, SourceListWidgetTo, tourl, toid, tokey)
+
+
                 else:
-                    self.errorbox('You Must Select Exactly 1 Destination Collector.')
+                    self.errorbox('You Must Select at Least 1 target.')
             else:
                 self.errorbox('No Source Collector Selected.')
         except Exception as e:
@@ -1585,15 +1675,13 @@ If you are absolutely sure, type "DELETE" in the box below.
             self.errorbox('No Collector Selected')
         return
 
-    # This is broken and not connected to any button currently
+
     def restoresources(self, CollectorListWidget, SourceListWidget, url, id, key):
         destinationcollectors = CollectorListWidget.selectedItems()
         if len(destinationcollectors) == 1:
             destinationcollectorqstring = destinationcollectors[0].text()
             destinationcollector = str(destinationcollectorqstring)
             destinationcollectorid = self.getcollectorid(destinationcollector, url, id, key)
-            print(destinationcollector)
-            print(destinationcollectorid)
             filter = "JSON (*.json)"
             restorefile, status = QtWidgets.QFileDialog.getOpenFileName(self, "Open file(s)...", os.getcwd(), filter)
 
@@ -1667,7 +1755,6 @@ If you are absolutely sure, type "DELETE" in the box below.
         else:
             self.errorbox('You must select 1 and only 1 collector.')
         return
-    # End Methods for Collector Tab
 
     # Start Methods for Search Tab
     def runsearch(self, url, id, key):
@@ -1847,11 +1934,187 @@ If you are absolutely sure, type "DELETE" in the box below.
         else:
             self.errorbox('No user and/or password.')
         return
-    # End Methods for Search Tab
+
+
+    # Start Methods for FER Tab
+    
+    def update_FER_list(self, FERListWidget, url, id, key):
+        sumo = SumoLogic(id, key, endpoint=url)
+        try:
+            logger.info("Updating FER List")
+            FERListWidget.currentcontent = sumo.get_fers_sync()
+            FERListWidget.clear()
+            if len(FERListWidget.currentcontent) > 0:
+                self.update_FER_listwidget(FERListWidget)
+                return
+
+        except Exception as e:
+            logger.exception(e)
+            self.errorbox('Something went wrong:\n\n' + str(e))
+            return
+    
+    def update_FER_listwidget(self, FERListWidget):
+        try:
+            FERListWidget.clear()
+            FERListWidget.setSortingEnabled(True)
+            for object in FERListWidget.currentcontent:
+                item_name = object['name']
+                FERListWidget.addItem(item_name)  # populate the list widget in the GUI
+
+            FERListWidget.updated = True
+
+        except Exception as e:
+            logger.exception(e)
+        return
+    
+    def delete_fer(self, FERListWidget, url, id, key):
+        logger.info("Deleting FER(s)")
+        selecteditems = FERListWidget.selectedItems()
+        if len(selecteditems) > 0:  # make sure something was selected
+            message = "You are about to delete the following item(s):\n\n"
+            for selecteditem in selecteditems:
+                message = message + str(selecteditem.text()) + "\n"
+            message = message + '''
+    This is exceedingly DANGEROUS!!!! 
+    Please be VERY, VERY, VERY sure you want to do this!
+    You could lose quite a bit of work if you delete the wrong thing(s).
+
+    If you are absolutely sure, type "DELETE" in the box below.
+
+                        '''
+            text, result = QtWidgets.QInputDialog.getText(self, 'Warning!!', message)
+            if (result and (str(text) == 'DELETE')):
+                try:
+
+                    sumo = SumoLogic(id, key, endpoint=url)
+                    for selecteditem in selecteditems:
+                        print(FERListWidget.currentcontent)
+                        for object in FERListWidget.currentcontent:
+                            if object['name'] == str(selecteditem.text()):
+                                item_id = object['id']
+
+                        result = sumo.delete_fer(item_id)
+
+                    self.update_FER_list(FERListWidget, url, id, key)
+                    return
+
+
+                except Exception as e:
+                    logger.exception(e)
+                    self.errorbox('Something went wrong:\n\n' + str(e))
+
+        else:
+            self.errorbox('You need to select something before you can delete it.')
+        return
+
+    def process_fer(self, exported_fer):
+        processed = {}
+        processed['name'] = exported_fer['name']
+        processed['scope'] = exported_fer['scope']
+        processed['parseExpression'] = exported_fer['parseExpression']
+        processed['enabled'] = 'false'
+
+        return processed
+
+    def copy_fers(self, FERListWidgetFrom, FERListWidgetTo, fromurl, fromid, fromkey,
+                          tourl, toid,
+                          tokey):
+
+        logger.info("Copying FER(s)")
+        try:
+            selecteditems = FERListWidgetFrom.selectedItems()
+            if len(selecteditems) > 0:  # make sure something was selected
+                fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl)
+                tosumo = SumoLogic(toid, tokey, endpoint=tourl)
+                for selecteditem in selecteditems:
+                    for object in FERListWidgetFrom.currentcontent:
+                        if object['name'] == str(selecteditem.text()):
+                            item_id = object['id']
+                            fer_export = fromsumo.get_fer(item_id)
+                            status = tosumo.create_fer(fer_export['name'], fer_export['scope'], fer_export['parseExpression'])
+                self.update_FER_list(FERListWidgetTo, tourl, toid, tokey)
+                return
+
+            else:
+                self.errorbox('You have not made any selections.')
+                return
+
+        except Exception as e:
+            logger.exception(e)
+            self.errorbox('Something went wrong:' + str(e))
+            self.update_csiem_information_model_list(FERListWidgetTo, tourl, toid, tokey)
+        return
+    
+    def backup_fer(self, FERListWidget, url, id, key):
+        logger.info("Backing Up FER(s)")
+        selecteditems = FERListWidget.selectedItems()
+        if len(selecteditems) > 0:  # make sure something was selected
+            savepath = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Backup Directory"))
+            if os.access(savepath, os.W_OK):
+                message = ''
+                sumo = SumoLogic(id, key, endpoint=url)
+                for selecteditem in selecteditems:
+                    for object in FERListWidget.currentcontent:
+                        if object['name'] == str(selecteditem.text()):
+                            item_id = object['id']
+                            try:
+                                export = sumo.get_fer(item_id)
+
+                                savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.json')
+                                if savefilepath:
+                                    with savefilepath.open(mode='w') as filepointer:
+                                        json.dump(export, filepointer)
+                                    message = message + str(selecteditem.text()) + r'.json' + '\n'
+                            except Exception as e:
+                                logger.exception(e)
+                                self.errorbox('Something went wrong:\n\n' + str(e))
+                                return
+                self.infobox('Wrote files: \n\n' + message)
+            else:
+                self.errorbox("You don't have permissions to write to that directory")
+
+        else:
+            self.errorbox('No content selected.')
+        return
+
+    def restore_fer(self, FERListWidget, url, id, key):
+        logger.info("Restoring FER(s)")
+        if FERListWidget.updated == True:
+
+            filter = "JSON (*.json)"
+            filelist, status = QtWidgets.QFileDialog.getOpenFileNames(self, "Open file(s)...", os.getcwd(),
+                                                                      filter)
+            if len(filelist) > 0:
+                sumo = SumoLogic(id, key, endpoint=url)
+                for file in filelist:
+                    try:
+                        with open(file) as filepointer:
+                            fer_backup = json.load(filepointer)
+                    except Exception as e:
+                        logger.exception(e)
+                        self.errorbox(
+                            "Something went wrong reading the file. Do you have the right file permissions? Does it contain valid JSON?")
+                        return
+                    try:
+                        status = sumo.create_fer(fer_backup['name'], fer_backup['scope'], fer_backup['parseExpression'])
+
+                    except Exception as e:
+                        logger.exception(e)
+                        self.errorbox('Something went wrong:\n\n' + str(e))
+                        return
+                self.update_FER_list(FERListWidget, url, id, key)
+
+
+            else:
+                self.errorbox("Please select at least one file to restore.")
+                return
+        else:
+            self.errorbox("Please update the directory list before restoring content")
+        return
 
     # Start Misc/Utility Methods
     def tabchange(self, index):
-        if index == 0:
+        if (index == 0) or (index == 1) or (index == 3) or (index == 4):
             self.comboBoxRegionRight.setEnabled(True)
             self.lineEditUserNameRight.setEnabled(True)
             self.lineEditPasswordRight.setEnabled(True)
@@ -1867,20 +2130,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                 self.comboBoxPresetRight.setEnabled(False)
 
 
-        if index == 1:
-            self.comboBoxRegionRight.setEnabled(True)
-            self.lineEditUserNameRight.setEnabled(True)
-            self.lineEditPasswordRight.setEnabled(True)
-            if self.cred_db_authenticated:
-                self.pushButtonCreatePresetRight.setEnabled(True)
-                self.pushButtonUpdatePresetRight.setEnabled(True)
-                self.pushButtonDeletePresetRight.setEnabled(True)
-                self.comboBoxPresetRight.setEnabled(True)
-            else:
-                self.pushButtonCreatePresetRight.setEnabled(False)
-                self.pushButtonUpdatePresetRight.setEnabled(False)
-                self.pushButtonDeletePresetRight.setEnabled(False)
-                self.comboBoxPresetRight.setEnabled(False)
+
         if index == 2:
             self.comboBoxRegionRight.setEnabled(False)
             self.lineEditUserNameRight.setEnabled(False)
@@ -1890,28 +2140,11 @@ If you are absolutely sure, type "DELETE" in the box below.
             self.pushButtonDeletePresetRight.setEnabled(False)
             self.comboBoxPresetRight.setEnabled(False)
 
+
+
+
         return
 
-    # no longer called by __init__ since the credential store has been implemented
-    def loadcredentials(self):
-        logger.info("Looking for Credential File")
-        # look to see if the credential file exists and load credentials if it does
-        # fail if anything at all goes wrong
-        if os.path.isfile(os.path.join(self.basedir, 'data/credentials.json')):
-            try:
-                with open(os.path.join(self.basedir, 'data/credentials.json'), 'r') as filepointer:
-                    credentials = json.load(filepointer)
-                self.lineEditUserNameLeft.setText(credentials['source']['user'])
-                self.lineEditPasswordLeft.setText(credentials['source']['password'])
-                self.lineEditUserNameRight.setText(credentials['destination']['user'])
-                self.lineEditPasswordRight.setText(credentials['destination']['password'])
-                logger.info("Found it! Creds will be populated.")
-            except Exception as e:
-                print("failed to load creds")
-                logger.exception(e)
-        else:
-            logger.info("Didn't find it. :(  Creds will be blank.")
-        return
 
 
     def errorbox(self, message):
@@ -1932,9 +2165,9 @@ If you are absolutely sure, type "DELETE" in the box below.
 
     def initModels(self):
         # Load API Endpoint List from file and create model for the comboboxes
-        with open(os.path.join(self.basedir, 'data/apiurls.json'), 'r') as infile:
-            self.loadedapiurls = json.load(infile)
-
+        # The join/split trickery clears white space from the text before it's processed by json.loads
+        # so that we don't get extra spacing and weirdness
+        self.loadedapiurls = json.loads("".join(self.config['API']['api_endpoints'].split()))
         self.apiurlsmodel = QtGui.QStandardItemModel()
         for key in self.loadedapiurls:
             text_item = QtGui.QStandardItem(key)
@@ -1976,12 +2209,79 @@ If you are absolutely sure, type "DELETE" in the box below.
         self.config.read(str(config_file))
         return
 
+    def load_icons(self):
+
+        self.icons = {}
+        iconpath = str(pathlib.Path(self.basedir + '/data/folder.svg'))
+        self.icons['Folder'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.basedir + '/data/dashboard.svg'))
+        self.icons['Dashboard'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.basedir + '/data/logsearch.svg'))
+        self.icons['Search'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.basedir + '/data/scheduledsearch.svg'))
+        self.icons['scheduledsearch'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.basedir + '/data/correlationrules.svg'))
+        self.icons['Rule'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.basedir + '/data/informationmodel.svg'))
+        self.icons['Model'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.basedir + '/data/lookuptable.svg'))
+        self.icons['Lookups'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.basedir + '/data/parser.svg'))
+        self.icons['Parser'] = QtGui.QIcon(iconpath)
+        return
+
+    def change_logging_level(self):
+        level = self.loggingmenugroup.checkedAction()
+        if level.text() == "Informational":
+            logzero.loglevel(level=20)
+        elif level.text() == "Debug":
+            logzero.loglevel(level=10)
+
+    def change_theme(self):
+        theme = self.thememenugroup.checkedAction()
+        if theme.text() == "Dark":
+            qtmodern.styles.dark(QtWidgets.QApplication.instance())
+        elif theme.text() == "Light":
+            qtmodern.styles.light(QtWidgets.QApplication.instance())
+
+
+
+    def setup_menus(self):
+
+        # setup the logging level menu
+        self.loggingmenugroup = QtWidgets.QActionGroup(self, exclusive=True)
+        self.loggingmenugroup.addAction(self.actionInformational)
+        self.loggingmenugroup.addAction(self.actionDebug)
+        self.loggingmenugroup.triggered.connect(self.change_logging_level)
+        # setup the theme selector
+        self.thememenugroup = QtWidgets.QActionGroup(self, exclusive=True)
+        self.thememenugroup.addAction(self.actionLight)
+        self.thememenugroup.addAction(self.actionDark)
+        self.thememenugroup.triggered.connect(self.change_theme)
+
     # End Misc/Utility Methods
 
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
-    window = sumotoolbox()
-    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+
+    # This loads the splash screen
+    start = time.time()
+    splash_pix = QtGui.QPixmap(os.path.join(basedir, 'data/sumotoolbox_logo_small.png'))
+    splash = QtWidgets.QSplashScreen(splash_pix)
+    splash.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
+    splash.show()
+    while time.time() - start < 1:
+        time.sleep(0.001)
+        app.processEvents()
+
+    qtmodern.styles.dark(app)
+
+    window = qtmodern.windows.ModernWindow(sumotoolbox())
+    # Close the splash screen and transition to the main UI
+    splash.finish(window)
+    # Load the stylesheet to make the GUI pretty
+
     window.show()
+
     sys.exit(app.exec_())

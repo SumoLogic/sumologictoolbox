@@ -47,7 +47,7 @@ __author__ = 'Tim MacDonald'
 #    https://crackstation.net/hashing-security.htm
 #
 # Q: Can I turn all of this off? I don't want my users using your/any credential store.
-# A: Yes! You can turn it off in the Sumologictoolbox ini file.
+# A: Yes! You can turn it off in the Sumotoolbox ini file.
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
