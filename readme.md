@@ -1,18 +1,15 @@
 Sumotoolbox
 ===========
 
- Sumotoolbox is a GUI utility for accessing the various Sumo Logic APIs (currently the search, content and collector
- APIs.) The idea is to make it easier to perform common API tasks such as copying
- sources and generating CSV files from searches.
+ Sumotoolbox is a GUI utility for accessing the various Sumo Logic APIs. The idea is to make
+ it easier to perform common API tasks such as copying sources and generating CSV files from
+ searches.
 
 Installing the Binaries
 =======================
 
 One way to use sumotoolbox is to look in the "dist" directory of this repo and grab the executable for your 
 platform. Make a new directory, copy the executable into it, and run the executable. 
-
-Note: If you are on Mac OS X you need to run the executable from the command line. Double clicking
-won't work. 
 
 The first time you run the executable it will create a "sumotoolbox.ini" file and if you choose to use the credential
 store feature it will also create a "credentials.db" file.
