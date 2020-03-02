@@ -3,16 +3,20 @@ Changelog for SumoToolBox
 01-30-2020  0.5-beta
 
 *Added FER tab with support for Field Extraction Rule copy/backup/restore (find/replace/copy buttons are disabled and will be implemented in a future release.
-
 *Added splash screen logo
-
 *Added "Settings" menu with ability to change logging level for debugging purposes.
-
 *Added Icons to Content Pane
-
-*Added ability to copy multiple sources to multiple target collectors
-
+*Added ability to copy multiple sources to multiple target get_collectors
 *Switched from Darkstyle Theme to qtmodern due to bugs in Darkstyle
-
 *Switched from pyqt5 to qtpy
+
+03-01-2020 0.5.1-beta
+
+*fixed bug that kept more than one selected item from being copied in the content pane
+*fixed bug that limited the number of collectors displayed to 1000
+*fixed bug required you to click "OK" each time a set of sources was copied to a collector when copying to multiple collectors
+*added search feature to collector list
+*renamed "collectors" method to "get_collectors" in sumologic.py
+*added "get_collectors_sync" synchronous method to sumologic.py
+
 

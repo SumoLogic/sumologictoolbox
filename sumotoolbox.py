@@ -198,6 +198,23 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         ))
 
         # UI Buttons for Collection API tab
+        
+        # Setup the search bars to work and to clear when update button is pushed
+        self.lineEditCollectorSearchLeft.textChanged.connect(lambda: self.set_listwidget_filter(
+            self.listWidgetCollectorsLeft,
+            self.lineEditCollectorSearchLeft.text()
+        ))
+
+        self.lineEditCollectorSearchRight.textChanged.connect(lambda: self.set_listwidget_filter(
+            self.listWidgetCollectorsRight,
+            self.lineEditCollectorSearchRight.text()
+        ))
+
+        self.pushButtonUpdateListLeft.clicked.connect(self.lineEditCollectorSearchLeft.clear)
+        self.pushButtonUpdateListRight.clicked.connect(self.lineEditCollectorSearchRight.clear)
+        
+        #
+        
         self.pushButtonUpdateListLeft.clicked.connect(lambda: self.updatecollectorlist(
             self.listWidgetCollectorsLeft,
             self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
@@ -1119,7 +1136,7 @@ If so type 'DELETE' in the box below:"
                             content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
                             status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
                             self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
-                    return
+                return
 
             else:
                 self.errorbox('You have not made any selections.')
@@ -1472,11 +1489,12 @@ If you are absolutely sure, type "DELETE" in the box below.
         return
 
     # Start Methods for Collector Tab
+
     def getcollectorid(self, collectorname, url, id, key):
         logger.info("Getting Collector IDs")
         sumo = SumoLogic(id, key, endpoint=url)
         try:
-            sumocollectors = sumo.collectors()
+            sumocollectors = sumo.get_collectors_sync()
 
             for sumocollector in sumocollectors:
                 if sumocollector['name'] == collectorname:
@@ -1509,7 +1527,7 @@ If you are absolutely sure, type "DELETE" in the box below.
             # access the API with provided credentials
             sumo = SumoLogic(id, key, endpoint=url)
             try:
-                collectors = sumo.collectors()  # get list of collectors
+                collectors = sumo.get_collectors_sync()  # get list of collectors
 
 
                 for collector in collectors:
@@ -1597,13 +1615,12 @@ If you are absolutely sure, type "DELETE" in the box below.
                                             tosumo.create_source(destinationcollectorid, template)
                                         else:
                                             self.errorbox(source + ' already exists, skipping.')
-                            # call the update method for the dest collector since they have changed after the copy
-                            print(len(destinationcollectorlist))
-                            if len(destinationcollectorlist) > 1:
-                                self.errorbox("Copy Complete. Please select an individual destination collector to see an updated source list.")
+                        # call the update method for the dest collector since they have changed after the copy
+                        if len(destinationcollectorlist) > 1:
+                            self.infobox("Copy Complete. Please select an individual destination collector to see an updated source list.")
 
-                            else:
-                                self.updatesourcelist(CollectorListWidgetTo, SourceListWidgetTo, tourl, toid, tokey)
+                        else:
+                            self.updatesourcelist(CollectorListWidgetTo, SourceListWidgetTo, tourl, toid, tokey)
 
 
                 else:
@@ -2141,11 +2158,16 @@ If you are absolutely sure, type "DELETE" in the box below.
             self.comboBoxPresetRight.setEnabled(False)
 
 
-
-
         return
 
-
+    def set_listwidget_filter(self, ListWidget, filtertext):
+        for row in range(ListWidget.count()):
+            item = ListWidget.item(row)
+            widget = ListWidget.itemWidget(item)
+            if filtertext:
+                item.setHidden(not filtertext in item.text())
+            else:
+                item.setHidden(False)
 
     def errorbox(self, message):
         msgBox = QtWidgets.QMessageBox()

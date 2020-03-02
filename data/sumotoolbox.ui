@@ -842,6 +842,13 @@ Preset</string>
               </property>
              </spacer>
             </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditCollectorSearchLeft">
+              <property name="placeholderText">
+               <string>Search</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>
@@ -1173,6 +1180,13 @@ Preset</string>
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditCollectorSearchRight">
+              <property name="placeholderText">
+               <string>Search</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -2252,7 +2266,7 @@ Folders</string>
             <property name="title">
              <string/>
             </property>
-            <widget class="QWidget" name="">
+            <widget class="QWidget" name="layoutWidget">
              <property name="geometry">
               <rect>
                <x>10</x>
@@ -2952,8 +2966,8 @@ Copy</string>
   </property>
  </designerdata>
  <buttongroups>
+  <buttongroup name="buttonGroupOutputType"/>
   <buttongroup name="buttonGroupContentRight"/>
   <buttongroup name="buttonGroupContentLeft"/>
-  <buttongroup name="buttonGroupOutputType"/>
  </buttongroups>
 </ui>

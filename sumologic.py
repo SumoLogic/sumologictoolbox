@@ -3,6 +3,8 @@ import requests
 import time
 import logzero
 from logzero import logger
+
+
 try:
     import cookielib
 except ImportError:
@@ -41,6 +43,7 @@ class SumoLogic(object):
         endpoint = self.response.url.replace('/collectors', '')  # dirty hack to sanitise URI and retain domain
         return endpoint
 
+
     def delete(self, method, params=None, headers=None, data=None):
         logger.debug("DELETE: " + self.endpoint + method)
         logger.debug("Headers:")
@@ -54,11 +57,12 @@ class SumoLogic(object):
         logger.debug(r)
         logger.debug("Response Body:")
         logger.debug(r.text)
-        if 400 <= r.status_code < 600:
+        if r.status_code != 200:
             r.reason = r.text
         r.raise_for_status()
         time.sleep(.30)
         return r
+
 
     def get(self, method, params=None, headers=None):
         logger.debug("GET: " + self.endpoint + method)
@@ -71,11 +75,12 @@ class SumoLogic(object):
         logger.debug(r)
         logger.debug("Response Body:")
         logger.debug(r.text)
-        if 400 <= r.status_code < 600:
+        if r.status_code != 200:
             r.reason = r.text
         r.raise_for_status()
         time.sleep(.30)
         return r
+
 
     def post(self, method, data, headers=None, params=None):
         logger.debug("POST: " + self.endpoint + method)
@@ -90,11 +95,12 @@ class SumoLogic(object):
         logger.debug(r)
         logger.debug("Response Body:")
         logger.debug(r.text)
-        if 400 <= r.status_code < 600:
+        if r.status_code != 200:
             r.reason = r.text
         r.raise_for_status()
         time.sleep(.30)
         return r
+
 
     def put(self, method, data, headers=None, params=None):
         logger.debug("PUT: " + self.endpoint + method)
@@ -109,7 +115,7 @@ class SumoLogic(object):
         logger.debug(r)
         logger.debug("Response Body:")
         logger.debug(r.text)
-        if 400 <= r.status_code < 600:
+        if r.status_code != 200:
             r.reason = r.text
         r.raise_for_status()
         time.sleep(.30)
@@ -187,10 +193,22 @@ class SumoLogic(object):
     def delete_search_job(self, search_job):
         return self.delete('/v1/search/jobs/' + str(search_job['id']))
 
-    def collectors(self, limit=None, offset=None):
+    def get_collectors(self, limit=1000, offset=None):
         params = {'limit': limit, 'offset': offset}
         r = self.get('/v1/collectors', params)
         return json.loads(r.text)['collectors']
+
+    def get_collectors_sync(self, limit=1000):
+        offset = 0
+        results = []
+        r = self.get_collectors(limit=limit, offset=offset)
+        offset = offset + limit
+        results = results + r
+        while not(len(r) < limit):
+            r = self.get_collectors(limit=limit, offset=offset)
+            offset = offset + limit
+            results = results + r
+        return results
 
     def collector(self, collector_id):
         r = self.get('/v1/collectors/' + str(collector_id))

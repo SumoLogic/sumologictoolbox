@@ -110,8 +110,8 @@ Collector Backup:
     1. Input/select Credentials for your org
     2. Select your region for your org
     3. Click "Update" to populate the collector list
-    4. Choose one or more collectors
-    5. Click 'Backup Collector(s)' to write a json dump of the selected collectors and their sources
+    4. Choose one or more get_collectors
+    5. Click 'Backup Collector(s)' to write a json dump of the selected get_collectors and their sources
     
     NOTE: There is not currently a collector restore capability in this tool. 
 
@@ -120,7 +120,7 @@ Collector Delete:
     1. Input/select Credentials for your org
     2. Select your region for your org
     3. Click "Update" for destination to populate the collector list
-    4. Choose one or more collectors
+    4. Choose one or more get_collectors
     6. Click "Delete Collector(s)"
     7. Verify that you really want to delete the collector(s) by typing "DELETE"
     8. Click "OK"
