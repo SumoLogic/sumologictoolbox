@@ -2,6 +2,7 @@ import json
 import requests
 import time
 import logzero
+
 from logzero import logger
 
 
@@ -477,6 +478,44 @@ class SumoLogic(object):
         return r.text
 
 
+    # Scheduled View API
+
+    def get_scheduled_views(self, limit=1000, token=''):
+        params = {'limit': limit, 'token': token}
+        r = self.get('/v1/scheduledViews', params=params)
+        return json.loads(r.text)
+
+    def get_scheduled_views_sync(self, limit=1000):
+        token = None
+        results = []
+        while True:
+            r = self.get_scheduled_views(limit=limit, token=token)
+            token = r['next']
+            results = results + r['data']
+            if token is None:
+                break
+        return results
+
+    #start time must be in RFC3339 format
+    # https://tools.ietf.org/html/rfc3339
+    # https://medium.com/easyread/understanding-about-rfc-3339-for-datetime-formatting-in-software-engineering-940aa5d5f68a
+    def create_scheduled_view(self, index_name, query, start_time, retention_period=-1, data_forwarding_id=None):
+        data = {'indexName': index_name, 'query': query, 'startTime': start_time, 'retentionPeriod': retention_period, "dataForwardingId": data_forwarding_id }
+        r = self.post('/v1/scheduledViews', data)
+        return json.loads(r.text)
+
+    def get_scheduled_view(self, item_id):
+        r = self.get('/v1/scheduledViews/' + str(item_id))
+        return json.loads(r.text)
+
+    def update_scheduled_view(self, item_id, data_forwarding_id=None, retention_period=-1, reduce_retention_period_immediately=False):
+        data = {'retentionPeriod': retention_period, "dataForwardingId": data_forwarding_id, "reduceRetentionPeriodImmediately" : str(reduce_retention_period_immediately).lower()}
+        r = self.put('/v1/scheduledViews/' + str(item_id), data)
+        return json.loads(r.text)
+
+    def disable_scheduled_view(self, item_id):
+        r = self.delete('/v1/scheduledViews/' + str(item_id) + '/disable')
+        return r.text
 
 
 
