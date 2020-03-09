@@ -14,6 +14,10 @@ added_files = [
     ( 'data/informationmodel.svg', 'data' ),
     ( 'data/lookuptable.svg', 'data' ),
     ( 'data/parser.svg', 'data' ),
+    ( 'data/collector.ui', 'data' ),
+    ( 'data/content.ui', 'data' ),
+    ( 'data/field_extraction_rule.ui', 'data' ),
+    ( 'data/scheduled_view.ui', 'data' ),
     ( 'qtmodern', 'qtmodern' )
     ]
 

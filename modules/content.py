@@ -13,12 +13,9 @@ class content_tab(QtWidgets.QWidget):
 
         super(content_tab, self).__init__()
         self.mainwindow = mainwindow
-        if getattr(sys, 'frozen', False):
-            self.basedir = sys._MEIPASS
-        else:
-            self.basedir = os.path.dirname(os.path.abspath(__file__))
+       
 
-        scheduled_view_widget_ui = os.path.join(self.basedir, 'data/content.ui')
+        scheduled_view_widget_ui = os.path.join(self.mainwindow.basedir, 'data/content.ui')
         uic.loadUi(scheduled_view_widget_ui, self)
 
         # Load icons used in the listviews
@@ -261,21 +258,21 @@ class content_tab(QtWidgets.QWidget):
     def load_icons(self):
 
         self.icons = {}
-        iconpath = str(pathlib.Path(self.basedir + '/data/folder.svg'))
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/folder.svg'))
         self.icons['Folder'] = QtGui.QIcon(iconpath)
-        iconpath = str(pathlib.Path(self.basedir + '/data/dashboard.svg'))
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/dashboard.svg'))
         self.icons['Dashboard'] = QtGui.QIcon(iconpath)
-        iconpath = str(pathlib.Path(self.basedir + '/data/logsearch.svg'))
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/logsearch.svg'))
         self.icons['Search'] = QtGui.QIcon(iconpath)
-        iconpath = str(pathlib.Path(self.basedir + '/data/scheduledsearch.svg'))
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/scheduledsearch.svg'))
         self.icons['scheduledsearch'] = QtGui.QIcon(iconpath)
-        iconpath = str(pathlib.Path(self.basedir + '/data/correlationrules.svg'))
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/correlationrules.svg'))
         self.icons['Rule'] = QtGui.QIcon(iconpath)
-        iconpath = str(pathlib.Path(self.basedir + '/data/informationmodel.svg'))
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/informationmodel.svg'))
         self.icons['Model'] = QtGui.QIcon(iconpath)
-        iconpath = str(pathlib.Path(self.basedir + '/data/lookuptable.svg'))
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/lookuptable.svg'))
         self.icons['Lookups'] = QtGui.QIcon(iconpath)
-        iconpath = str(pathlib.Path(self.basedir + '/data/parser.svg'))
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/parser.svg'))
         self.icons['Parser'] = QtGui.QIcon(iconpath)
         return
 

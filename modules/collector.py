@@ -14,12 +14,8 @@ class collector_tab(QtWidgets.QWidget):
 
         super(collector_tab, self).__init__()
         self.mainwindow = mainwindow
-        if getattr(sys, 'frozen', False):
-            self.basedir = sys._MEIPASS
-        else:
-            self.basedir = os.path.dirname(os.path.abspath(__file__))
 
-        collector_ui = os.path.join(self.basedir, 'data/collector.ui')
+        collector_ui = os.path.join(self.mainwindow.basedir, 'data/collector.ui')
         uic.loadUi(collector_ui, self)
 
         self.font = "Waree"

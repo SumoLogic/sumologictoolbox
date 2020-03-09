@@ -13,12 +13,8 @@ class scheduled_view_tab(QtWidgets.QWidget):
 
         super(scheduled_view_tab, self).__init__()
         self.mainwindow = mainwindow
-        if getattr(sys, 'frozen', False):
-            self.basedir = sys._MEIPASS
-        else:
-            self.basedir = os.path.dirname(os.path.abspath(__file__))
 
-        scheduled_view_widget_ui = os.path.join(self.basedir, 'data/scheduled_view.ui')
+        scheduled_view_widget_ui = os.path.join(self.mainwindow.basedir, 'data/scheduled_view.ui')
         uic.loadUi(scheduled_view_widget_ui, self)
 
         self.pushButtonUpdateSVLeft.clicked.connect(lambda: self.update_SV_list(

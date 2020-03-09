@@ -12,12 +12,8 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
 
         super(field_extraction_rule_tab, self).__init__()
         self.mainwindow = mainwindow
-        if getattr(sys, 'frozen', False):
-            self.basedir = sys._MEIPASS
-        else:
-            self.basedir = os.path.dirname(os.path.abspath(__file__))
 
-        scheduled_view_widget_ui = os.path.join(self.basedir, 'data/field_extraction_rule.ui')
+        scheduled_view_widget_ui = os.path.join(self.mainwindow.basedir, 'data/field_extraction_rule.ui')
         uic.loadUi(scheduled_view_widget_ui, self)
 
         self.pushButtonUpdateFERLeft.clicked.connect(lambda: self.update_FER_list(
