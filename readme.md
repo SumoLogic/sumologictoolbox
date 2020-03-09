@@ -213,7 +213,14 @@ Content Copying:
     6. Click "Copy" (left to right or right to left). Your content will be copied to the current folder 
        in the destination pane.
     
-FER copy/import/export: !New!
+Field Extraction Rule copy/import/export: !New!
+
+    1. Input/select Credentials for your source and destination orgs
+    2. Select your regions for source and destination orgs
+    3. Click "Update" for source and destination to populate the FER lists
+    4. Click "Copy" or "Backup" or "Restore".
+    
+Scheduled View copy/import/export: !New!
 
     1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
@@ -369,6 +376,10 @@ Screen Shots:
 ![Search API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_search_example.png "Search API")
 
 ![Content API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_content_example.png "Content API")
+
+![Field Extraction Rule API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_FER_example.png "Content API")
+
+![Scheduled View API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_SV_example.png "Content API")
 
 Known Issues:
 =============
