@@ -284,9 +284,9 @@ Content Restore:
 Logging:   
 
     The tool should now generate a "sumologic.log" file in the directory it lives in. If you experience a
-    bug, please delete the log file, recreate the bug, and send me the new log file along with a screenshot
-    and/or description or what you were doing at the time. I can't promise an immediate fix but I will do my
-    best.
+    bug, please delete the log file, set the logging level to "debug" (from the "settings" menu), recreate
+    the bug, and send me the new log file along with a screenshot and/or description or what you were doing
+    at the time. I can't promise an immediate fix but I will do my best. 
     
     tmacdonald@sumologic.com
     
@@ -391,6 +391,8 @@ might be fixed by multithreading the app but currently this is expected behaviou
 * When copying content to Admin Recommended folders the content will be copied but not visible in this tool until it is shared in the
 SumoLogic UI. This will be resolved in a future release. 
 
+* New style dashboards are not currently visible in the content explorer.
+
 To Do:
 ======
 
@@ -398,13 +400,7 @@ To Do:
 
 * Add Users/Roles API functionality
 
-* Add Scheduled View functionality
-
 * Add Connections Functionality
-
-
-
-
 
 License
 =======
