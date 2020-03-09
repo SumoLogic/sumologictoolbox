@@ -37,6 +37,9 @@
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
+           <property name="toolTip">
+            <string>Update the list of content based on the region/credentials entered above. </string>
+           </property>
            <property name="text">
             <string>Update</string>
            </property>
@@ -68,6 +71,9 @@
              <pointsize>12</pointsize>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Go up one directory.</string>
+           </property>
            <property name="text">
             <string>Parent Dir</string>
            </property>
@@ -98,6 +104,9 @@
              <pointsize>12</pointsize>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Show the personal folder contents of the user who's credentials are entered above.</string>
+           </property>
            <property name="text">
             <string>Personal
 Folder</string>
@@ -121,6 +130,9 @@ Folder</string>
              <pointsize>12</pointsize>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Show the folders of all users in the system. This will fail if your credentials do not have appropriate rights.</string>
+           </property>
            <property name="text">
             <string>Global
 Folders</string>
@@ -137,6 +149,9 @@ Folders</string>
              <family>Waree</family>
              <pointsize>12</pointsize>
             </font>
+           </property>
+           <property name="toolTip">
+            <string>Show the contents of the admin recommended folder. Currently only shows that content that has also been SHARED. This will be fixed soon. </string>
            </property>
            <property name="text">
             <string>Admin Recommended
@@ -209,6 +224,9 @@ Folders</string>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Create a new folder in the current one. </string>
+         </property>
          <property name="text">
           <string>New Folder</string>
          </property>
@@ -227,6 +245,9 @@ Folders</string>
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Delete the selected content/folder(s). Be careful!</string>
          </property>
          <property name="text">
           <string>Delete</string>
@@ -247,6 +268,9 @@ Folders</string>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Backup the currently selected content to JSON file(s). Each item will be written to a seperate file. </string>
+         </property>
          <property name="text">
           <string>Backup</string>
          </property>
@@ -265,6 +289,9 @@ Folders</string>
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Restore content from previously backed up/exported JSON file(s). You can use this to import content that was exported from the Sumo Logic UI as well. </string>
          </property>
          <property name="text">
           <string>Restore</string>
@@ -314,6 +341,9 @@ Folders</string>
        <property name="contextMenuPolicy">
         <enum>Qt::NoContextMenu</enum>
        </property>
+       <property name="toolTip">
+        <string>Copy the selected content from the left org to the right org. </string>
+       </property>
        <property name="text">
         <string>Copy -&gt;</string>
        </property>
@@ -329,6 +359,9 @@ Folders</string>
        </property>
        <property name="contextMenuPolicy">
         <enum>Qt::NoContextMenu</enum>
+       </property>
+       <property name="toolTip">
+        <string>Copy the selected content from the right org to the left org. </string>
        </property>
        <property name="text">
         <string>&lt;- Copy</string>
@@ -359,6 +392,9 @@ Folders</string>
        <property name="contextMenuPolicy">
         <enum>Qt::NoContextMenu</enum>
        </property>
+       <property name="toolTip">
+        <string>Copy the selected content from the left to right org AND replace sourceCategory tags as it's done. This is an experimental feature and may not always work properly. Fixes to come soon. </string>
+       </property>
        <property name="text">
         <string>Find 
 Replace-&gt;
@@ -376,6 +412,9 @@ Copy</string>
        </property>
        <property name="contextMenuPolicy">
         <enum>Qt::NoContextMenu</enum>
+       </property>
+       <property name="toolTip">
+        <string>Copy the selected content from the right to left org AND replace sourceCategory tags as it's done. This is an experimental feature and may not always work properly. Fixes to come soon. </string>
        </property>
        <property name="text">
         <string>Find 
@@ -422,6 +461,9 @@ Copy</string>
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
+           <property name="toolTip">
+            <string>Update the list of content based on the region/credentials entered above. </string>
+           </property>
            <property name="text">
             <string>Update</string>
            </property>
@@ -446,6 +488,9 @@ Copy</string>
              <family>Waree</family>
              <pointsize>12</pointsize>
             </font>
+           </property>
+           <property name="toolTip">
+            <string>Go up one directory.</string>
            </property>
            <property name="text">
             <string>Parent Dir</string>
@@ -477,6 +522,9 @@ Copy</string>
              <pointsize>12</pointsize>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Show the personal folder contents of the user who's credentials are entered above.</string>
+           </property>
            <property name="text">
             <string>Personal
 Folder</string>
@@ -500,6 +548,9 @@ Folder</string>
              <pointsize>12</pointsize>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Show the folders of all users in the system. This will fail if your credentials do not have appropriate rights.</string>
+           </property>
            <property name="text">
             <string>Global
 Folders</string>
@@ -516,6 +567,9 @@ Folders</string>
              <family>Waree</family>
              <pointsize>12</pointsize>
             </font>
+           </property>
+           <property name="toolTip">
+            <string>Show the contents of the admin recommended folder. Currently only shows that content that has also been SHARED. This will be fixed soon. </string>
            </property>
            <property name="text">
             <string>Admin Recommended
@@ -591,6 +645,9 @@ Folders</string>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Create a new folder in the current one. </string>
+         </property>
          <property name="text">
           <string>New Folder</string>
          </property>
@@ -609,6 +666,9 @@ Folders</string>
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Delete the selected content/folder(s). Be careful!</string>
          </property>
          <property name="text">
           <string>Delete</string>
@@ -629,6 +689,9 @@ Folders</string>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Backup the currently selected content to JSON file(s). Each item will be written to a seperate file. </string>
+         </property>
          <property name="text">
           <string>Backup</string>
          </property>
@@ -647,6 +710,9 @@ Folders</string>
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Restore content from previously backed up/exported JSON file(s). You can use this to import content that was exported from the Sumo Logic UI as well. </string>
          </property>
          <property name="text">
           <string>Restore</string>

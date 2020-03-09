@@ -33,6 +33,8 @@ copying or restoring.) If you want to set them to retroactively process older da
 after they are copied/restored.
 
 *Changed the tab visual style to make it beautiful :-)
+*Added tooltips
+
 
 
 

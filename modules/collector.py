@@ -6,6 +6,7 @@ import json
 import re
 from logzero import logger
 from modules.sumologic import SumoLogic
+from modules.dialogs import restoreSourcesDialog
 
 class collector_tab(QtWidgets.QWidget):
 

@@ -29,6 +29,9 @@
          <property name="contextMenuPolicy">
           <enum>Qt::NoContextMenu</enum>
          </property>
+         <property name="toolTip">
+          <string>Update the list of collectors based on the region/credentials entered above. </string>
+         </property>
          <property name="text">
           <string>Update</string>
          </property>
@@ -79,6 +82,9 @@
        </item>
        <item>
         <widget class="QLineEdit" name="lineEditCollectorSearchLeft">
+         <property name="toolTip">
+          <string>Filter the list of collectors based on the string that you type here. This is case sensistive. </string>
+         </property>
          <property name="placeholderText">
           <string>Search</string>
          </property>
@@ -104,7 +110,7 @@
         <set>QAbstractItemView::NoEditTriggers</set>
        </property>
        <property name="alternatingRowColors">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
@@ -124,6 +130,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Backup the selected collector(s) to JSON file. There is currently no collector restore, but you can restore source(s) to an existing collector based on this backup. </string>
+         </property>
          <property name="text">
           <string>Backup Collector(s)</string>
          </property>
@@ -136,6 +145,9 @@
            <family>Noto Sans Gothic</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Delete the selected collector(s). Be careful. Deleting the wrong one(s) could be very bad. </string>
          </property>
          <property name="text">
           <string>Delete Collector(s)</string>
@@ -199,7 +211,7 @@
         <set>QAbstractItemView::NoEditTriggers</set>
        </property>
        <property name="alternatingRowColors">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
@@ -219,6 +231,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Delete the selected source(s). Be careful. Deleting the wrong one(s) could be very bad. </string>
+         </property>
          <property name="text">
           <string>Delete Source(s)</string>
          </property>
@@ -231,6 +246,9 @@
            <family>Noto Sans Gothic</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Restore source(s) from JSON file, such as a collector backup. Does not create the collector itself though.  </string>
          </property>
          <property name="text">
           <string>Restore Source(s)</string>
@@ -317,6 +335,9 @@
        <property name="contextMenuPolicy">
         <enum>Qt::NoContextMenu</enum>
        </property>
+       <property name="toolTip">
+        <string>Copy the selected source(s) from the left to the selected collector(s) on the right. Use this to mass deploy sources to many collectors. </string>
+       </property>
        <property name="text">
         <string>Copy -&gt;</string>
        </property>
@@ -332,6 +353,9 @@
        </property>
        <property name="contextMenuPolicy">
         <enum>Qt::NoContextMenu</enum>
+       </property>
+       <property name="toolTip">
+        <string>Copy the selected source(s) from the right to the selected collector(s) on the left. Use this to mass deploy sources to many collectors. </string>
        </property>
        <property name="text">
         <string>&lt;- Copy</string>
@@ -367,6 +391,9 @@
          </property>
          <property name="contextMenuPolicy">
           <enum>Qt::NoContextMenu</enum>
+         </property>
+         <property name="toolTip">
+          <string>Update the list of collectors based on the region/credentials entered above. </string>
          </property>
          <property name="text">
           <string>Update</string>
@@ -418,6 +445,9 @@
        </item>
        <item>
         <widget class="QLineEdit" name="lineEditCollectorSearchRight">
+         <property name="toolTip">
+          <string>Filter the list of collectors based on the string that you type here. This is case sensistive. </string>
+         </property>
          <property name="placeholderText">
           <string>Search</string>
          </property>
@@ -440,7 +470,7 @@
         <set>QAbstractItemView::NoEditTriggers</set>
        </property>
        <property name="alternatingRowColors">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
@@ -460,6 +490,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Backup the selected collector(s) to JSON file. There is currently no collector restore, but you can restore source(s) to an existing collector based on this backup. </string>
+         </property>
          <property name="text">
           <string>Backup Collector(s)</string>
          </property>
@@ -472,6 +505,9 @@
            <family>Noto Sans Gothic</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Delete the selected collector(s). Be careful. Deleting the wrong one(s) could be very bad. </string>
          </property>
          <property name="text">
           <string>Delete Collector(s)</string>
@@ -538,7 +574,7 @@
         <set>QAbstractItemView::NoEditTriggers</set>
        </property>
        <property name="alternatingRowColors">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
@@ -558,6 +594,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Delete the selected source(s). Be careful. Deleting the wrong one(s) could be very bad. </string>
+         </property>
          <property name="text">
           <string>Delete Source(s)</string>
          </property>
@@ -570,6 +609,9 @@
            <family>Noto Sans Gothic</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Restore source(s) from JSON file, such as a collector backup. Does not create the collector itself though.  </string>
          </property>
          <property name="text">
           <string>Restore Source(s)</string>

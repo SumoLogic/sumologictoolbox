@@ -37,6 +37,9 @@
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
+           <property name="toolTip">
+            <string>Update the list of Field Extraction Rules based on the org/credentials entered above. </string>
+           </property>
            <property name="text">
             <string>Update</string>
            </property>
@@ -91,6 +94,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Delete the selected Field Extraction Rules. Be careful!</string>
+         </property>
          <property name="text">
           <string>Delete</string>
          </property>
@@ -110,6 +116,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Backup the selected Field Extraction Rules to JSON files. One file will be written per rule. </string>
+         </property>
          <property name="text">
           <string>Backup</string>
          </property>
@@ -128,6 +137,9 @@
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Restore Field Extraction Rule(s) from JSON file(s). </string>
          </property>
          <property name="text">
           <string>Restore</string>
@@ -177,6 +189,9 @@
        <property name="contextMenuPolicy">
         <enum>Qt::NoContextMenu</enum>
        </property>
+       <property name="toolTip">
+        <string>Copy the the select Field Extraction Rule(s) from the left org to the right org. </string>
+       </property>
        <property name="text">
         <string>Copy -&gt;</string>
        </property>
@@ -192,6 +207,9 @@
        </property>
        <property name="contextMenuPolicy">
         <enum>Qt::NoContextMenu</enum>
+       </property>
+       <property name="toolTip">
+        <string>Copy the the select Field Extraction Rule(s) from the right org to the left org. </string>
        </property>
        <property name="text">
         <string>&lt;- Copy</string>
@@ -297,6 +315,9 @@ Copy</string>
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
+           <property name="toolTip">
+            <string>Update the list of Field Extraction Rules based on the org/credentials entered above. </string>
+           </property>
            <property name="text">
             <string>Update</string>
            </property>
@@ -351,6 +372,9 @@ Copy</string>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Delete the selected Field Extraction Rules. Be careful!</string>
+         </property>
          <property name="text">
           <string>Delete</string>
          </property>
@@ -370,6 +394,9 @@ Copy</string>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Backup the selected Field Extraction Rules to JSON files. One file will be written per rule. </string>
+         </property>
          <property name="text">
           <string>Backup</string>
          </property>
@@ -388,6 +415,9 @@ Copy</string>
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Restore Field Extraction Rule(s) from JSON file(s). </string>
          </property>
          <property name="text">
           <string>Restore</string>

@@ -37,6 +37,9 @@
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
+           <property name="toolTip">
+            <string>Update the list of Scheduled Views based on your curently entered credentials. </string>
+           </property>
            <property name="text">
             <string>Update</string>
            </property>
@@ -91,6 +94,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Disable/Delete the currently selected Scheduled View(s).</string>
+         </property>
          <property name="text">
           <string>Disable</string>
          </property>
@@ -110,6 +116,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Backup the selected Scheduled View(s) to file. Each SV will be written to it's own JSON file. </string>
+         </property>
          <property name="text">
           <string>Backup</string>
          </property>
@@ -128,6 +137,9 @@
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Restore one or more Scheduled Views from file(s). These must be properly formatted JSON, either from a previous backup or created in accordance with the Sumo Logic API documentation. </string>
          </property>
          <property name="text">
           <string>Restore</string>
@@ -177,6 +189,9 @@
        <property name="contextMenuPolicy">
         <enum>Qt::NoContextMenu</enum>
        </property>
+       <property name="toolTip">
+        <string>Copy the selected scheduled view(s) from the left org to the right org.</string>
+       </property>
        <property name="text">
         <string>Copy -&gt;</string>
        </property>
@@ -192,6 +207,9 @@
        </property>
        <property name="contextMenuPolicy">
         <enum>Qt::NoContextMenu</enum>
+       </property>
+       <property name="toolTip">
+        <string>Copy the selected scheduled view(s) from the right org to the left org.</string>
        </property>
        <property name="text">
         <string>&lt;- Copy</string>
@@ -297,6 +315,9 @@ Copy</string>
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
+           <property name="toolTip">
+            <string>Update the list of Scheduled Views based on your curently entered credentials. </string>
+           </property>
            <property name="text">
             <string>Update</string>
            </property>
@@ -351,6 +372,9 @@ Copy</string>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Disable/Delete the currently selected Scheduled View(s).</string>
+         </property>
          <property name="text">
           <string>Disable</string>
          </property>
@@ -370,6 +394,9 @@ Copy</string>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Backup the selected Scheduled View(s) to file. Each SV will be written to it's own JSON file. </string>
+         </property>
          <property name="text">
           <string>Backup</string>
          </property>
@@ -388,6 +415,9 @@ Copy</string>
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Restore one or more Scheduled Views from file(s). These must be properly formatted JSON, either from a previous backup or created in accordance with the Sumo Logic API documentation. </string>
          </property>
          <property name="text">
           <string>Restore</string>

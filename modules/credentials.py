@@ -24,7 +24,7 @@ __author__ = 'Tim MacDonald'
 #    You can send feedback to: tmacdonald@sumologic.com
 #
 # Q: What is Argon2? I've never heard of it!
-# A: At the time of writing argon2 was the recommended password hashing algoritm by the password hashing competititon
+# A: At the time of writing argon2 was the recommended password hashing algoritm by the password hashing competition
 #    https://password-hashing.net/
 #
 # Q: I have my own keystore, can I use that instead?

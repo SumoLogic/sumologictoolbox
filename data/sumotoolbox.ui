@@ -114,6 +114,9 @@
              <property name="contextMenuPolicy">
               <enum>Qt::NoContextMenu</enum>
              </property>
+             <property name="toolTip">
+              <string>Select the region the Sumo Logic org you want to connect to resides in.  </string>
+             </property>
              <property name="styleSheet">
               <string notr="true"/>
              </property>
@@ -158,6 +161,9 @@
              <property name="contextMenuPolicy">
               <enum>Qt::NoContextMenu</enum>
              </property>
+             <property name="toolTip">
+              <string>Enter your Sumo Logic access key ID.</string>
+             </property>
              <property name="text">
               <string/>
              </property>
@@ -198,6 +204,9 @@
              </property>
              <property name="contextMenuPolicy">
               <enum>Qt::NoContextMenu</enum>
+             </property>
+             <property name="toolTip">
+              <string>Enter your Sumo Logic access key.</string>
              </property>
              <property name="text">
               <string/>
@@ -246,6 +255,9 @@
              <property name="contextMenuPolicy">
               <enum>Qt::NoContextMenu</enum>
              </property>
+             <property name="toolTip">
+              <string>Select a previously saved set of credentials. </string>
+             </property>
              <property name="insertPolicy">
               <enum>QComboBox::InsertAfterCurrent</enum>
              </property>
@@ -269,6 +281,9 @@
                <pointsize>12</pointsize>
               </font>
              </property>
+             <property name="toolTip">
+              <string>Save the currently entered credentials/region as a new preset. </string>
+             </property>
              <property name="text">
               <string>Create
 Preset</string>
@@ -286,6 +301,9 @@ Preset</string>
                <pointsize>12</pointsize>
               </font>
              </property>
+             <property name="toolTip">
+              <string>Update the currently selected preset with the currently entered region/ID/Key. </string>
+             </property>
              <property name="text">
               <string>Update
 Preset</string>
@@ -302,6 +320,9 @@ Preset</string>
                <family>Waree</family>
                <pointsize>12</pointsize>
               </font>
+             </property>
+             <property name="toolTip">
+              <string>Delete the currently selected preset. There is no undo. </string>
              </property>
              <property name="text">
               <string>Delete
@@ -349,6 +370,9 @@ Preset</string>
              <pointsize>12</pointsize>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Create a new database to hold your credentials. Not clickable if you already have a credential database. </string>
+           </property>
            <property name="text">
             <string>Create Cred
 Database</string>
@@ -393,6 +417,9 @@ Database</string>
              <family>Waree</family>
              <pointsize>12</pointsize>
             </font>
+           </property>
+           <property name="toolTip">
+            <string>Load your existing credential database. Requires your master password. There is no password recovery. </string>
            </property>
            <property name="text">
             <string>Load Cred
@@ -441,6 +468,9 @@ Database</string>
              <family>Waree</family>
              <pointsize>12</pointsize>
             </font>
+           </property>
+           <property name="toolTip">
+            <string>Delete your credential database. Only selectable if you've previously created one. </string>
            </property>
            <property name="text">
             <string>Delete Cred
@@ -528,6 +558,9 @@ Database</string>
              <property name="contextMenuPolicy">
               <enum>Qt::NoContextMenu</enum>
              </property>
+             <property name="toolTip">
+              <string>Select the region the Sumo Logic org you want to connect to resides in.  </string>
+             </property>
              <property name="editable">
               <bool>false</bool>
              </property>
@@ -572,6 +605,9 @@ Database</string>
              <property name="contextMenuPolicy">
               <enum>Qt::NoContextMenu</enum>
              </property>
+             <property name="toolTip">
+              <string>Enter your Sumo Logic access key ID.</string>
+             </property>
              <property name="text">
               <string/>
              </property>
@@ -612,6 +648,9 @@ Database</string>
              </property>
              <property name="contextMenuPolicy">
               <enum>Qt::NoContextMenu</enum>
+             </property>
+             <property name="toolTip">
+              <string>Enter your Sumo Logic access key.</string>
              </property>
              <property name="text">
               <string/>
@@ -660,6 +699,9 @@ Database</string>
              <property name="contextMenuPolicy">
               <enum>Qt::NoContextMenu</enum>
              </property>
+             <property name="toolTip">
+              <string>Select a previously saved set of credentials. </string>
+             </property>
              <property name="insertPolicy">
               <enum>QComboBox::InsertAfterCurrent</enum>
              </property>
@@ -686,6 +728,9 @@ Database</string>
                <pointsize>12</pointsize>
               </font>
              </property>
+             <property name="toolTip">
+              <string>Save the currently entered credentials/region as a new preset. </string>
+             </property>
              <property name="text">
               <string>Create
 Preset</string>
@@ -709,6 +754,9 @@ Preset</string>
                <pointsize>12</pointsize>
               </font>
              </property>
+             <property name="toolTip">
+              <string>Update the currently selected preset with the currently entered region/ID/Key. </string>
+             </property>
              <property name="text">
               <string>Update
 Preset</string>
@@ -731,6 +779,9 @@ Preset</string>
                <family>Waree</family>
                <pointsize>12</pointsize>
               </font>
+             </property>
+             <property name="toolTip">
+              <string>Delete the currently selected preset. There is no undo. </string>
              </property>
              <property name="text">
               <string>Delete
@@ -826,6 +877,9 @@ Preset</string>
               <pointsize>12</pointsize>
              </font>
             </property>
+            <property name="toolTip">
+             <string>Select the timezone you want to search in. </string>
+            </property>
            </widget>
           </item>
           <item>
@@ -892,6 +946,9 @@ Preset</string>
               <pointsize>12</pointsize>
              </font>
             </property>
+            <property name="toolTip">
+             <string>Select the start time for your search. </string>
+            </property>
             <property name="calendarPopup">
              <bool>false</bool>
             </property>
@@ -941,6 +998,9 @@ Preset</string>
               <family>Waree</family>
               <pointsize>12</pointsize>
              </font>
+            </property>
+            <property name="toolTip">
+             <string>Select the end time for your search. </string>
             </property>
             <property name="calendarPopup">
              <bool>false</bool>
@@ -993,6 +1053,9 @@ Preset</string>
             <pointsize>12</pointsize>
            </font>
           </property>
+          <property name="toolTip">
+           <string>Enter Your Search Here</string>
+          </property>
           <property name="frameShadow">
            <enum>QFrame::Sunken</enum>
           </property>
@@ -1035,6 +1098,9 @@ Preset</string>
                   <pointsize>12</pointsize>
                  </font>
                 </property>
+                <property name="toolTip">
+                 <string>Output Raw Log Data</string>
+                </property>
                 <property name="text">
                  <string>Messages</string>
                 </property>
@@ -1053,6 +1119,9 @@ Preset</string>
                   <family>Waree</family>
                   <pointsize>12</pointsize>
                  </font>
+                </property>
+                <property name="toolTip">
+                 <string>Output Aggregate Records</string>
                 </property>
                 <property name="text">
                  <string>Records</string>
@@ -1080,6 +1149,9 @@ Preset</string>
               <pointsize>12</pointsize>
              </font>
             </property>
+            <property name="toolTip">
+             <string>Write output to CSV file instead of screen.</string>
+            </property>
             <property name="text">
              <string>Save to CSV</string>
             </property>
@@ -1098,6 +1170,9 @@ Preset</string>
               <family>Waree</family>
               <pointsize>12</pointsize>
              </font>
+            </property>
+            <property name="toolTip">
+             <string>Convert Time Stamps to Human Readable Format (Not Epoch)</string>
             </property>
             <property name="text">
              <string>Convert to Selected Timezone from UTC Epoch</string>
@@ -1124,6 +1199,9 @@ Preset</string>
               <family>Waree</family>
               <pointsize>12</pointsize>
              </font>
+            </property>
+            <property name="toolTip">
+             <string>Run the search. This may take a very long time and the window will not update until it is done. </string>
             </property>
             <property name="text">
              <string>Start</string>
