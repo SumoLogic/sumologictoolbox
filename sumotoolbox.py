@@ -1,5 +1,5 @@
 __author__ = 'Tim MacDonald'
-__version__ = '0.6'
+__version__ = '0.7'
 # Copyright 2015 Timothy MacDonald
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -15,6 +15,7 @@ import json
 import csv
 import pytz
 import os.path
+import re
 from datetime import datetime
 from tzlocal import get_localzone
 from qtpy import QtCore, QtGui, QtWidgets, uic
@@ -22,20 +23,24 @@ import pathlib
 import os
 import logzero
 from logzero import logger
+from configupdater import ConfigUpdater
 import configparser
 import shutil
 import qtmodern.styles
 import qtmodern.windows
 import time
+# import tabs here
 from modules.scheduled_view import scheduled_view_tab
 from modules.field_extration_rule import field_extraction_rule_tab
 from modules.content import content_tab
 from modules.collector import collector_tab
+from modules.organizations import organizations_tab
+from modules.users_and_roles import users_and_roles_tab
 
 #local imports
 from modules.sumologic import SumoLogic
 from modules.credentials import CredentialsDB
-from modules.dialogs import *
+
 
 # detect if in Pyinstaller package and build appropriate base directory path
 if getattr(sys, 'frozen', False):
@@ -50,6 +55,145 @@ logger.info("SumoLogicToolBox started.")
 # This script uses Qt Designer files to define the UI elements which must be loaded
 qtMainWindowUI = os.path.join(basedir, 'data/sumotoolbox.ui')
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtMainWindowUI)
+
+class NewPasswordDialog(QtWidgets.QDialog):
+
+    def __init__(self):
+        super(NewPasswordDialog, self).__init__()
+        self.objectlist = []
+        self.setupUi(self)
+
+    def setupUi(self, Dialog):
+
+        Dialog.setObjectName("EnterNewPassword")
+        Dialog.resize(320, 366)
+        self.setWindowTitle('Enter new password...')
+        self.okbutton = QtWidgets.QPushButton(Dialog)
+        self.okbutton.setText('OK')
+        self.okbutton.setGeometry(250, 320, 50, 32)
+        self.okbutton.setEnabled(False)
+
+        self.cancelbutton = QtWidgets.QPushButton(Dialog)
+        self.cancelbutton.setText('Cancel')
+        self.cancelbutton.setGeometry(190, 320, 50, 32)
+        self.cancelbutton.setEnabled(True)
+        self.label = QtWidgets.QLabel(Dialog)
+        self.label.setGeometry(QtCore.QRect(17, 7, 281, 81))
+        self.label.setFrameShape(QtWidgets.QFrame.Box)
+        self.label.setTextFormat(QtCore.Qt.PlainText)
+        self.label.setObjectName("label")
+        self.lineEditPassword1 = QtWidgets.QLineEdit(Dialog)
+        self.lineEditPassword1.setGeometry(QtCore.QRect(20, 240, 281, 31))
+        self.lineEditPassword1.setObjectName("lineEditPassword1")
+        self.lineEditPassword1.setEchoMode(2)
+        self.lineEditPassword2 = QtWidgets.QLineEdit(Dialog)
+        self.lineEditPassword2.setGeometry(QtCore.QRect(20, 280, 281, 34))
+        self.lineEditPassword2.setObjectName("lineEditPassword2")
+        self.lineEditPassword2.setEchoMode(2)
+        self.labelCount = QtWidgets.QLabel(Dialog)
+        self.labelCount.setGeometry(QtCore.QRect(20, 100, 281, 18))
+        self.labelCount.setObjectName("labelCount")
+        self.labelLowerCase = QtWidgets.QLabel(Dialog)
+        self.labelLowerCase.setGeometry(QtCore.QRect(20, 120, 281, 18))
+        self.labelLowerCase.setObjectName("labe1LowerCase")
+        self.labelUpperCase = QtWidgets.QLabel(Dialog)
+        self.labelUpperCase.setGeometry(QtCore.QRect(20, 140, 281, 18))
+        self.labelUpperCase.setObjectName("labelUpperCase")
+        self.labelNumeral = QtWidgets.QLabel(Dialog)
+        self.labelNumeral.setGeometry(QtCore.QRect(20, 160, 281, 18))
+        self.labelNumeral.setObjectName("labelNumeral")
+        self.labelNonAlphaNumeric = QtWidgets.QLabel(Dialog)
+        self.labelNonAlphaNumeric.setGeometry(QtCore.QRect(20, 180, 281, 18))
+        self.labelNonAlphaNumeric.setObjectName("labelNonAlphaNumeric")
+        self.labelMatch = QtWidgets.QLabel(Dialog)
+        self.labelMatch.setGeometry(QtCore.QRect(20, 200, 281, 18))
+        self.labelMatch.setObjectName("labelMatch")
+
+        self.retranslateUi(Dialog)
+        # self.buttonBox.accepted.connect(Dialog.accept)
+        # self.buttonBox.rejected.connect(Dialog.reject)
+        self.okbutton.clicked.connect(Dialog.accept)
+        self.cancelbutton.clicked.connect(Dialog.reject)
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+        self.lineEditPassword1.textEdited.connect(self.check_password)
+        self.lineEditPassword2.textEdited.connect(self.check_password)
+        self.labelCount.setStyleSheet('color: red')
+        self.labelLowerCase.setStyleSheet('color: red')
+        self.labelUpperCase.setStyleSheet('color: red')
+        self.labelNumeral.setStyleSheet('color: red')
+        self.labelNonAlphaNumeric.setStyleSheet('color: red')
+        self.labelMatch.setStyleSheet('color: red')
+
+    def check_password(self):
+        password1 = self.lineEditPassword1.text()
+        password2 = self.lineEditPassword2.text()
+        if len(password1) > 9:
+            self.labelCount.setStyleSheet('color: green')
+            count = True
+        else:
+            self.labelCount.setStyleSheet('color: red')
+            count = False
+
+        if re.search(r'[a-z]', password1):
+            self.labelLowerCase.setStyleSheet('color: green')
+            lower = True
+        else:
+            self.labelLowerCase.setStyleSheet('color: red')
+            lower = False
+
+        if re.search(r'[A-Z]', password1):
+            self.labelUpperCase.setStyleSheet('color: green')
+            upper = True
+        else:
+            self.labelUpperCase.setStyleSheet('color: red')
+            upper = False
+
+        if re.search(r'[0-9]', password1):
+            self.labelNumeral.setStyleSheet('color: green')
+            numeral = True
+        else:
+            self.labelNumeral.setStyleSheet('color: red')
+            numeral = False
+
+        if re.search(r'[,\.!?#@$]', password1):
+            self.labelNonAlphaNumeric.setStyleSheet('color: green')
+            nonalpha = True
+        else:
+            self.labelNonAlphaNumeric.setStyleSheet('color: red')
+            nonalpha = False
+
+        if password1 == password2:
+            self.labelMatch.setStyleSheet('color: green')
+            match = True
+        else:
+            self.labelMatch.setStyleSheet('color: red')
+            match = False
+
+        if count and lower and upper and numeral and nonalpha and match:
+            self.okbutton.setEnabled(True)
+        else:
+            self.okbutton.setEnabled(False)
+
+    def getresults(self):
+            return str(self.lineEditPassword1.text())
+
+    def retranslateUi(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        self.label.setText(_translate("Dialog", "Please enter a new password.\n"
+"Once entered your password cannot\n"
+"be retrieved. Remember it!\n"
+"It must meet the following conditions:"))
+        self.labelCount.setText(_translate("Dialog", "-Have 10 or more characters"))
+        self.labelLowerCase.setText(_translate("Dialog", "-Contain at least 1 lowercase character"))
+        self.labelUpperCase.setText(_translate("Dialog", "-Contain at least 1 uppercase character"))
+        self.labelNumeral.setText(_translate("Dialog", "-Contain at least 1 numeral"))
+        self.labelNonAlphaNumeric.setText(_translate("Dialog", "-Contain at least 1 of these ,.!?#@$"))
+        self.labelMatch.setText(_translate("Dialog", "-Both entries must match"))
+
+
+
 
 class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
 
@@ -76,8 +220,6 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         # Initially set logging level to match what is checked in the logging menu
         self.change_logging_level()
 
-
-
         # Configure the creddb buttons according to the config file settings
         #self.initial_config_cred_db_buttons()
         self.set_creddbbuttons()
@@ -87,10 +229,14 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.tabWidget.addTab(self.collector, "Collectors")
         self.content = content_tab(self)
         self.tabWidget.addTab(self.content, "Content")
+        self.users_and_roles = users_and_roles_tab(self)
+        self.tabWidget.addTab(self.users_and_roles, "Users and Roles")
         self.field_extraction_rule = field_extraction_rule_tab(self)
         self.tabWidget.addTab(self.field_extraction_rule, "Field Extraction Rules")
         self.scheduled_view = scheduled_view_tab(self)
         self.tabWidget.addTab(self.scheduled_view, "Scheduled Views")
+        self.organizations = organizations_tab(self)
+        self.tabWidget.addTab(self.organizations, "Multi Account Mgmt")
 
         # disable right credential box because we always start on the search tab
         # which only uses the left credentials
@@ -218,6 +364,8 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.content.reset_stateful_objects(side)
         self.scheduled_view.reset_stateful_objects(side)
         self.field_extraction_rule.reset_stateful_objects(side)
+        self.organizations.reset_stateful_objects()
+        self.users_and_roles.reset_stateful_objects(side)
         return
 
     def clear_creds(self):
@@ -301,6 +449,8 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                             'right'
                         )
                     self.set_creddbbuttons()
+                    # disable right region box if we are on one of the tabs that don't use it
+                    self.tabchange(self.tabWidget.currentIndex())
 
                         
                 except Exception as e:
@@ -478,27 +628,36 @@ If so type 'DELETE' in the box below:"
     # called when the create preset button is clicked
     def create_preset(self, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side):
         logger.info('Creating preset in credential store.')
-        sumoregion = str(comboBoxRegion.currentText())
+        sumo_region = str(comboBoxRegion.currentText())
         accesskeyid = str(lineEditUserName.text())
         accesskey = str(lineEditPassword.text())
         message = "Please type a name for the new preset."
-        preset, result = QtWidgets.QInputDialog.getText(self, 'Enter preset name', message)
+        preset_name, result = QtWidgets.QInputDialog.getText(self, 'Enter preset name', message)
         if result:
-            if self.credentialstore.name_exists(preset):
+            if self.credentialstore.name_exists(preset_name):
                 self.errorbox('That name already exists in the credential database. Choose a new name or use "Update" to modify an existing entry.')
                 return
             else:
-                try:
-                    self.credentialstore.add_creds(preset, sumoregion, accesskeyid, accesskey)
-                    self.add_preset_to_combobox(preset)
-                    # index = comboBoxRegion.findText(preset, QtCore.Qt.MatchFixedString)
-                    # if index >= 0:
-                    #     comboBoxRegion.setCurrentIndex(index)
-                    self.load_preset(preset, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side)
-                except Exception as e:
-                    logger.exception(e)
+
+                self.create_preset_non_interactive(preset_name, sumo_region, accesskeyid, accesskey)
+                self.load_preset(preset_name, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side)
+
+
                 return
-        return
+
+    def create_preset_non_interactive(self, preset_name, sumo_region, accesskeyid, accesskey):
+        if self.cred_db_authenticated == True:
+
+            try:
+                self.credentialstore.add_creds(preset_name, sumo_region.upper(), accesskeyid, accesskey)
+                self.add_preset_to_combobox(preset_name)
+
+            except Exception as e:
+                logger.exception(e)
+            return
+
+        else:
+            return "NOAUTH"
 
     # This exists for an edge case. If there is only one entry in the preset list and the user edits/modifies
     # the cred text then clicking on the preset will not reload the cred because the index hasn't changed.
@@ -584,6 +743,7 @@ If so type 'DELETE' in the box below:"
         selectedtimezone = str(self.comboBoxTimeZone.currentText())
         timezone = pytz.timezone(selectedtimezone)
         starttime = str(self.dateTimeEditSearchStartTime.dateTime().toString(QtCore.Qt.ISODate))
+        #starttime = timezone.localize(starttime).dst()
         endtime = str(self.dateTimeEditSearchEndTime.dateTime().toString(QtCore.Qt.ISODate))
         searchstring = str(self.plainTextEditSearch.toPlainText())
         regexprog = re.compile(r'\S+')
@@ -762,7 +922,7 @@ If so type 'DELETE' in the box below:"
 
     # Start Misc/Utility Methods
     def tabchange(self, index):
-        if index == 0:
+        if index == 0 or index == 6:
             self.comboBoxRegionRight.setEnabled(False)
             self.lineEditUserNameRight.setEnabled(False)
             self.lineEditPasswordRight.setEnabled(False)
@@ -837,16 +997,58 @@ If so type 'DELETE' in the box below:"
         return
 
     def init_and_load_config_file(self):
-
+        logger.info('Updating INI file')
         config_file = pathlib.Path('sumotoolbox.ini')
+        config_template_file = pathlib.Path(self.basedir + '/data/sumotoolbox.ini')
+
+        new_ini = ConfigUpdater()
+        new_ini.read(config_template_file)
         if not config_file.is_file():
-            # If the config file doesn't exist then we need to create a new one. This should only happen
-            # when running the pyinstaller executable version.
-            # get the copy that's hidden inside the executable archive and copy it to the current dir
-            source_file = pathlib.Path(self.basedir + '/data/sumotoolbox.ini')
-            shutil.copy(str(source_file), str(config_file))
+            try:
+                # If the config file doesn't exist then we need to create a new one. This should only happen
+                # when running the pyinstaller executable version.
+                # get the copy that's hidden inside the executable archive and copy it to the current dir
+                with open(config_file, 'w') as f:
+                    new_ini.write(f)
+            except Exception as e:
+                logger.info('Failed creating new ini file: ' + str(e))
+                self.errorbox("Failed creating new ini file\n\n" + str(e))
+        else:
+            try:
+                config = configparser.ConfigParser()
+                config.read(config_file)
+                template = configparser.ConfigParser()
+                template.read(config_template_file)
+                # save the credential store settings from the current ini file
+                if config.has_option('Credential Store', 'credential_store_implementation'):
+                    new_ini['Credential Store']['credential_store_implementation'] = config['Credential Store']['credential_store_implementation']
+                if config.has_option('Credential Store', 'username'):
+                    new_ini['Credential Store']['username'] = config['Credential Store']['username']
+
+                # Merge the API endpoints
+                template_API_dict = json.loads("".join(template['API']['api_endpoints'].split()))
+                if config.has_option('API', 'api_endpoints'):
+                    config_API_dict = json.loads("".join(config['API']['api_endpoints'].split()))
+                    template_API_dict.update(config_API_dict)
+                new_ini['API']['api_endpoints'] = json.dumps(template_API_dict)
+
+                # save the MAM settings from the current ini file if they exist
+                if config.has_option('Multi Account Management','partner_name'):
+                    new_ini['Multi Account Management']['partner_name'] = config['Multi Account Management']['partner_name']
+                if config.has_option('Multi Account Management','authorized_preset'):
+                    new_ini['Multi Account Management']['authorized_preset'] = config['Multi Account Management']['authorized_preset']
+
+                # write the new ini file
+                with open(config_file, 'w') as f:
+                    new_ini.write(f)
+            except Exception as e:
+                logger.info('Failed updating ini: ' + str(e))
+                self.errorbox("Failed updating ini file\n\n" + str(e))
+
+        logger.info('Loading INI file')
         self.config = configparser.ConfigParser()
-        self.config.read(str(config_file))
+        self.config.read(config_file)
+
         return
 
 
@@ -869,12 +1071,14 @@ If so type 'DELETE' in the box below:"
     def setup_menus(self):
 
         # setup the logging level menu
-        self.loggingmenugroup = QtWidgets.QActionGroup(self, exclusive=True)
+        self.loggingmenugroup = QtWidgets.QActionGroup(self)
+        self.loggingmenugroup.setExclusive(True)
         self.loggingmenugroup.addAction(self.actionInformational)
         self.loggingmenugroup.addAction(self.actionDebug)
         self.loggingmenugroup.triggered.connect(self.change_logging_level)
         # setup the theme selector
-        self.thememenugroup = QtWidgets.QActionGroup(self, exclusive=True)
+        self.thememenugroup = QtWidgets.QActionGroup(self)
+        self.thememenugroup.setExclusive(True)
         self.thememenugroup.addAction(self.actionLight)
         self.thememenugroup.addAction(self.actionDark)
         self.thememenugroup.triggered.connect(self.change_theme)

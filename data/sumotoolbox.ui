@@ -827,7 +827,7 @@ Preset</string>
       </property>
       <widget class="QWidget" name="SearchAPI">
        <attribute name="title">
-        <string>Search API</string>
+        <string>Search</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_8">
         <item>

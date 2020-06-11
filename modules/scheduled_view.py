@@ -163,7 +163,6 @@ class scheduled_view_tab(QtWidgets.QWidget):
 
                     sumo = SumoLogic(id, key, endpoint=url)
                     for selecteditem in selecteditems:
-                        print(SVListWidget.currentcontent)
                         for object in SVListWidget.currentcontent:
                             if object['indexName'] == str(selecteditem.text()):
                                 item_id = object['id']
@@ -227,7 +226,7 @@ class scheduled_view_tab(QtWidgets.QWidget):
                             try:
                                 export = sumo.get_scheduled_view(item_id)
 
-                                savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.json')
+                                savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.sv.json')
                                 if savefilepath:
                                     with savefilepath.open(mode='w') as filepointer:
                                         json.dump(export, filepointer)

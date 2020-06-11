@@ -1,11 +1,96 @@
 from qtpy import QtCore, QtGui, QtWidgets, uic
 import os
 import sys
+import re
 import pathlib
 import json
 from logzero import logger
 from modules.sumologic import SumoLogic
-from modules.dialogs import findReplaceCopyDialog
+
+class findReplaceCopyDialog(QtWidgets.QDialog):
+
+    def __init__(self, fromcategories, tocategories, parent=None):
+        super(findReplaceCopyDialog, self).__init__(parent)
+        self.objectlist = []
+        self.setupUi(self, fromcategories, tocategories)
+
+    def setupUi(self, Dialog, fromcategories, tocategories):
+
+        # setup static elements
+        Dialog.setObjectName("FindReplaceCopy")
+        Dialog.setMinimumWidth(700)
+        Dialog.setWindowTitle('Dynamically Replace Source Category Strings')
+
+        QBtn = QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        self.buttonBox = QtWidgets.QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        # set up the list of destination categories to populate into the comboboxes
+        itemmodel = QtGui.QStandardItemModel()
+        for tocategory in tocategories:
+            text_item = QtGui.QStandardItem(str(tocategory))
+            itemmodel.appendRow(text_item)
+        itemmodel.sort(0)
+
+
+
+        self.layoutSelections = QtWidgets.QGridLayout()
+        self.labelReplace = QtWidgets.QLabel()
+        self.labelReplace.setText("Replace")
+        self.layoutSelections.addWidget(self.labelReplace, 0, 0)
+        self.labelOriginal = QtWidgets.QLabel()
+        self.labelOriginal.setText("Original Source Category")
+        self.layoutSelections.addWidget(self.labelOriginal, 0, 1)
+        self.labelReplaceWith = QtWidgets.QLabel()
+        self.labelReplaceWith.setText("With:")
+        self.layoutSelections.addWidget(self.labelReplaceWith, 0, 2)
+
+        # Create 1 set of (checkbox, label, combobox per fromcategory
+        for index, fromcategory in enumerate(fromcategories):
+
+            objectdict = {'checkbox': None, 'label': None, 'combobox': None}
+
+            objectdict['checkbox'] = QtWidgets.QCheckBox()
+            objectdict['checkbox'].setObjectName("checkBox" + str(index))
+            objectdict['checkbox'].setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+            self.layoutSelections.addWidget(objectdict['checkbox'], index + 1, 0)
+            objectdict['label']= QtWidgets.QLabel()
+            objectdict['label'].setObjectName("comboBox" + str(index))
+            objectdict['label'].setText(fromcategory)
+            objectdict['label'].setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+            self.layoutSelections.addWidget(objectdict['label'], index + 1, 1)
+            objectdict['combobox'] = QtWidgets.QComboBox()
+            objectdict['combobox'].setObjectName("comboBox" + str(index))
+            objectdict['combobox'].setModel(itemmodel)
+            objectdict['combobox'].setEditable(True)
+            objectdict['combobox'].setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+            self.layoutSelections.addWidget(objectdict['combobox'], index + 1, 2)
+            self.objectlist.append(objectdict)
+
+        self.groupBox = QtWidgets.QGroupBox()
+        self.groupBox.setLayout(self.layoutSelections)
+
+        # Creata a vertical scroll area with a grid layout inside with label headers
+
+        self.scrollArea = QtWidgets.QScrollArea()
+        self.scrollArea.setWidget(self.groupBox)
+        self.scrollArea.setWidgetResizable(True)
+        #self.scrollArea.setFixedHeight(400)
+        self.scrollArea.setMaximumHeight(500)
+        self.scrollArea.setMinimumWidth(700)
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.addWidget(self.scrollArea)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
+
+    def getresults(self):
+        results = []
+        for object in self.objectlist:
+            if str(object['checkbox'].checkState()) == '2':
+                objectdata = { 'from': str(object['label'].text()), 'to': str(object['combobox'].currentText())}
+                results.append(objectdata)
+        return results
 
 class content_tab(QtWidgets.QWidget):
 
@@ -15,8 +100,8 @@ class content_tab(QtWidgets.QWidget):
         self.mainwindow = mainwindow
        
 
-        scheduled_view_widget_ui = os.path.join(self.mainwindow.basedir, 'data/content.ui')
-        uic.loadUi(scheduled_view_widget_ui, self)
+        content_widget_ui = os.path.join(self.mainwindow.basedir, 'data/content.ui')
+        uic.loadUi(content_widget_ui, self)
 
         # Load icons used in the listviews
         self.load_icons()
@@ -276,6 +361,73 @@ class content_tab(QtWidgets.QWidget):
         self.icons['Parser'] = QtGui.QIcon(iconpath)
         return
 
+    def find_keys(self, obj, key):
+        """Pull all values of specified key from nested JSON."""
+        arr = []
+
+        def extract(obj, arr, key):
+            """Recursively search for values of key in JSON tree."""
+            if isinstance(obj, dict):
+                for k, v in obj.items():
+                    if isinstance(v, (dict, list)):
+                        extract(v, arr, key)
+                    elif k == key:
+                        arr.append(v)
+            elif isinstance(obj, list):
+                for item in obj:
+                    extract(item, arr, key)
+            return arr
+
+        results = extract(obj, arr, key)
+        return results
+
+    def recurse_replace_query_strings(self, query_string_replacement_list, exported_json):
+
+        if exported_json['type'] == "SavedSearchWithScheduleSyncDefinition":
+            for query_string_replacement in query_string_replacement_list:
+                if query_string_replacement['from'] in exported_json['search']['queryText']:
+                    exported_json['search']['queryText'] = exported_json['search']['queryText'].replace(
+                        str(query_string_replacement['from']),
+                        str(query_string_replacement['to']))
+                    break
+            return exported_json
+
+        elif exported_json['type'] == "DashboardSyncDefinition":
+            for panelnum, panel in enumerate(exported_json['panels'], start=0):
+
+                if panel['viewerType'] == "metrics":  # there can be multiple query strings so we have an extra loop here
+                    for querynum, metrics_query in enumerate(panel['metricsQueries'], start=0):
+                        for query_string_replacement in query_string_replacement_list:
+                            if query_string_replacement['from'] in metrics_query['query']:
+                                metrics_query['query'] = metrics_query['query'].replace(
+                                    str(query_string_replacement['from']),
+                                    str(query_string_replacement['to']))
+                                break
+                        panel['metricsQueries'][querynum] = metrics_query
+
+                else:  # if panel is a log panel
+                    for query_string_replacement in query_string_replacement_list:
+                        if query_string_replacement['from'] in panel['queryString']:
+                            panel['queryString'] = panel['queryString'].replace(
+                                str(query_string_replacement['from']),
+                                str(query_string_replacement['to']))
+                            break
+                exported_json['panels'][panelnum] = panel
+            return exported_json
+
+        elif exported_json['type'] == "FolderSyncDefinition":
+
+            children = []
+            for object in exported_json['children']:
+                children.append(self.recurse_replace_query_strings(query_string_replacement_list, object))
+            exported_json['children'] = children
+            return exported_json
+
+
+
+
+
+
     # Start methods for Content Tab
 
     def findreplacecopycontent(self, ContentListWidgetFrom, ContentListWidgetTo, fromurl, fromid, fromkey, tourl,
@@ -313,14 +465,21 @@ class content_tab(QtWidgets.QWidget):
             if exportsuccessful:
                 categoriesfrom = []
                 for content in contents:
-                    contentstring = json.dumps(content)
-                    categoriesfrom = categoriesfrom + re.findall(r'\"_sourceCategory\s*=\s*\\?\"?([^\s\\|]*)',
-                                                                 contentstring)
+                    query_list = self.find_keys(content, 'queryText')
+                    query_list = query_list + self.find_keys(content, 'query')
+                    query_list = query_list + self.find_keys(content, 'queryString')
+                    for query in query_list:
+                        categoriesfrom = categoriesfrom + re.findall(r'_sourceCategory\s*=\s*\\?\"?([^\s^"^)]*)\"?',
+                                                                      query)
+                #    contentstring = json.dumps(content)
+                #    categoriesfrom = categoriesfrom + re.findall(r'\"_sourceCategory\s*=\s*\\?\"?([^\s\\|]*)',
+                #                                                 contentstring)
                 uniquecategoriesfrom = list(set(categoriesfrom))  # dedupe the list
                 try:
                     fromtime = str(QtCore.QDateTime.currentDateTime().addSecs(-3600).toString(QtCore.Qt.ISODate))
                     totime = str(QtCore.QDateTime.currentDateTime().toString(QtCore.Qt.ISODate))
 
+                    # We query the destination org to get a sample of active source categories
                     query = r'* | count by _sourceCategory | fields _sourceCategory'
                     searchresults = tosumo.search_job_records_sync(query, fromTime=fromtime, toTime=totime,
                                                                    timeZone='UTC', byReceiptTime='false')
@@ -342,11 +501,12 @@ class content_tab(QtWidgets.QWidget):
                     if len(replacelist) > 0:
                         newcontents = []
                         for content in contents:
-                            for entry in replacelist:
-                                contentstring = json.dumps(content)
-                                contentstring = contentstring.replace(str(entry['from']), str(entry['to']))
-                                logger.info(contentstring)
-                                newcontents.append(json.loads(contentstring))
+                            newcontents.append(self.recurse_replace_query_strings(replacelist, content))
+                            # for entry in replacelist:
+                            #     contentstring = json.dumps(content)
+                            #     contentstring = contentstring.replace(str(entry['from']), str(entry['to']))
+                            #     logger.info(contentstring)
+                            #     newcontents.append(json.loads(contentstring))
                     else:
                         newcontents = contents
 
@@ -354,10 +514,12 @@ class content_tab(QtWidgets.QWidget):
                         tofolderid = ContentListWidgetTo.currentcontent['id']
                         for newcontent in newcontents:
                             status = tosumo.import_content_job_sync(tofolderid, newcontent, adminmode=toadminmode)
+
                         self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected,
                                                todirectorylabel)
                         return
                     except Exception as e:
+
                         logger.exception(e)
                         self.mainwindow.errorbox('Something went wrong with the Destination:\n\n' + str(e))
                         return
@@ -396,8 +558,7 @@ class content_tab(QtWidgets.QWidget):
                             item_id = child['id']
                             content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
                             status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
-                            self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected,
-                                                   todirectorylabel)
+                self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
 
             else:
@@ -549,7 +710,7 @@ If you are absolutely sure, type "DELETE" in the box below.
 
                 else:  # "Admin Folders" must be selected
                     logger.info("Updating Admin Folder List")
-                    ContentListWidget.currentcontent = sumo.get_admin_folder_sync(adminmode=False)
+                    ContentListWidget.currentcontent = sumo.get_admin_folder_sync(adminmode=True)
 
                     ContentListWidget.currentdirlist = []
                     dir = {'name': 'Admin Recommended', 'id': 'TOP'}
@@ -690,11 +851,11 @@ If you are absolutely sure, type "DELETE" in the box below.
                             item_id = child['id']
                             try:
                                 content = sumo.export_content_job_sync(item_id, adminmode=adminmode)
-                                savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.json')
+                                savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.sumocontent.json')
                                 if savefilepath:
                                     with savefilepath.open(mode='w') as filepointer:
                                         json.dump(content, filepointer)
-                                    message = message + str(selecteditem.text()) + r'.json' + '\n'
+                                    message = message + str(selecteditem.text()) + r'.sumocontent.json' + '\n'
                             except Exception as e:
                                 logger.exception(e)
                                 self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))

@@ -240,7 +240,7 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
                             try:
                                 export = sumo.get_fer(item_id)
 
-                                savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.json')
+                                savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.fer.json')
                                 if savefilepath:
                                     with savefilepath.open(mode='w') as filepointer:
                                         json.dump(export, filepointer)

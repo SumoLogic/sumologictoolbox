@@ -213,20 +213,32 @@ Content Copying:
     6. Click "Copy" (left to right or right to left). Your content will be copied to the current folder 
        in the destination pane.
     
-Field Extraction Rule copy/import/export: !New!
+Field Extraction Rule copy/import/export: 
 
     1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
     3. Click "Update" for source and destination to populate the FER lists
     4. Click "Copy" or "Backup" or "Restore".
     
-Scheduled View copy/import/export: !New!
+Scheduled View copy/import/export: 
 
     1. Input/select Credentials for your source and destination orgs
     2. Select your regions for source and destination orgs
     3. Click "Update" for source and destination to populate the FER lists
     4. Click "Copy" or "Backup" or "Restore".
+
+Users and Roles copy/import/export: !NEW!
+
+    1. Input/select Credentials for your source and destination orgs
+    2. Select your regions for source and destination orgs
+    3. Click "Update" for source and destination to populate the Users and Roles lists
+    4. Click "Copy" or "Backup" or "Restore" in either the Users or Roles sections. 
     
+    NOTE: Currently if you copy a user then that users roles will also be copied if they don't already
+    exist in the target org. 
+    
+    NOTE: You will get an error if you try to delete a role that still has users that belong to it. 
+        
 Content Find/Replace/Copy:  !EXPERIMENTAL!
 
     Copying content between orgs often requires that the sourceCategory tags be changed to match the new 
@@ -250,6 +262,26 @@ Content Find/Replace/Copy:  !EXPERIMENTAL!
         patience and resist the urge to rage quit, it's still a million times faster than doing this by hand.
     11. Once the pop-up window closes your content should be copied to the current folder in the 
         destination pane.
+
+Multi Account Management Support: !Alpha!
+
+    SumoLogic now provides an account provisioning API for SumoLogic partners and Large Customers. This feature
+    must be enabled by SumoLogic and will not be available to most customers. Please contact your SumoLogic rep
+    for more info. 
+    
+    0. Add credentials to the credential store for your master account. Then edit the sumotoolbox.ini file
+    and populate the two fields under the "Multi Account Management" section according to the instructions in the
+    comments.
+    1. Start Sumotoolbox, load your credential database, and switch to the preset that represents your "master"
+    org/account. I.E. the account that is authorized to provision new accounts (what you entered in the 
+    "authorized_preset" option in your ini file.)
+    2. Click Update to see a list of currently provisioned orgs (this will return nothing if you have never used
+    the MAM API to provision an org.)
+    3. Use the "Create Cloudflex Org" button to provison a new Cloudflex org. 
+    4. Use the "Update Org" button to modify an existing org. 
+    5. Use "Cancel Subscription" deactivate an org. 
+    
+    Note: Functionality here will change as the API and Sumotoolbox evolve. 
     
 Content Backup: 
 
@@ -295,8 +327,7 @@ Config File:
     sumologictoolbox now includes a sumologictoolbox.ini file to configure the tool. The ini file contains 
     documetation on each setting. 
     
-    NOTE: If you downloaded the executables rather than the source then this file will be generated on your 
-          first execution of the tool in the same directory as the tool. 
+    NOTE: This file will be generated on your first execution of the tool in the same directory as the tool. 
    
 Credential Database: 
 

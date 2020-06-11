@@ -6,7 +6,84 @@ import json
 import re
 from logzero import logger
 from modules.sumologic import SumoLogic
-from modules.dialogs import restoreSourcesDialog
+
+class restoreSourcesDialog(QtWidgets.QDialog):
+
+    def __init__(self, sources_json, parent=None):
+        super(restoreSourcesDialog, self).__init__(parent)
+        self.objectlist = []
+        self.setupUi(self, sources_json)
+
+    def setupUi(self, rsd, sources_json):
+
+        # setup static elements
+        rsd.setObjectName("Restore Sources")
+        rsd.resize(1150, 640)
+        self.buttonBox = QtWidgets.QDialogButtonBox(rsd)
+        self.buttonBox.setGeometry(QtCore.QRect(10, 600, 1130, 35))
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBoxOkCancel")
+        self.label = QtWidgets.QLabel(rsd)
+        self.label.setGeometry(QtCore.QRect(20, 10, 1120, 140))
+        self.label.setWordWrap(True)
+        self.label.setObjectName("labelInstructions")
+        self.scrollArea = QtWidgets.QScrollArea(rsd)
+        self.scrollArea.setGeometry(QtCore.QRect(10, 150, 1130, 440))
+        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setObjectName("scrollArea")
+        self.scrollAreaWidget = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents = QtWidgets.QFormLayout()
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+
+
+
+        # Create 1 set of (checkbox, label, combobox per fromcategory
+
+
+        for index, source in enumerate(sources_json):
+
+            objectdict = {'checkbox': None, 'label': None}
+            layout = QtWidgets.QHBoxLayout()
+            objectdict['checkbox'] = QtWidgets.QCheckBox()
+            objectdict['checkbox'].setGeometry(QtCore.QRect(0, 0, 20, 20))
+            objectdict['checkbox'].setText("")
+            objectdict['checkbox'].setObjectName("checkBox" + str(index))
+            objectdict['checkbox'].setCheckState(2)
+            layout.addWidget(objectdict['checkbox'])
+            objectdict['label']= QtWidgets.QLabel()
+            objectdict['label'].setGeometry(QtCore.QRect(0, 0, 480, 25))
+            objectdict['label'].setObjectName("label" + str(index))
+            objectdict['label'].setText(source['name'])
+            layout.addWidget(objectdict['label'])
+
+            self.objectlist.append(objectdict)
+            self.scrollAreaWidgetContents.addRow(layout)
+
+        self.scrollAreaWidget.setLayout(self.scrollAreaWidgetContents)
+        self.scrollArea.setWidget(self.scrollAreaWidget)
+        self.scrollArea.show()
+
+
+        self.retranslateUi(rsd)
+        self.buttonBox.accepted.connect(rsd.accept)
+        self.buttonBox.rejected.connect(rsd.reject)
+        QtCore.QMetaObject.connectSlotsByName(rsd)
+
+    def retranslateUi(self, restoreSourcesDialog):
+        _translate = QtCore.QCoreApplication.translate
+        restoreSourcesDialog.setWindowTitle(_translate("Restore Sources", "Dialog"))
+        self.label.setText(_translate("Restore Sources",
+                                      "<html><head/><body<p>Select the sources you wish to restore:</p></body></html>"))
+
+    def getresults(self):
+        results = []
+        for object in self.objectlist:
+            if str(object['checkbox'].checkState()) == '2':
+                results.append(object['label'].text())
+        return results
 
 class collector_tab(QtWidgets.QWidget):
 
@@ -24,15 +101,7 @@ class collector_tab(QtWidgets.QWidget):
         # UI Buttons for Collection API tab
 
         # Setup the search bars to work and to clear when update button is pushed
-        self.lineEditCollectorSearchLeft.textChanged.connect(lambda: self.set_listwidget_filter(
-            self.listWidgetCollectorsLeft,
-            self.lineEditCollectorSearchLeft.text()
-        ))
 
-        self.lineEditCollectorSearchRight.textChanged.connect(lambda: self.set_listwidget_filter(
-            self.listWidgetCollectorsRight,
-            self.lineEditCollectorSearchRight.text()
-        ))
 
         self.pushButtonUpdateListLeft.clicked.connect(self.lineEditCollectorSearchLeft.clear)
         self.pushButtonUpdateListRight.clicked.connect(self.lineEditCollectorSearchRight.clear)
@@ -295,16 +364,13 @@ class collector_tab(QtWidgets.QWidget):
                                         if 'id' in sumosource:  # the API creates an ID so this must be deleted before sending
                                             del sumosource['id']
                                         if 'alive' in sumosource:
-                                            del sumosource[
-                                                'alive']  # the API sets this itself so this must be deleted before sending
+                                            del sumosource['alive']  # the API sets this itself so this must be deleted before sending
                                         template = {}
-                                        template[
-                                            'source'] = sumosource  # the API expects a dict with a key called 'source'
+                                        template['source'] = sumosource  # the API expects a dict with a key called 'source'
                                         notduplicate = True
                                         sumotosourcelist = tosumo.sources(destinationcollectorid)
                                         for sumotosource in sumotosourcelist:
-                                            if sumotosource[
-                                                'name'] == source:  # make sure the source doesn't already exist in the destination
+                                            if sumotosource['name'] == source:  # make sure the source doesn't already exist in the destination
                                                 notduplicate = False
                                         if notduplicate:  # finally lets copy this thing
                                             tosumo.create_source(destinationcollectorid, template)
@@ -338,9 +404,9 @@ class collector_tab(QtWidgets.QWidget):
                 sumo = SumoLogic(id, key, endpoint=url)
                 for collectornameqstring in collectornamesqstring:
                     collectorid = self.getcollectorid(str(collectornameqstring.text()), url, id, key)
-                    savefilepath = pathlib.Path(savepath + r'/' + str(collectornameqstring.text()) + r'.json')
+                    savefilepath = pathlib.Path(savepath + r'/' + str(collectornameqstring.text()) + r'.collector.json')
                     savefilesourcespath = pathlib.Path(
-                        savepath + r'/' + str(collectornameqstring.text()) + r'_sources' + r'.json')
+                        savepath + r'/' + str(collectornameqstring.text()) + r'_sources' + r'.sources.json')
 
                     if savefilepath:
                         with savefilepath.open(mode='w') as filepointer:
