@@ -429,9 +429,9 @@ To Do:
 
 * Add "source update" functionality (for instance to add filters)
 
-* Add Users/Roles API functionality
-
 * Add Connections Functionality
+
+* Add filtering and export functionality to MAM support. 
 
 License
 =======
