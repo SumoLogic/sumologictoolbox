@@ -1,5 +1,6 @@
 # -*- mode: python -*-
-
+import PyInstaller.config
+PyInstaller.config.CONF['distpath'] = "./dist/mac"
 block_cipher = None
 
 added_files = [
@@ -8,7 +9,7 @@ added_files = [
     ]
 
 a = Analysis(['sumotoolbox.py'],
-             pathex=['/mnt/tim/PycharmProjects/sumotoolbox'],
+             pathex=['/netstuff/projects/PycharmProjects/sumologictoolbox'],
              binaries=None,
              datas=added_files,
              hiddenimports=['pkg_resources.py2_warn'],

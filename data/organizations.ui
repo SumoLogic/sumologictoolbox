@@ -84,6 +84,9 @@
      </property>
      <item>
       <widget class="QPushButton" name="pushButtonCreateCloudFlexOrg">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -103,7 +106,7 @@ Org</string>
      <item>
       <widget class="QPushButton" name="pushButtonCreateCreditsOrg">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -112,7 +115,7 @@ Org</string>
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Feature coming soon!</string>
+        <string>Create </string>
        </property>
        <property name="text">
         <string>Create

@@ -72,3 +72,24 @@ default values without overwriting existing values.
 
 *All backup files will now have a extension that indicates what sort of object they are.
 
+09-26-2020 0.7.1
+
+* Fixed the collector search bar which somehow got broken in the last update
+
+* Updated the "Find/Replace/Copy" Content feature to work with new style dashboards
+
+* Fixed a bug in which the content panel couldn't always show some folders in "admin recommended" and "global folders"
+modes
+
+* Added new method to sumologic.py: get_source_with_etag which returns the etag header as well. This is required for
+the update_source method to work.
+
+* Fixed the update_source method in sumologic.py. It was encoding the source json improperly and kicking back an error.
+
+* Temporarily disabled the MAM tab until that API is closer to release.
+
+* Added the "source update" tab which allows mass updates of source processing rules on sources. If you have a lot of
+collectors then refreshing this tab may take a while (like 40 minutes if you have 10,000 collectors.) Be patient.
+
+
+

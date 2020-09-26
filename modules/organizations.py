@@ -12,12 +12,6 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
         self.deployments = deployments
 
         self.product_names = ["SUMO-CF-TRIAL",
-                              "SUMO-CF-FREE",
-                              "SUMO-CF-PRO",
-                              "SUMO-CF-ENT",
-                              "SUMO-ESS",
-                              "SUMO-ENT-OPS",
-                              "SUMO-ENT-SEC",
                               "SUMO-ENT-SUI"
                               ]
         self.subscription_type = subscription_type
@@ -30,7 +24,6 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
 
     def setupUi(self, Dialog):
         Dialog.setObjectName("CreateOrg")
-        #Dialog.resize(320, 366)
         self.intValidator = QtGui.QIntValidator()
         self.setWindowTitle('Enter Org Details')
 
@@ -77,7 +70,7 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
         self.labelDeployment.setText('Deployment:')
         self.comboBoxDeployment = QtWidgets.QComboBox(Dialog)
         for deployment in self.deployments:
-            self.comboBoxDeployment.addItem(deployment['deploymentName'].strip())
+            self.comboBoxDeployment.addItem(deployment['deploymentId'].strip())
         self.layoutDeployment = QtWidgets.QHBoxLayout()
         self.layoutDeployment.addWidget(self.labelDeployment)
         self.layoutDeployment.addWidget(self.comboBoxDeployment)
@@ -332,8 +325,8 @@ class organizations_tab(QtWidgets.QWidget):
 
         self.tableWidgetOrgs.clearContents()
         if self.mainwindow.cred_db_authenticated == True:
-            current_org_preset = str(self.mainwindow.comboBoxPresetLeft.currentText())
-            authorized_org_preset = self.mainwindow.config['Multi Account Management']['authorized_preset']
+            current_org_preset = str(self.mainwindow.comboBoxPresetLeft.currentText()).strip()
+            authorized_org_preset = str(self.mainwindow.config['Multi Account Management']['authorized_preset']).strip()
             if current_org_preset == authorized_org_preset:
                 self.mainwindow.organizations.setEnabled(True)
             else:
@@ -356,12 +349,13 @@ class organizations_tab(QtWidgets.QWidget):
             sumo_mam = SumoLogic_MAM(id, key)
             deployments = sumo_mam.get_deployments(partner_name)
             for deployment in deployments:
-                deployment_orgs=sumo_mam.get_orgs(partner_name, deployment['deploymentName'], status_filter=status_filter)
+                deployment_orgs = sumo_mam.get_orgs(partner_name, deployment['deploymentId'], status_filter=status_filter)
                 orgs = orgs + deployment_orgs
 
             if self.checkBoxOrgDetails.isChecked():
                 for org_index, org in enumerate(orgs, start=0):
                     details_raw = sumo_mam.get_org_details(partner_name, org['deploymentId'], org['orgId'])
+                    print(details_raw)
                     orgs[org_index] = {'organizationName': details_raw['organizationName'],
                                        'orgId': details_raw['orgId'],
                                        'deploymentId': details_raw['deploymentId'],

@@ -361,6 +361,7 @@ class content_tab(QtWidgets.QWidget):
         self.icons['Parser'] = QtGui.QIcon(iconpath)
         return
 
+    # Thanks Stackoverflow. Yoink!
     def find_keys(self, obj, key):
         """Pull all values of specified key from nested JSON."""
         arr = []
@@ -414,6 +415,20 @@ class content_tab(QtWidgets.QWidget):
                             break
                 exported_json['panels'][panelnum] = panel
             return exported_json
+
+        elif exported_json['type'] == "DashboardV2SyncDefinition":  # if it's a new style dashboard
+            for panelnum, panel in enumerate(exported_json['panels'], start=0):
+                for querynum, query in enumerate(panel['queries']):
+                    for query_string_replacement in query_string_replacement_list:
+                        if query_string_replacement['from'] in query['queryString']:
+                            query['queryString'] = query['queryString'].replace(
+                                str(query_string_replacement['from']),
+                                str(query_string_replacement['to']))
+                            break
+                    panel['queries'][querynum] = query
+                exported_json['panels'][panelnum] = panel
+            return exported_json
+
 
         elif exported_json['type'] == "FolderSyncDefinition":
 
@@ -498,6 +513,7 @@ class content_tab(QtWidgets.QWidget):
                 if str(dialog.result()) == '1':
                     replacelist = dialog.getresults()
                     logger.info(replacelist)
+                    dialog.close()
                     if len(replacelist) > 0:
                         newcontents = []
                         for content in contents:
@@ -524,6 +540,7 @@ class content_tab(QtWidgets.QWidget):
                         self.mainwindow.errorbox('Something went wrong with the Destination:\n\n' + str(e))
                         return
                 else:
+                    dialog.close()
                     return
 
 
@@ -724,7 +741,11 @@ If you are absolutely sure, type "DELETE" in the box below.
 
 
             else:
-                ContentListWidget.currentcontent = sumo.get_folder(currentdir['id'])
+                if radioselected == -3 or radioselected == -4:
+                    adminmode = True
+                else:
+                    adminmode = False
+                ContentListWidget.currentcontent = sumo.get_folder(currentdir['id'], adminmode=adminmode)
                 self.updatecontentlistwidget(ContentListWidget, url, id, key, radioselected, directorylabel)
 
 
@@ -739,8 +760,9 @@ If you are absolutely sure, type "DELETE" in the box below.
     def doubleclickedcontentlist(self, item, ContentListWidget, url, id, key, radioselected, directorylabel):
         logger.info("Going Down One Content Folder")
         sumo = SumoLogic(id, key, endpoint=url)
+        print(radioselected)
         currentdir = ContentListWidget.currentdirlist[-1]
-        if radioselected == -3:
+        if radioselected == -3 or radioselected == -4:
             adminmode = True
         else:
             adminmode = False
@@ -775,7 +797,11 @@ If you are absolutely sure, type "DELETE" in the box below.
 
                 else:
                     ContentListWidget.currentdirlist.pop()
-                    ContentListWidget.currentcontent = sumo.get_folder(parentdir['id'])
+                    if radioselected == -3 or radioselected == -4:
+                        adminmode = True
+                    else:
+                        adminmode = False
+                    ContentListWidget.currentcontent = sumo.get_folder(parentdir['id'], adminmode=adminmode)
 
                     self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
                     return
@@ -804,12 +830,12 @@ If you are absolutely sure, type "DELETE" in the box below.
                     item = QtWidgets.QListWidgetItem(self.icons['Search'], item_name)
                     item.setIcon(self.icons['Search'])
                     ContentListWidget.addItem(item)  # populate the list widget in the GUI
-                elif object['itemType'] == 'Dashboard':
+                elif object['itemType'] == 'Dashboard' or object['itemType'] == 'Report':
                     item = QtWidgets.QListWidgetItem(self.icons['Dashboard'], item_name)
                     item.setIcon(self.icons['Dashboard'])
                     ContentListWidget.addItem(item)  # populate the list widget in the GUI
                 elif object['itemType'] == 'Lookups':
-                    item = QtWidgets.QListWidgetItem(self.icons['Dashboard'], item_name)
+                    item = QtWidgets.QListWidgetItem(self.icons['Lookups'], item_name)
                     item.setIcon(self.icons['Lookups'])
                     ContentListWidget.addItem(item)  # populate the list widget in the GUI
                 else:

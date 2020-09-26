@@ -1,10 +1,23 @@
+__author__ = 'Tim MacDonald'
+__version__ = '0.9'
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at:
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+
 import json
 import requests
 import time
+import warnings
+import urllib.parse
 
 
 from logzero import logger
-
+import logzero
 
 try:
     import cookielib
@@ -45,6 +58,7 @@ class SumoLogic(object):
 
     def __init__(self, accessId, accessKey, endpoint=None, cookieFile='cookies.txt'):
         self.session = requests.Session()
+        logzero.loglevel(level=20) # info level, debug is 10
         self.session.auth = (accessId, accessKey)
         self.session.headers = {'content-type': 'application/json', 'accept': 'application/json'}
         cj = cookielib.FileCookieJar(cookieFile)
@@ -53,8 +67,12 @@ class SumoLogic(object):
             self.endpoint = self._get_endpoint()
         else:
             self.endpoint = endpoint
+        if self.endpoint[-4:] == "/v1":
+            self.endpoint = self.endpoint[:-4]
+            warnings.warn('Endpoint should no longer end in "/v1/", it has been removed from your endpoint string.', DeprecationWarning)
         if endpoint[-1:] == "/":
-          raise Exception("Endpoint should not end with a slash character")
+            self.endpoint = self.endpoint[:-1]
+            warnings.warn("Endpoint should not end with a slash character, it has been removed from your endpoint string.")
 
     def _get_endpoint(self):
         """
@@ -237,9 +255,31 @@ class SumoLogic(object):
             results = results + r
         return results
 
-    def collector(self, collector_id):
+    # for backwards compatibility with old community API
+    def get_collector(self, collector_id):
+        return self.get_collector_by_id(collector_id)
+
+    def get_collector_by_id(self, collector_id):
         r = self.get('/v1/collectors/' + str(collector_id))
         return r.json()
+
+    # The following calls the Sumo "get collector by name" method which does not support special characters like ; / % \
+    def get_collector_by_name(self, name):
+        encoded_name = urllib.parse.quote(str(name))
+        r = self.get('/v1/collectors/name/' + encoded_name)
+        return r.json()
+
+    # this version makes multiple calls but should work with special characters in the collector name
+    def get_collector_by_name_alternate(self, name):
+        sumocollectors = self.get_collectors_sync()
+        for sumocollector in sumocollectors:
+            if sumocollector['name'] == str(name):
+                collector = self.get_collector(sumocollector['id'])
+                return collector
+
+    # for backward compatibility with old community API
+    def collector(self, collector_id):
+        return self.get_collector(collector_id)
 
     def create_collector(self, collector, headers=None):
         r = self.post('/v1/collectors', collector, headers)
@@ -254,14 +294,38 @@ class SumoLogic(object):
         r = self.delete('/v1/collectors/' + str(collector_id))
         return r.json()
 
-    def sources(self, collector_id, limit=None, offset=None):
+    def get_sources(self, collector_id, limit=None, offset=None):
         params = {'limit': limit, 'offset': offset}
         r = self.get('/v1/collectors/' + str(collector_id) + '/sources', params)
         return json.loads(r.text)['sources']
 
-    def source(self, collector_id, source_id):
+    def get_sources_sync(self, collector_id, limit=1000):
+        offset = 0
+        results = []
+        r = self.get_sources(collector_id, limit=limit, offset=offset)
+        offset = offset + limit
+        results = results + r
+        while not (len(r) < limit):
+            r = self.get_sources(collector_id, limit=limit, offset=offset)
+            offset = offset + limit
+            results = results + r
+        return results
+
+    # for backward compatibility with old community API
+    def sources(self, collector_id, limit=None, offset=None):
+        return self.get_sources(collector_id, limit=limit, offset=offset)
+
+    def get_source(self, collector_id, source_id):
         r = self.get('/v1/collectors/' + str(collector_id) + '/sources/' + str(source_id))
         return r.json()
+
+    def get_source_with_etag(self, collector_id, source_id):
+        r = self.get('/v1/collectors/' + str(collector_id) + '/sources/' + str(source_id))
+        return r.headers.get('etag'), r.json()
+
+    # for backward compatibility with old community API
+    def source(self, collector_id, source_id):
+        return self.get_source(collector_id, source_id)
 
     def create_source(self, collector_id, source):
         r = self.post('/v1/collectors/' + str(collector_id) + '/sources', source)
@@ -269,12 +333,12 @@ class SumoLogic(object):
 
     def update_source(self, collector_id, source, etag):
         headers = {'If-Match': etag}
-        r = self.put('/v1/collectors/' + str(collector_id) + '/sources/' + str(source['source']['id']), json.loads(source), headers)
+        r = self.put('/v1/collectors/' + str(collector_id) + '/sources/' + str(source['source']['id']), source, headers)
         return r.json()
 
     def delete_source(self, collector_id, source_id):
         r = self.delete('/v1/collectors/' + str(collector_id) + '/sources/' + str(source_id))
-        return r.json()
+        return r
 
     # Unverified API calls. These are disabled as they are not documented by Sumo Logic.
     # def dashboards(self, monitors=False):
@@ -474,6 +538,7 @@ class SumoLogic(object):
         job_id = str(r['id'])
         status = self.get_import_content_job_status(str(folder_id), str(job_id), adminmode=adminmode)
         while status['status'] == 'InProgress':
+            time.sleep(1)
             status = self.get_import_content_job_status(str(folder_id), str(job_id), adminmode=adminmode)
         return status
 
@@ -668,7 +733,7 @@ class SumoLogic(object):
     # https://tools.ietf.org/html/rfc3339
     # https://medium.com/easyread/understanding-about-rfc-3339-for-datetime-formatting-in-software-engineering-940aa5d5f68a
     def create_scheduled_view(self, index_name, query, start_time, retention_period=-1, data_forwarding_id=None):
-        data = {'indexName': index_name, 'query': query, 'startTime': start_time, 'retentionPeriod': retention_period, "dataForwardingId": data_forwarding_id }
+        data = {'indexName': str(index_name), 'query': str(query), 'startTime': str(start_time), 'retentionPeriod': int(retention_period), "dataForwardingId": str(data_forwarding_id) }
         r = self.post('/v1/scheduledViews', data)
         return r.json()
 
@@ -686,4 +751,36 @@ class SumoLogic(object):
         return r.json()
 
 
+    # Partitions API
+
+    def get_partitions(self, limit=1000, token=''):
+        params = {'limit': limit, 'token': token}
+        r = self.get('/v1/partitions', params=params)
+        return r.json()
+
+    def get_partitions_sync(self, limit=1000):
+        token = None
+        results = []
+        while True:
+            r = self.get_partitions(limit=limit, token=token)
+            token = r['next']
+            results = results + r['data']
+            if token is None:
+                break
+        return results
+
+    def create_partition(self, name, routing_expression, analytics_tier="enhanced", retention_period=-1, data_forwarding_id=None, is_compliant=False):
+        data = {'name': str(name),
+                'routingExpression': str(routing_expression),
+                'analyticsTier': str(analytics_tier),
+                'retentionPeriod': int(retention_period),
+                'dataForwardingId': str(data_forwarding_id),
+                'isCompliant': str(is_compliant).lower()}
+
+        r = self.post('/v1/partitions', data)
+        return r.json()
+
+    def get_partition(self, item_id):
+        r = self.get('/v1/partitions/' + str(item_id))
+        return r.json()
 

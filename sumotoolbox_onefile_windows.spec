@@ -1,5 +1,6 @@
 # -*- mode: python -*-
-
+import PyInstaller.config
+PyInstaller.config.CONF['distpath'] = "dist\\windows"
 block_cipher = None
 
 added_files = [
@@ -9,7 +10,7 @@ added_files = [
 
 
 a = Analysis(['sumotoolbox.py'],
-             pathex=['Z:\\PycharmProjects\\sumologictoolbox'],
+             pathex=['Z:\\Projects\\PycharmProjects\\sumologictoolbox'],
              binaries=[],
              datas=added_files,
              hiddenimports=['pkg_resources.py2_warn'],

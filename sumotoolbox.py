@@ -1,5 +1,5 @@
 __author__ = 'Tim MacDonald'
-__version__ = '0.7'
+__version__ = '0.7.1'
 # Copyright 2015 Timothy MacDonald
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -34,6 +34,7 @@ from modules.scheduled_view import scheduled_view_tab
 from modules.field_extration_rule import field_extraction_rule_tab
 from modules.content import content_tab
 from modules.collector import collector_tab
+from modules.source_update import source_update_tab
 from modules.organizations import organizations_tab
 from modules.users_and_roles import users_and_roles_tab
 
@@ -213,20 +214,22 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         # initialize variable to hold whether we've authenticated the cred database
         self.cred_db_authenticated = False
 
+        # Load update and load the ini file into self.config
         self.init_and_load_config_file()
         self.initModels()  # load all the comboboxes and such with values
-        # Configure the menu actions
+        # Configure the dropdown menu actions
         self.setup_menus()
         # Initially set logging level to match what is checked in the logging menu
         self.change_logging_level()
 
         # Configure the creddb buttons according to the config file settings
-        #self.initial_config_cred_db_buttons()
         self.set_creddbbuttons()
 
         # load additional Tabs from available modules
         self.collector = collector_tab(self)
         self.tabWidget.addTab(self.collector, "Collectors")
+        self.source_update = source_update_tab(self)
+        self.tabWidget.addTab(self.source_update, "Source Update")
         self.content = content_tab(self)
         self.tabWidget.addTab(self.content, "Content")
         self.users_and_roles = users_and_roles_tab(self)
@@ -235,14 +238,15 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.tabWidget.addTab(self.field_extraction_rule, "Field Extraction Rules")
         self.scheduled_view = scheduled_view_tab(self)
         self.tabWidget.addTab(self.scheduled_view, "Scheduled Views")
-        self.organizations = organizations_tab(self)
-        self.tabWidget.addTab(self.organizations, "Multi Account Mgmt")
+        # Commented out org tab until v1.0 or org API release
+        # self.organizations = organizations_tab(self)
+        # self.tabWidget.addTab(self.organizations, "Multi Account Mgmt")
 
         # disable right credential box because we always start on the search tab
         # which only uses the left credentials
         self.tabchange(0)
 
-        # initial clear of all stateful objects
+        # initial clear of all stateful objects (This makes sure all of the tabs are cleared and initialized)
         self.reset_stateful_objects()
 
         # connect all of the UI button elements to their respective methods
@@ -361,10 +365,11 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
     def reset_stateful_objects(self, side='both'):
 
         self.collector.reset_stateful_objects(side)
+        self.source_update.reset_stateful_objects(side)
         self.content.reset_stateful_objects(side)
         self.scheduled_view.reset_stateful_objects(side)
         self.field_extraction_rule.reset_stateful_objects(side)
-        self.organizations.reset_stateful_objects()
+        #self.organizations.reset_stateful_objects()
         self.users_and_roles.reset_stateful_objects(side)
         return
 
@@ -401,7 +406,9 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                     # We pass a username here (from the config file) just in case someone has written their own
                     # version of the CredentialDB class that requires both a username/id AND password
                     # however the version distributed with sumologictoolbox ignores the username.
-                    self.credentialstore = CredentialsDB(password, username=self.config['Credential Store']['username'], create_new=True)
+                    self.credentialstore = CredentialsDB(password,
+                                                         username=self.config['Credential Store']['username'],
+                                                         create_new=True)
                     # restrict permissions on the db file to just the user. May not be effective on Windows
                     os.chmod(str(db_file), 0o600)
                     self.cred_db_authenticated = True
@@ -922,7 +929,7 @@ If so type 'DELETE' in the box below:"
 
     # Start Misc/Utility Methods
     def tabchange(self, index):
-        if index == 0 or index == 6:
+        if index == 0 or index == 2 or index == 6:
             self.comboBoxRegionRight.setEnabled(False)
             self.lineEditUserNameRight.setEnabled(False)
             self.lineEditPasswordRight.setEnabled(False)

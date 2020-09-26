@@ -100,8 +100,17 @@ class collector_tab(QtWidgets.QWidget):
 
         # UI Buttons for Collection API tab
 
-        # Setup the search bars to work and to clear when update button is pushed
 
+        # Setup the search bars to work and to clear when update button is pushed
+        self.lineEditCollectorSearchLeft.textChanged.connect(lambda: self.set_listwidget_filter(
+            self.listWidgetCollectorsLeft,
+            self.lineEditCollectorSearchLeft.text()
+        ))
+
+        self.lineEditCollectorSearchRight.textChanged.connect(lambda: self.set_listwidget_filter(
+            self.listWidgetCollectorsRight,
+            self.lineEditCollectorSearchRight.text()
+        ))
 
         self.pushButtonUpdateListLeft.clicked.connect(self.lineEditCollectorSearchLeft.clear)
         self.pushButtonUpdateListRight.clicked.connect(self.lineEditCollectorSearchRight.clear)

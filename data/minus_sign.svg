@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="118.82239"
+   height="122.92707"
+   viewBox="0 0 118.82239 122.92707"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="negative.svg">
+  <title
+     id="title5066">Negative Icon</title>
+  <defs
+     id="defs4">
+    <radialGradient
+       gradientTransform="matrix(1,0,0,0.08641975,-311.54127,-1303.7362)"
+       gradientUnits="userSpaceOnUse"
+       xlink:href="#3"
+       id="5"
+       r="53.91"
+       cy="117.35"
+       cx="63.894001" />
+    <linearGradient
+       id="3">
+      <stop
+         id="I" />
+      <stop
+         stop-opacity="0"
+         offset="1"
+         id="J" />
+    </linearGradient>
+    <linearGradient
+       gradientUnits="userSpaceOnUse"
+       xlink:href="#2"
+       id="A"
+       y2="120.54"
+       x2="0"
+       y1="8.7069998"
+       gradientTransform="matrix(1.0119373,0,0,1.0266947,-314.97601,-1418.8024)" />
+    <linearGradient
+       id="2">
+      <stop
+         id="G"
+         style="stop-color:#cf6161;stop-opacity:1" />
+      <stop
+         offset="1"
+         id="H"
+         style="stop-color:#8a0000;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient
+       gradientTransform="matrix(0.5353487,-0.7140729,0.764706,0.9803922,169.49135,1199.2767)"
+       gradientUnits="userSpaceOnUse"
+       xlink:href="#4"
+       id="7"
+       r="38.945999"
+       cy="148.57001"
+       cx="-64" />
+    <linearGradient
+       id="4">
+      <stop
+         stop-color="#eee"
+         id="K" />
+      <stop
+         stop-color="#dcdcdc"
+         offset="1"
+         id="L" />
+    </linearGradient>
+    <radialGradient
+       gradientTransform="matrix(1.5330966,-3.1358239e-8,2.404893e-8,1.1240308,-33.828167,2.9909361)"
+       gradientUnits="userSpaceOnUse"
+       xlink:href="#9"
+       id="8"
+       r="55.27"
+       cy="-15.174"
+       cx="64.699997" />
+    <linearGradient
+       id="9">
+      <stop
+         stop-color="#eee"
+         id="M" />
+      <stop
+         stop-opacity="0"
+         stop-color="#eee"
+         offset="1"
+         id="N" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="-90.058141"
+     inkscape:cy="36.898977"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1680"
+     inkscape:window-height="974"
+     inkscape:window-x="3600"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Negative Icon</dc:title>
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>adlerweb</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:source>based on &quot;Minus Emblem Icon&quot; by sixsixfive</dc:source>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-737.73163,-182.32723)">
+    <g
+       id="g4336"
+       transform="translate(1045.9838,1594.1901)">
+      <path
+         id="B"
+         d="m -193.73761,-1293.5947 a 53.91015,4.6589018 0 1 1 -107.8203,0 53.91015,4.6589018 0 1 1 107.8203,0 z"
+         inkscape:connector-curvature="0"
+         style="opacity:0.44299999;fill:url(#5)" />
+      <path
+         id="C"
+         d="m -191.42962,-1352.4517 a 57.41135,57.411349 0 1 1 -114.8227,0 57.41135,57.411349 0 1 1 114.8227,0 z"
+         inkscape:connector-curvature="0"
+         style="fill:url(#A)" />
+      <path
+         id="D"
+         d="m -191.42962,-1352.4517 a 57.41135,57.411349 0 1 1 -114.8227,0 57.41135,57.411349 0 1 1 114.8227,0 z"
+         inkscape:connector-curvature="0"
+         style="fill:none;stroke:#6e0000;stroke-width:3.99969125;stroke-opacity:1" />
+      <rect
+         rx="3.3640001"
+         id="E"
+         transform="scale(-1,-1)"
+         y="1345.3894"
+         x="219.06097"
+         height="14.13"
+         width="59.560001"
+         style="fill:url(#7)" />
+      <g
+         id="F"
+         transform="translate(-312.84552,-1414.3988)">
+        <path
+           id="O"
+           transform="matrix(1.0119373,0,0,1.0266947,-2.1350421,-4.4029736)"
+           d="m 65.34375,11.21875 c -29.979853,0 -54.21875,23.915681 -54.21875,53.40625 0,29.490569 24.238897,53.40625 54.21875,53.40625 29.979853,0 54.25,-23.917374 54.25,-53.40625 0,-29.488876 -24.270147,-53.40625 -54.25,-53.40625 z"
+           inkscape:connector-curvature="0"
+           style="fill:none;stroke:url(#8);stroke-width:2.079" />
+      </g>
+    </g>
+  </g>
+</svg>

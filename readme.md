@@ -239,7 +239,7 @@ Users and Roles copy/import/export: !NEW!
     
     NOTE: You will get an error if you try to delete a role that still has users that belong to it. 
         
-Content Find/Replace/Copy:  !EXPERIMENTAL!
+Content Find/Replace/Copy:  (New and Improved Algorithm)
 
     Copying content between orgs often requires that the sourceCategory tags be changed to match the new 
     environment. The Find/Replace/Copy feature is intended to lighten this burden by doing sourceCategory
@@ -263,8 +263,8 @@ Content Find/Replace/Copy:  !EXPERIMENTAL!
     11. Once the pop-up window closes your content should be copied to the current folder in the 
         destination pane.
 
-Multi Account Management Support: !Alpha!
-
+Multi Account Management Support: !Alpha! (!Temporaily Disabled due to API Changes!)
+ 
     SumoLogic now provides an account provisioning API for SumoLogic partners and Large Customers. This feature
     must be enabled by SumoLogic and will not be available to most customers. Please contact your SumoLogic rep
     for more info. 
@@ -282,7 +282,46 @@ Multi Account Management Support: !Alpha!
     5. Use "Cancel Subscription" deactivate an org. 
     
     Note: Functionality here will change as the API and Sumotoolbox evolve. 
+
+Source Update: !New! !Experimental!:
+
+    Source update allows you to perform mass updates of processing rules on sources. This is experimental functionality
+    so please be EXTREMELY careful using it. 
     
+    1. Choose relative or absolute mode. Relative will allow you to add or remove rules but leave other rules intact.
+       Absolute mode will overwrite existing rules. 
+    2. Update your list of sources. This can take a REALLY long time if you lots of collectors (40 minutes(!) if you
+       have 10,000 collectors.) Be patient, it's probably still faster than updating rules by hand. 
+    3. The source list will populate with three types of entries; source categories, sources, and fields.
+            A. Choosing a sourceCategory (listed in blue) will target all sources that have that sourceCategory
+            B. Choosing a specifing source (lised in white with the collector name in square brackets) will target that
+            specfic sournce
+            C. Choosing a field/value pair (listed in pink) will target all sources with that field/value set. 
+    4. Select any comibnation of entries from the source list and add them to the target list. Don't worry if you think
+       your selections might result in a particular source being targeted multiple times, the list will be deduped when you 
+       apply the update. 
+    5. Add updates to perform. Currently you can either add or remove processing rules. 
+    
+        A. If you add a rule you'll need to enter the details into the dialog box that comes up. Note that what you
+        enter here is not tested for valid syntax. It is highly recommended that you test your processing rule in the
+        Sumo Logic UI prior to mass deploying it.
+        B. If you remove a rule you'll be able to select from a list of existing rules. Note that this is an
+        aggregate list of existing rules on your targeted sources. it's possible that some or most of your targeted
+        sources will not have all the rules in the list. Note You cannot remove rules while in absolute mode as
+        it clears all rules from the source by default anyway. 
+    6. Once you've added all the updates you like click "Apply Changes". This will start the process of applying the
+       changes to your org. This can take a long time if you are updating many sources. If you are adding rule(s) and your
+       new rules have bad syntax then you will have failures now. Always test your rules first in the Sumo Logic UI!
+    7. Once the apply process is finished Sumo Toolbox will re-update the source list automatically and clear the target
+       list. At this point you should stop what you are doing, do not, under any circumstances close Sumotoolbox, and go
+       to the Sumo Logic UI and verify the outcome of your update. If anything went wrong move on to step 8.
+    8. (Optional) Undo changes. If you've made a mistake (or if I've made a mistake and you encountered a bug) the you
+       can choose to undo your changes. This should put everything back (again it may take a while.) Be warned that "undo"
+       goes away if you shut down Sumotoolbox, so do not close the program until you've verified your changes. 
+    
+    
+    
+
 Content Backup: 
 
     1. Input/select Credentials for your source and destination orgs
@@ -419,19 +458,26 @@ Known Issues:
 until the calls complete. This is due to the requests library blocking Qt5 when REST calls are being used. One day this
 might be fixed by multithreading the app but currently this is expected behaviour. 
 
-* When copying content to Admin Recommended folders the content will be copied but not visible in this tool until it is shared in the
-SumoLogic UI. This will be resolved in a future release. 
+* Copying scheduled searches that use a connection for alerting (as opposed to email) the import fails as the connection
+ID does not exist in the target. Working to resolve this. 
 
-* New style dashboards are not currently visible in the content explorer.
 
 To Do:
 ======
 
-* Add "source update" functionality (for instance to add filters)
+* add "copy org" tab
 
-* Add Connections Functionality
+* add "partitions" tab
 
-* Add filtering and export functionality to MAM support. 
+* Add "SAML" tab
+
+* add "connections" tab
+
+* Re-enable MAM tab with ability to deploy users/roles/content/etc... as part of org provision
+
+* add JSON viewer to all tabs 
+
+* add addition update options to "source update" tab, such as updating sourceCategory or field info
 
 License
 =======
