@@ -1,95 +1,90 @@
 Changelog for SumoToolBox
 
-01-30-2020  0.5-beta
+10-29-2020 0.8
+*   Fixed this file (the changelog) to be descending (new stuff at the top instead of the bottom.)
+*   Fixed the content find/replace/copy functionality to work with new style dashboards
+*   Added JSON view button to most panes. This will show you the JSON that defines the selected object. The viewer
+is pretty basic but it does have search capability. Type in your search term and click the Up or Down arrow to search
+in that direction. There is currently no context menu but you can copy from the window using ctrl-c or command-c
+depending on your computer. I may update this viewer later to be a bit more advanced (maybe an alternate collapsible
+tree view?)
+*   Fixed bug where the right side of scheduled views pane was disabled
+*   Updated font for source updated pane to match the app standard font (Waree 12)
+*   Added shared module for classes and functions that are shared by all panes (for instance the new JSON viewer)
+*   Fixed a bug that was preventing mask rule updates from working in the "source update" tab.
+*   Fixed a bug that was preventing debug mode from working
+*   Added a Partitions tab to manipulate partitions (no general partition yet though, waiting on API update). Note that
+copying a partition only creates that partition in the destination, it does NOT copy the data stored in the partition.
 
-*Added FER tab with support for Field Extraction Rule copy/backup/restore (find/replace/copy buttons are disabled and will be implemented in a future release.
-*Added splash screen logo
-*Added "Settings" menu with ability to change logging level for debugging purposes.
-*Added Icons to Content Pane
-*Added ability to copy multiple sources to multiple target get_collectors
-*Switched from Darkstyle Theme to qtmodern due to bugs in Darkstyle
-*Switched from pyqt5 to qtpy
+09-26-2020 0.7.1
 
-03-01-2020 0.5.1-beta
-
-*fixed bug that kept more than one selected item from being copied in the content pane
-*fixed bug that limited the number of collectors displayed to 1000
-*fixed bug required you to click "OK" each time a set of sources was copied to a collector when copying to multiple collectors
-*added search feature to collector list
-*renamed "collectors" method to "get_collectors" in sumologic.py
-*added "get_collectors_sync" synchronous method to sumologic.py
-
-03-09-2020 0.6
-
-*major code refactor. Each tab (except for search) is now it's own class and imports it's own tab layout. This makes the
-project much more modular and easier to work on. The main class is nicely trimmed down. This should also make it
-much simpler for people to contribute functionality to the project in the future.
-
-*The project directory structure has changed as a result of the refactor. The modules folder now contains all the additional
-modules and classes. If you're looking for sumologic.py to use as a python SDK it's now in the "modules" folder.
-
-*Added scheduled view support in it's own tab (currently scheduled views are set to start "now"-ish when they are created (through
-copying or restoring.) If you want to set them to retroactively process older data you'll need to edit them in the SumoLogic UI
-after they are copied/restored.
-
-*Changed the tab visual style to make it beautiful :-)
-*Added tooltips
+*   Fixed the collector search bar which somehow got broken in the last update
+*   Updated the "Find/Replace/Copy" Content feature to work with new style dashboards
+*   Fixed a bug in which the content panel couldn't always show some folders in "admin recommended" and "global folders"
+modes
+*   Added new method to sumologic.py: get_source_with_etag which returns the etag header as well. This is required for
+the update_source method to work.
+*   Fixed the update_source method in sumologic.py. It was encoding the source json improperly and kicking back an error.
+*   Temporarily disabled the MAM tab until that API is closer to release.
+*   Added the "source update" tab which allows mass updates of source processing rules on sources. If you have a lot of
+collectors then refreshing this tab may take a while (like 40 minutes if you have 10,000 collectors.) Be patient.
 
 06-10-2020 0.7
 
-*Added Multi Account Management support for large Enterprises and Service Providers. This is not a globally available API
+*   Added Multi Account Management support for large Enterprises and Service Providers. This is not a globally available API
 must be turned on by Sumo Logic for specific customers/partners. To enable MAM support in Sumotoolbox you must edit your
 config file and enter your "partner_name" in the appropriate field. If you do not know your partner name contact Sumo Logic.
 If you are leveraging the built-in Credential Store in SumoToolBox you also need to specify which of your credential presets
 is authorized to perform MAM functions by editing the "authorized_preset" field in the INI file.
-
-*Added a new SDK for Multi Account Management. Look for the file called "sumologic_mam.py" under the modules folder.
+*   Added a new SDK for Multi Account Management. Look for the file called "sumologic_mam.py" under the modules folder.
 I broke this out as a separate SDK because the API endpoint for MAM is different than the rest of the SDKs and the rate
 limiting may be different as well. Plus only a small number of customers/partners will be able to use this feature.
-
-*Added a proper back off algorithm to the standard Sumo Logic SDK to deal with rate limiting (previously wait times
+*   Added a proper back off algorithm to the standard Sumo Logic SDK to deal with rate limiting (previously wait times
 between calls were hard coded.)
-
-*Updated the Content Find/Replace/Copy functionality with a new algorithm that should work much better. The "new hotness"
+*   Updated the Content Find/Replace/Copy functionality with a new algorithm that should work much better. The "new hotness"
 recurses the data structure whereas the "old and busted" just turned the whole structure to a massive string and tried to
 find source categories that way (problematic with all the escape characters in the exported JSON.)
-
-*Moved all custom dialogs out of the dialog.py file and into their calling module.
-
-*Did some code cleanup in sumologic.py. I don't believe any functionality changed (fingers crossed)
-
-*Rewrote Find/Replace/Copy dialog setupUI method to use layouts instead of geometry. It's still not quite right but it's
+*   Moved all custom dialogs out of the dialog.py file and into their calling module.
+*   Did some code cleanup in sumologic.py. I don't believe any functionality changed (fingers crossed)
+*   Rewrote Find/Replace/Copy dialog setupUI method to use layouts instead of geometry. It's still not quite right but it's
 much better than it was. If anyone is better at Qt5 dynamic form generation than I am (not hard) and wants to suggest
 improvements please suggest away.
-
-*Added a Users and Roles tab. This allows copying, backup, restore, and deletion of Users and Roles. Users are currently
+*   Added a Users and Roles tab. This allows copying, backup, restore, and deletion of Users and Roles. Users are currently
 exported with all of their role info attached. Additionally when users are copied/restored the roles they belong to are
 created as well. In the future I may make this optional (i.e. remove the user from roles interactively (with user input)
 before creating the user, but for now it just happens.
-
-*Added config file update functionality. This should ensure that your ini file is updated with the latest options and
+*   Added config file update functionality. This should ensure that your ini file is updated with the latest options and
 default values without overwriting existing values.
+*   All backup files will now have a extension that indicates what sort of object they are.
 
-*All backup files will now have a extension that indicates what sort of object they are.
+03-09-2020 0.6
 
-09-26-2020 0.7.1
+*   major code refactor. Each tab (except for search) is now it's own class and imports it's own tab layout. This makes the
+project much more modular and easier to work on. The main class is nicely trimmed down. This should also make it
+much simpler for people to contribute functionality to the project in the future.
+*   The project directory structure has changed as a result of the refactor. The modules folder now contains all the additional
+modules and classes. If you're looking for sumologic.py to use as a python SDK it's now in the "modules" folder.
+*   Added scheduled view support in it's own tab (currently scheduled views are set to start "now"-ish when they are created (through
+copying or restoring.) If you want to set them to retroactively process older data you'll need to edit them in the SumoLogic UI
+after they are copied/restored.
+*   Changed the tab visual style to make it beautiful :-)
+*   Added tooltips
 
-* Fixed the collector search bar which somehow got broken in the last update
+03-01-2020 0.5.1-beta
 
-* Updated the "Find/Replace/Copy" Content feature to work with new style dashboards
+*   fixed bug that kept more than one selected item from being copied in the content pane
+*   fixed bug that limited the number of collectors displayed to 1000
+*   fixed bug required you to click "OK" each time a set of sources was copied to a collector when copying to multiple collectors
+*   added search feature to collector list
+*   renamed "collectors" method to "get_collectors" in sumologic.py
+*   added "get_collectors_sync" synchronous method to sumologic.py
 
-* Fixed a bug in which the content panel couldn't always show some folders in "admin recommended" and "global folders"
-modes
+01-30-2020  0.5-beta
 
-* Added new method to sumologic.py: get_source_with_etag which returns the etag header as well. This is required for
-the update_source method to work.
-
-* Fixed the update_source method in sumologic.py. It was encoding the source json improperly and kicking back an error.
-
-* Temporarily disabled the MAM tab until that API is closer to release.
-
-* Added the "source update" tab which allows mass updates of source processing rules on sources. If you have a lot of
-collectors then refreshing this tab may take a while (like 40 minutes if you have 10,000 collectors.) Be patient.
-
-
-
+*   Added FER tab with support for Field Extraction Rule copy/backup/restore (find/replace/copy buttons are disabled and will be implemented in a future release.
+*   Added splash screen logo
+*   Added "Settings" menu with ability to change logging level for debugging purposes.
+*   Added Icons to Content Pane
+*   Added ability to copy multiple sources to multiple target get_collectors
+*   Switched from Darkstyle Theme to qtmodern due to bugs in Darkstyle
+*   Switched from pyqt5 to qtpy

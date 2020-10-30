@@ -4,7 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pyinstaller = "*"
+pyinstaller = ">=3.6"
 
 [packages]
 pyqt5 = "*"
@@ -23,3 +23,4 @@ qtpy = "*"
 qtmodern = "*"
 ratelimit = "*"
 configupdater = "*"
+

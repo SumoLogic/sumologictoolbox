@@ -58,7 +58,7 @@ class SumoLogic(object):
 
     def __init__(self, accessId, accessKey, endpoint=None, cookieFile='cookies.txt'):
         self.session = requests.Session()
-        logzero.loglevel(level=20) # info level, debug is 10
+        # logzero.loglevel(level=20) # info level, debug is 10
         self.session.auth = (accessId, accessKey)
         self.session.headers = {'content-type': 'application/json', 'accept': 'application/json'}
         cj = cookielib.FileCookieJar(cookieFile)
@@ -255,31 +255,28 @@ class SumoLogic(object):
             results = results + r
         return results
 
-    # for backwards compatibility with old community API
-    def get_collector(self, collector_id):
-        return self.get_collector_by_id(collector_id)
-
     def get_collector_by_id(self, collector_id):
         r = self.get('/v1/collectors/' + str(collector_id))
-        return r.json()
+        return r.json()['collector'], r.headers['etag']
 
     # The following calls the Sumo "get collector by name" method which does not support special characters like ; / % \
     def get_collector_by_name(self, name):
         encoded_name = urllib.parse.quote(str(name))
         r = self.get('/v1/collectors/name/' + encoded_name)
-        return r.json()
+        return r.json()['collector'], r.headers['etag']
 
     # this version makes multiple calls but should work with special characters in the collector name
     def get_collector_by_name_alternate(self, name):
         sumocollectors = self.get_collectors_sync()
         for sumocollector in sumocollectors:
             if sumocollector['name'] == str(name):
-                collector = self.get_collector(sumocollector['id'])
+                collector, _ = self.get_collector_by_id(sumocollector['id'])
                 return collector
 
     # for backward compatibility with old community API
     def collector(self, collector_id):
-        return self.get_collector(collector_id)
+        r = self.get('/collectors/' + str(collector_id))
+        return r.json(), r.headers['etag']
 
     def create_collector(self, collector, headers=None):
         r = self.post('/v1/collectors', collector, headers)
@@ -784,3 +781,15 @@ class SumoLogic(object):
         r = self.get('/v1/partitions/' + str(item_id))
         return r.json()
 
+    def update_partition(self, item_id,  data_forwarding_id=None, retention_period=-1, reduce_retention_period_immediately=False, is_compliant=False):
+        data = {'retentionPeriod': retention_period,
+                "dataForwardingId": data_forwarding_id,
+                "reduceRetentionPeriodImmediately" : str(reduce_retention_period_immediately).lower(),
+                "isCompliant": str(is_compliant).lower()}
+        r = self.put('/v1/partitions/' + str(item_id),data)
+        return r.json()
+
+    def decommission_partition(self, item_id):
+        data ={}
+        r = self.post('/v1/partitions/' + str(item_id) + '/decommission', data)
+        return r

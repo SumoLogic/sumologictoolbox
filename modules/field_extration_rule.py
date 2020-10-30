@@ -5,6 +5,7 @@ import pathlib
 import json
 from logzero import logger
 from modules.sumologic import SumoLogic
+from modules.shared import ShowTextDialog
 
 class field_extraction_rule_tab(QtWidgets.QWidget):
 
@@ -80,6 +81,20 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
             str(self.mainwindow.lineEditPasswordRight.text())
         ))
 
+        self.pushButtonFERJSONLeft.clicked.connect(lambda: self.view_json(
+            self.FERListWidgetLeft,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
+            str(self.mainwindow.lineEditUserNameLeft.text()),
+            str(self.mainwindow.lineEditPasswordLeft.text())
+        ))
+
+        self.pushButtonFERJSONRight.clicked.connect(lambda: self.view_json(
+            self.FERListWidgetRight,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionRight.currentText())],
+            str(self.mainwindow.lineEditUserNameRight.text()),
+            str(self.mainwindow.lineEditPasswordRight.text())
+        ))
+
         self.pushButtonFERRestoreLeft.clicked.connect(lambda: self.restore_fer(
             self.FERListWidgetLeft,
             self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
@@ -121,7 +136,7 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
     def update_FER_list(self, FERListWidget, url, id, key):
         sumo = SumoLogic(id, key, endpoint=url)
         try:
-            logger.info("Updating FER List")
+            logger.info("[Field Extraction Rules]Updating FER List")
             FERListWidget.currentcontent = sumo.get_fers_sync()
             FERListWidget.clear()
             if len(FERListWidget.currentcontent) > 0:
@@ -148,7 +163,7 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
         return
 
     def delete_fer(self, FERListWidget, url, id, key):
-        logger.info("Deleting FER(s)")
+        logger.info("[Field Extraction Rules]Deleting FER(s)")
         selecteditems = FERListWidget.selectedItems()
         if len(selecteditems) > 0:  # make sure something was selected
             message = "You are about to delete the following item(s):\n\n"
@@ -199,7 +214,7 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
                   tourl, toid,
                   tokey):
 
-        logger.info("Copying FER(s)")
+        logger.info("[Field Extraction Rules]Copying FER(s)")
         try:
             selecteditems = FERListWidgetFrom.selectedItems()
             if len(selecteditems) > 0:  # make sure something was selected
@@ -226,7 +241,7 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
         return
 
     def backup_fer(self, FERListWidget, url, id, key):
-        logger.info("Backing Up FER(s)")
+        logger.info("[Field Extraction Rules]Backing Up FER(s)")
         selecteditems = FERListWidget.selectedItems()
         if len(selecteditems) > 0:  # make sure something was selected
             savepath = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Backup Directory"))
@@ -254,11 +269,36 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
                 self.mainwindow.errorbox("You don't have permissions to write to that directory")
 
         else:
-            self.mainwindow.errorbox('No content selected.')
+            self.mainwindow.errorbox('No FER selected.')
+        return
+
+    def view_json(self, FERListWidget, url, id, key):
+        logger.info("[Field Extraction Rules]Viewing FER(s) as JSON")
+        selecteditems = FERListWidget.selectedItems()
+        if len(selecteditems) > 0:  # make sure something was selected
+            try:
+                sumo = SumoLogic(id, key, endpoint=url)
+                json_text = ''
+                for selecteditem in selecteditems:
+                    for object in FERListWidget.currentcontent:
+                        if object['name'] == str(selecteditem.text()):
+                            item_id = object['id']
+                            fer = sumo.get_fer(item_id)
+                            json_text = json_text + json.dumps(fer, indent=4, sort_keys=True) + '\n\n'
+                self.json_window = ShowTextDialog('JSON', json_text, self.mainwindow.basedir)
+                self.json_window.show()
+
+            except Exception as e:
+                logger.exception(e)
+                self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+                return
+
+        else:
+            self.mainwindow.errorbox('No FER selected.')
         return
 
     def restore_fer(self, FERListWidget, url, id, key):
-        logger.info("Restoring FER(s)")
+        logger.info("[Field Extraction Rules]Restoring FER(s)")
         if FERListWidget.updated == True:
 
             filter = "JSON (*.json)"

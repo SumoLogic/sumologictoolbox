@@ -6,6 +6,7 @@ import pathlib
 import json
 from logzero import logger
 from modules.sumologic import SumoLogic
+from modules.shared import ShowTextDialog
 
 
 class users_and_roles_tab(QtWidgets.QWidget):
@@ -95,6 +96,20 @@ class users_and_roles_tab(QtWidgets.QWidget):
             str(self.mainwindow.lineEditPasswordRight.text())
         ))
 
+        self.pushButtonUserJSONLeft.clicked.connect(lambda: self.view_user_json(
+            self.listWidgetUsersLeft,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
+            str(self.mainwindow.lineEditUserNameLeft.text()),
+            str(self.mainwindow.lineEditPasswordLeft.text())
+        ))
+
+        self.pushButtonUserJSONRight.clicked.connect(lambda: self.view_user_json(
+            self.listWidgetUsersRight,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionRight.currentText())],
+            str(self.mainwindow.lineEditUserNameRight.text()),
+            str(self.mainwindow.lineEditPasswordRight.text())
+        ))
+
         self.pushButtonRestoreUserLeft.clicked.connect(lambda: self.restore_user(
             self.listWidgetRolesLeft,
             self.listWidgetUsersLeft,
@@ -165,6 +180,20 @@ class users_and_roles_tab(QtWidgets.QWidget):
             str(self.mainwindow.lineEditPasswordRight.text())
         ))
 
+        self.pushButtonRoleJSONLeft.clicked.connect(lambda: self.view_role_json(
+            self.listWidgetRolesLeft,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
+            str(self.mainwindow.lineEditUserNameLeft.text()),
+            str(self.mainwindow.lineEditPasswordLeft.text())
+        ))
+
+        self.pushButtonRoleJSONRight.clicked.connect(lambda: self.view_role_json(
+            self.listWidgetRolesRight,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionRight.currentText())],
+            str(self.mainwindow.lineEditUserNameRight.text()),
+            str(self.mainwindow.lineEditPasswordRight.text())
+        ))
+
         self.pushButtonRestoreRoleLeft.clicked.connect(lambda: self.restore_role(
             self.listWidgetRolesLeft,
             self.listWidgetUsersLeft,
@@ -221,7 +250,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
         if right:
             self.listWidgetUsersRight.clear()
             self.listWidgetUsersRight.currentcontent = {}
-            self.listWidgetRolesRight.updated = False
+            self.listWidgetUsersRight.updated = False
             self.listWidgetRolesRight.clear()
             self.listWidgetRolesRight.currentcontent = {}
             self.listWidgetRolesRight.updated = False
@@ -238,7 +267,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
     def update_users_and_roles_lists(self, UserListWidget, RoleListWidget, url, id, key):
         sumo = SumoLogic(id, key, endpoint=url)
         try:
-            logger.info("Updating Users and Roles Lists")
+            logger.info("[Users and Roles]Updating Users and Roles Lists")
             UserListWidget.currentcontent = sumo.get_users_sync()
             RoleListWidget.currentcontent = sumo.get_roles_sync()
             self.update_users_and_roles_listwidgets(UserListWidget, RoleListWidget)
@@ -276,7 +305,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
                   tourl, toid, tokey):
 
         # Need to add check if user already exists and interactively ask if any missing roles should be created 
-        logger.info("Copying User(s)")
+        logger.info("[Users and Roles]Copying User(s)")
         try:
             selecteditems = UserListWidgetFrom.selectedItems()
             if len(selecteditems) > 0:  # make sure something was selected
@@ -326,7 +355,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
         return
     
     def backup_user(self, UserListWidget, url, id, key):
-        logger.info("Backing Up User(s)")
+        logger.info("[Users and Roles]Backing Up User(s)")
         selecteditems = UserListWidget.selectedItems()
         if len(selecteditems) > 0:  # make sure something was selected
             savepath = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Backup Directory"))
@@ -354,11 +383,35 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 self.mainwindow.errorbox("You don't have permissions to write to that directory")
 
         else:
-            self.mainwindow.errorbox('No content selected.')
+            self.mainwindow.errorbox('No user selected.')
+        return
+
+    def view_user_json(self, UserListWidget, url, id, key):
+        logger.info("[Users and Roles]Viewing User(s) JSON")
+        selecteditems = UserListWidget.selectedItems()
+        if len(selecteditems) > 0:  # make sure something was selected
+            try:
+                sumo = SumoLogic(id, key, endpoint=url)
+                json_text = ''
+                for selecteditem in selecteditems:
+                    for object in UserListWidget.currentcontent:
+                        if object['firstName'] + ' ' + object['lastName'] == str(selecteditem.text()):
+                            user_id = object['id']
+                            user = sumo.get_user(user_id)
+                            json_text = json_text + json.dumps(user, indent=4, sort_keys=True) + '\n\n'
+                self.json_window = ShowTextDialog('JSON', json_text, self.mainwindow.basedir)
+                self.json_window.show()
+
+            except Exception as e:
+                logger.exception(e)
+                self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+                return
+        else:
+            self.mainwindow.errorbox('No user selected.')
         return
 
     def restore_user(self, RoleListWidget, UserListWidget, url, id, key):
-        logger.info("Restoring User(s)")
+        logger.info("[Users and Roles]Restoring User(s)")
         if UserListWidget.updated == True:
 
             filter = "JSON (*.json)"
@@ -415,7 +468,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
         return
 
     def delete_user(self, RoleListWidget, UserListWidget, url, id, key):
-        logger.info("Deleting User(s)")
+        logger.info("[Users and Roles]Deleting User(s)")
         selecteditems = UserListWidget.selectedItems()
         if len(selecteditems) > 0:  # make sure something was selected
             message = "You are about to delete the following item(s):\n\n"
@@ -456,7 +509,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
     def copy_role(self, RoleListWidgetFrom, RoleListWidgetTo, UserListWidgetTo, fromurl, fromid, fromkey,
                   tourl, toid, tokey):
 
-        logger.info("Copying Role(s)")
+        logger.info("[Users and Roles]Copying Role(s)")
         try:
             selecteditems = RoleListWidgetFrom.selectedItems()
             if len(selecteditems) > 0:  # make sure something was selected
@@ -482,7 +535,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
         return
 
     def backup_role(self, RoleListWidget, url, id, key):
-        logger.info("Backing Up Role(s)")
+        logger.info("[Users and Roles]Backing Up Role(s)")
         selecteditems = RoleListWidget.selectedItems()
         if len(selecteditems) > 0:  # make sure something was selected
             savepath = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Backup Directory"))
@@ -513,8 +566,32 @@ class users_and_roles_tab(QtWidgets.QWidget):
             self.mainwindow.errorbox('No content selected.')
         return
 
+    def view_role_json(self, RoleListWidget, url, id, key):
+        logger.info("[Users and Roles]Viewing Roles(s) JSON")
+        selecteditems = RoleListWidget.selectedItems()
+        if len(selecteditems) > 0:  # make sure something was selected
+            try:
+                sumo = SumoLogic(id, key, endpoint=url)
+                json_text = ''
+                for selecteditem in selecteditems:
+                    for object in RoleListWidget.currentcontent:
+                        if object['name'] == str(selecteditem.text()):
+                            role_id = object['id']
+                            role = sumo.get_role(role_id)
+                            json_text = json_text + json.dumps(role, indent=4, sort_keys=True) + '\n\n'
+                self.json_window = ShowTextDialog('JSON', json_text, self.mainwindow.basedir)
+                self.json_window.show()
+
+            except Exception as e:
+                logger.exception(e)
+                self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+                return
+        else:
+            self.mainwindow.errorbox('No role selected.')
+        return
+    
     def restore_role(self, RoleListWidget, UserListWidget, url, id, key):
-        logger.info("Restoring Role(s)")
+        logger.info("[Users and Roles]Restoring Role(s)")
         if RoleListWidget.updated == True:
 
             filter = "JSON (*.json)"
@@ -550,7 +627,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
         return
 
     def delete_role(self, RoleListWidget, UserListWidget, url, id, key):
-        logger.info("Deleting Role(s)")
+        logger.info("[Users and Roles]Deleting Role(s)")
         selecteditems = RoleListWidget.selectedItems()
         if len(selecteditems) > 0:  # make sure something was selected
             message = "You are about to delete the following item(s):\n\n"

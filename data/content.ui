@@ -299,6 +299,22 @@ Folders</string>
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pushButtonContentViewJSONLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>View item(s) as JSON</string>
+         </property>
+         <property name="text">
+          <string>JSON</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_15">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -720,6 +736,22 @@ Folders</string>
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pushButtonContentViewJSONRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>View item(s) as JSON</string>
+         </property>
+         <property name="text">
+          <string>JSON</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_16">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -741,7 +773,7 @@ Folders</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupContentLeft"/>
   <buttongroup name="buttonGroupContentRight"/>
+  <buttongroup name="buttonGroupContentLeft"/>
  </buttongroups>
 </ui>

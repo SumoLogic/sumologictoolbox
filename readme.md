@@ -92,6 +92,19 @@ See the contents of "pipfile"
 Features and Usage
 ==================
 
+Partition Copying/Backup/Restore: !NEW! 
+
+    1. Input/select Credentials for your source and destination orgs
+    2. Select your regions for source and destination orgs
+    3. Click "Update" for source and destination to populate the list of partitions.
+    
+    NOTE: Currently neither the general index nor decommissioned partitions will appear in this list. 
+    The general index should be added soon. 
+    
+    4. Click "Copy" or "Backup" or "Restore" to perform these functions to the selected partition(s)
+    
+    NOTE: These only copy/backup/restore the partition config, NOT THE DATA stored in the partition.  
+    
 Collector Source Copying:
 
     1. Input/select Credentials for your source and destination orgs
@@ -467,15 +480,11 @@ To Do:
 
 * add "copy org" tab
 
-* add "partitions" tab
-
 * Add "SAML" tab
 
 * add "connections" tab
 
 * Re-enable MAM tab with ability to deploy users/roles/content/etc... as part of org provision
-
-* add JSON viewer to all tabs 
 
 * add addition update options to "source update" tab, such as updating sourceCategory or field info
 

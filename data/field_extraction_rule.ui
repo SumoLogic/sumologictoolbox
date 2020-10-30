@@ -147,6 +147,22 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pushButtonFERJSONLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>View FER(s) JSON</string>
+         </property>
+         <property name="text">
+          <string>JSON</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_40">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -421,6 +437,22 @@ Copy</string>
          </property>
          <property name="text">
           <string>Restore</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonFERJSONRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>View FER(s) JSON</string>
+         </property>
+         <property name="text">
+          <string>JSON</string>
          </property>
         </widget>
        </item>

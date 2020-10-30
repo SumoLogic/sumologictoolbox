@@ -97,7 +97,7 @@ class AddProcessingRuleDialog(QtWidgets.QDialog):
         results['name'] = self.lineEditRuleName.text()
         results['regexp'] = self.lineEditFilter.text()
         results['filterType'] = self.comboBoxRuleType.currentText()
-        if results['filterType'] == 'mask':
+        if results['filterType'] == 'Mask':
             results['mask'] = self.lineEditMaskString.text()
         return results
 
@@ -218,13 +218,12 @@ class source_update_tab(QtWidgets.QWidget):
 
         if side == 'both':
             left = True
-            right = True
+
         if side == 'left':
             left = True
-            right = False
+
         if side == 'right':
             left = False
-            right = True
 
         if left:
 
@@ -329,6 +328,16 @@ class source_update_tab(QtWidgets.QWidget):
                 item.setForeground(QtGui.QColor('#FE019A'))
             self.listWidgetSources.addItem(item)
 
+    def view_json(self):
+        logger.info("[Source Update] Viewing Selected Source")
+        item_text = ''
+        window_title = 'JSON Source'
+        selecteditems = self.listWidgetSources.selectedItems()
+        if len(selecteditems) > 0:  # make sure something was selected
+            for selecteditem in selecteditems:
+                if not self.listWidgetTargets.findItems(selecteditem.text(), QtCore.Qt.MatchExactly):
+                    newItem = QtWidgets.QListWidgetItem(selecteditem)
+                    self.listWidgetTargets.addItem(newItem)
 
     def add_targets(self):
         logger.info("[Source Update] Adding Sources to Target List")

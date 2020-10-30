@@ -6,6 +6,7 @@ import json
 from logzero import logger
 from datetime import datetime, timezone
 from modules.sumologic import SumoLogic
+from modules.shared import ShowTextDialog
 
 class scheduled_view_tab(QtWidgets.QWidget):
 
@@ -81,6 +82,20 @@ class scheduled_view_tab(QtWidgets.QWidget):
             str(self.mainwindow.lineEditPasswordRight.text())
         ))
 
+        self.pushButtonSVJSONLeft.clicked.connect(lambda: self.view_json(
+            self.SVListWidgetLeft,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
+            str(self.mainwindow.lineEditUserNameLeft.text()),
+            str(self.mainwindow.lineEditPasswordLeft.text())
+        ))
+
+        self.pushButtonSVJSONRight.clicked.connect(lambda: self.view_json(
+            self.SVListWidgetRight,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionRight.currentText())],
+            str(self.mainwindow.lineEditUserNameRight.text()),
+            str(self.mainwindow.lineEditPasswordRight.text())
+        ))
+
         self.pushButtonSVRestoreLeft.clicked.connect(lambda: self.restore_scheduled_view(
             self.SVListWidgetLeft,
             self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
@@ -119,7 +134,7 @@ class scheduled_view_tab(QtWidgets.QWidget):
     def update_SV_list(self, SVListWidget, url, id, key):
         sumo = SumoLogic(id, key, endpoint=url)
         try:
-            logger.info("Updating SV List")
+            logger.info("[Scheduled Views]Updating SV List")
             SVListWidget.currentcontent = sumo.get_scheduled_views_sync()
             SVListWidget.clear()
             if len(SVListWidget.currentcontent) > 0:
@@ -143,7 +158,7 @@ class scheduled_view_tab(QtWidgets.QWidget):
         return
 
     def delete_scheduled_view(self, SVListWidget, url, id, key):
-        logger.info("Deleting SV(s)")
+        logger.info("[Scheduled Views]Deleting SV(s)")
         selecteditems = SVListWidget.selectedItems()
         if len(selecteditems) > 0:  # make sure something was selected
             message = "You are about to delete the following item(s):\n\n"
@@ -185,7 +200,7 @@ class scheduled_view_tab(QtWidgets.QWidget):
                   tourl, toid,
                   tokey):
 
-        logger.info("Copying SV(s)")
+        logger.info("[Scheduled Views]Copying SV(s)")
         try:
             selecteditems = SVListWidgetFrom.selectedItems()
             if len(selecteditems) > 0:  # make sure something was selected
@@ -212,7 +227,7 @@ class scheduled_view_tab(QtWidgets.QWidget):
         return
 
     def backup_scheduled_view(self, SVListWidget, url, id, key):
-        logger.info("Backing Up SV(s)")
+        logger.info("[Scheduled Views]Backing Up SV(s)")
         selecteditems = SVListWidget.selectedItems()
         if len(selecteditems) > 0:  # make sure something was selected
             savepath = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Backup Directory"))
@@ -243,8 +258,33 @@ class scheduled_view_tab(QtWidgets.QWidget):
             self.mainwindow.errorbox('No content selected.')
         return
 
+    def view_json(self, SVListWidget, url, id, key):
+        logger.info("[Scheduled Views]Viewing SV(s) as JSON")
+        selecteditems = SVListWidget.selectedItems()
+        if len(selecteditems) > 0:  # make sure something was selected
+            try:
+                sumo = SumoLogic(id, key, endpoint=url)
+                json_text = ''
+                for selecteditem in selecteditems:
+                    for object in SVListWidget.currentcontent:
+                        if object['indexName'] == str(selecteditem.text()):
+                            item_id = object['id']
+                            fer = sumo.get_scheduled_view(item_id)
+                            json_text = json_text + json.dumps(fer, indent=4, sort_keys=True) + '\n\n'
+                self.json_window = ShowTextDialog('JSON', json_text, self.mainwindow.basedir)
+                self.json_window.show()
+
+            except Exception as e:
+                logger.exception(e)
+                self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+                return
+
+        else:
+            self.mainwindow.errorbox('No FER selected.')
+        return
+    
     def restore_scheduled_view(self, SVListWidget, url, id, key):
-        logger.info("Restoring SV(s)")
+        logger.info("[Scheduled Views]Restoring SV(s)")
         if SVListWidget.updated == True:
 
             filter = "JSON (*.json)"

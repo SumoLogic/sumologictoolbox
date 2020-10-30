@@ -6,6 +6,7 @@ import json
 import re
 from logzero import logger
 from modules.sumologic import SumoLogic
+from modules.shared import ShowTextDialog
 
 class restoreSourcesDialog(QtWidgets.QDialog):
 
@@ -171,6 +172,20 @@ class collector_tab(QtWidgets.QWidget):
             str(self.mainwindow.lineEditPasswordRight.text())
         ))
 
+        self.pushButtonCollectorJSONLeft.clicked.connect(lambda: self.view_collector_JSON(
+            self.listWidgetCollectorsLeft,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
+            str(self.mainwindow.lineEditUserNameLeft.text()),
+            str(self.mainwindow.lineEditPasswordLeft.text())
+        ))
+
+        self.pushButtonCollectorJSONRight.clicked.connect(lambda: self.view_collector_JSON(
+            self.listWidgetCollectorsRight,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionRight.currentText())],
+            str(self.mainwindow.lineEditUserNameRight.text()),
+            str(self.mainwindow.lineEditPasswordRight.text())
+        ))
+
         self.pushButtonDeleteCollectorLeft.clicked.connect(lambda: self.deletecollectors(
             self.listWidgetCollectorsLeft,
             self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
@@ -216,6 +231,22 @@ class collector_tab(QtWidgets.QWidget):
             str(self.mainwindow.lineEditUserNameRight.text()),
             str(self.mainwindow.lineEditPasswordRight.text())
 
+        ))
+
+        self.pushButtonSourceJSONLeft.clicked.connect(lambda: self.view_source_JSON(
+            self.listWidgetCollectorsLeft,
+            self.listWidgetSourcesLeft,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
+            str(self.mainwindow.lineEditUserNameLeft.text()),
+            str(self.mainwindow.lineEditPasswordLeft.text())
+        ))
+
+        self.pushButtonSourceJSONRight.clicked.connect(lambda: self.view_source_JSON(
+            self.listWidgetCollectorsRight,
+            self.listWidgetSourcesRight,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionRight.currentText())],
+            str(self.mainwindow.lineEditUserNameRight.text()),
+            str(self.mainwindow.lineEditPasswordRight.text())
         ))
 
         # set up a signal to update the source list if a new collector is set
@@ -265,7 +296,7 @@ class collector_tab(QtWidgets.QWidget):
                 item.setHidden(False)
 
     def getcollectorid(self, collectorname, url, id, key):
-        logger.info("Getting Collector IDs")
+        logger.info("[Collectors] Getting Collector IDs")
         sumo = SumoLogic(id, key, endpoint=url)
         try:
             sumocollectors = sumo.get_collectors_sync()
@@ -278,7 +309,7 @@ class collector_tab(QtWidgets.QWidget):
         return
 
     def getsourceid(self, collectorid, sourcename, url, id, key):
-        logger.info("Getting Source IDs")
+        logger.info("[Collectors] Getting Source IDs")
         sumo = SumoLogic(id, key, endpoint=url)
         try:
             sumosources = sumo.sources(collectorid)
@@ -292,7 +323,7 @@ class collector_tab(QtWidgets.QWidget):
         return
 
     def updatecollectorlist(self, CollectorListWidget, url, id, key):
-        logger.info("Updating Collector List")
+        logger.info("[Collectors] Updating Collector List")
         CollectorListWidget.clear()  # clear the list first since it might already be populated
         regexprog = re.compile(r'\S+')  # make sure username and password have something in them
         if (re.match(regexprog, id) != None) and (re.match(regexprog, key) != None):
@@ -318,7 +349,7 @@ class collector_tab(QtWidgets.QWidget):
         return
 
     def updatesourcelist(self, CollectorListWidget, SourceListWidget, url, id, key):
-        logger.info("Updating Source List")
+        logger.info("[Collectors] Updating Source List")
         SourceListWidget.clear()  # clear the list first since it might already be populated
         collectors = CollectorListWidget.selectedItems()
         if (len(collectors) > 1) or (len(collectors) < 1):
@@ -334,7 +365,7 @@ class collector_tab(QtWidgets.QWidget):
 
     def copysources(self, CollectorListWidgetFrom, CollectorListWidgetTo, SourceListWidgetFrom, SourceListWidgetTo,
                     fromurl, fromid, fromkey, tourl, toid, tokey):
-        logger.info("Copying Sources")
+        logger.info("[Collectors] Copying Sources")
         try:
             fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl)
             sourcecollectorlist = CollectorListWidgetFrom.selectedItems()  # get the selected source collector
@@ -404,7 +435,7 @@ class collector_tab(QtWidgets.QWidget):
         return
 
     def backupcollector(self, CollectorListWidget, url, id, key):
-        logger.info("Backing Up Collector")
+        logger.info("[Collectors] Backing Up Collector")
         collectornamesqstring = CollectorListWidget.selectedItems()  # get collectors sources have been selected
         if len(collectornamesqstring) > 0:  # make sure something was selected
             savepath = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Backup Directory"))
@@ -419,7 +450,8 @@ class collector_tab(QtWidgets.QWidget):
 
                     if savefilepath:
                         with savefilepath.open(mode='w') as filepointer:
-                            json.dump(sumo.collector(collectorid), filepointer)
+                            collector, _ = sumo.get_collector_by_id(collectorid)
+                            json.dump(collector, filepointer)
                     if savefilesourcespath:
                         with savefilesourcespath.open(mode='w') as filepointer:
                             json.dump(sumo.sources(collectorid), filepointer)
@@ -432,8 +464,54 @@ class collector_tab(QtWidgets.QWidget):
             self.mainwindow.errorbox('No Source Collector Selected.')
         return
 
+    def view_collector_JSON(self, CollectorListWidget, url, id, key):
+        logger.info("[Collectors] Viewing Collector JSON")
+        collectornamesqstring = CollectorListWidget.selectedItems()  # get collectors sources have been selected
+        if len(collectornamesqstring) > 0:  # make sure something was selected
+            try:
+                sumo = SumoLogic(id, key, endpoint=url)
+                json_text = ''
+                for collectornameqstring in collectornamesqstring:
+                    collector = sumo.get_collector_by_name_alternate(str(collectornameqstring.text()))
+                    # sources = sumo.get_sources_sync(collector['id'])
+                    json_text = json_text + json.dumps(collector, indent=4, sort_keys=True) + '\n\n'
+                    # json_text = json_text + json.dumps(sources, indent=4, sort_keys=True) + '\n\n'
+                self.json_window = ShowTextDialog('JSON', json_text, self.mainwindow.basedir)
+                self.json_window.show()
+            except Exception as e:
+                logger.exception(e)
+                self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+        else:
+            self.mainwindow.errorbox('No Collector Selected.')
+        return
+
+    def view_source_JSON(self, CollectorListWidget, SourceListWidget, url, id, key):
+        logger.info("[Collectors] Viewing Source JSON")
+        sourcenames = SourceListWidget.selectedItems()
+        if len(sourcenames) > 0:  # make sure at least one source is selected
+            try:
+                sumo = SumoLogic(id, key, endpoint=url)
+                json_text = ''
+                collectornamesqstring = CollectorListWidget.selectedItems()  # get collectors sources have been selected
+                collectorname = str(collectornamesqstring[0].text())
+                collector = sumo.get_collector_by_name_alternate(collectorname)
+                sources = sumo.get_sources_sync(collector['id'])
+                for sourcename in sourcenames:
+                    for source in sources:
+                        if str(sourcename.text()) == source['name']:
+                            json_text = json_text + json.dumps(source, indent=4, sort_keys=True) + '\n\n'
+                self.json_window = ShowTextDialog('JSON', json_text, self.mainwindow.basedir)
+                self.json_window.show()
+
+            except Exception as e:
+                logger.exception(e)
+                self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+
+        else:
+            self.mainwindow.errorbox('No Source Selected.')
+
     def deletecollectors(self, CollectorListWidget, url, id, key):
-        logger.info("Deleting Collectors")
+        logger.info("[Collectors] Deleting Collectors")
         collectornamesqstring = CollectorListWidget.selectedItems()
         if len(collectornamesqstring) > 0:  # make sure something was selected
             message = "You are about to delete the following collector(s):\n\n"
@@ -511,7 +589,7 @@ If you are absolutely sure, type "DELETE" in the box below.
         return
 
     def deletesources(self, CollectorListWidget, SourceListWidget, url, id, key):
-        logger.info("Deleting Sources")
+        logger.info("[Collectors] Deleting Sources")
         collectornamesqstring = CollectorListWidget.selectedItems()
         if len(collectornamesqstring) == 1:  # make sure something was selected
             collectorid = self.getcollectorid(str(collectornamesqstring[0].text()), url, id, key)
@@ -544,3 +622,4 @@ If you are absolutely sure, type "DELETE" in the box below.
         else:
             self.mainwindow.errorbox('You must select 1 and only 1 collector.')
         return
+

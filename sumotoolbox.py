@@ -1,5 +1,5 @@
 __author__ = 'Tim MacDonald'
-__version__ = '0.7.1'
+__version__ = '0.8'
 # Copyright 2015 Timothy MacDonald
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -37,6 +37,7 @@ from modules.collector import collector_tab
 from modules.source_update import source_update_tab
 from modules.organizations import organizations_tab
 from modules.users_and_roles import users_and_roles_tab
+from modules.partitions import partitions_tab
 
 #local imports
 from modules.sumologic import SumoLogic
@@ -56,6 +57,26 @@ logger.info("SumoLogicToolBox started.")
 # This script uses Qt Designer files to define the UI elements which must be loaded
 qtMainWindowUI = os.path.join(basedir, 'data/sumotoolbox.ui')
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtMainWindowUI)
+
+
+class ShowTextDialog(QtWidgets.QDialog):
+
+    def __init__(self, title, text):
+        super(ShowTextDialog, self).__init__()
+        self.title = title
+        self.text = text
+        self.setupUi(self)
+
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("TextDisplay")
+        self.setWindowTitle(self.title)
+        self.textedit = QtWidgets.QTextEdit()
+        self.textedit.setText(self.text)
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.addWidget(self.textedit)
+
+
+
 
 class NewPasswordDialog(QtWidgets.QDialog):
 
@@ -238,6 +259,9 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.tabWidget.addTab(self.field_extraction_rule, "Field Extraction Rules")
         self.scheduled_view = scheduled_view_tab(self)
         self.tabWidget.addTab(self.scheduled_view, "Scheduled Views")
+        self.partitions = partitions_tab(self)
+        self.tabWidget.addTab(self.partitions, "Partitions")
+
         # Commented out org tab until v1.0 or org API release
         # self.organizations = organizations_tab(self)
         # self.tabWidget.addTab(self.organizations, "Multi Account Mgmt")
@@ -929,7 +953,7 @@ If so type 'DELETE' in the box below:"
 
     # Start Misc/Utility Methods
     def tabchange(self, index):
-        if index == 0 or index == 2 or index == 6:
+        if index == 0 or index == 2:
             self.comboBoxRegionRight.setEnabled(False)
             self.lineEditUserNameRight.setEnabled(False)
             self.lineEditPasswordRight.setEnabled(False)

@@ -6,6 +6,7 @@ import pathlib
 import json
 from logzero import logger
 from modules.sumologic import SumoLogic
+from modules.shared import ShowTextDialog
 
 class findReplaceCopyDialog(QtWidgets.QDialog):
 
@@ -314,7 +315,23 @@ class content_tab(QtWidgets.QWidget):
             self.buttonGroupContentRight.checkedId(),
             self.contentCurrentDirLabelRight
         ))
-        
+
+        self.pushButtonContentViewJSONLeft.clicked.connect(lambda: self.view_json(
+            self.contentListWidgetLeft,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
+            str(self.mainwindow.lineEditUserNameLeft.text()),
+            str(self.mainwindow.lineEditPasswordLeft.text()),
+            self.buttonGroupContentLeft.checkedId()
+        ))
+
+        self.pushButtonContentViewJSONRight.clicked.connect(lambda: self.view_json(
+            self.contentListWidgetRight,
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionRight.currentText())],
+            str(self.mainwindow.lineEditUserNameRight.text()),
+            str(self.mainwindow.lineEditPasswordRight.text()),
+            self.buttonGroupContentRight.checkedId()
+        ))
+
     def reset_stateful_objects(self, side='both'):
 
         if side == 'both':
@@ -381,6 +398,8 @@ class content_tab(QtWidgets.QWidget):
 
         results = extract(obj, arr, key)
         return results
+
+
 
     def recurse_replace_query_strings(self, query_string_replacement_list, exported_json):
 
@@ -449,7 +468,7 @@ class content_tab(QtWidgets.QWidget):
                                toid, tokey,
                                fromradioselected, toradioselected, todirectorylabel):
 
-        logger.info("Copying Content")
+        logger.info("[Content] Copying Content")
 
         selecteditemsfrom = ContentListWidgetFrom.selectedItems()
         if toradioselected == -3 or toradioselected == -4:  # Admin or Global folders selected
@@ -552,7 +571,7 @@ class content_tab(QtWidgets.QWidget):
 
     def copycontent(self, ContentListWidgetFrom, ContentListWidgetTo, fromurl, fromid, fromkey, tourl, toid, tokey,
                     fromradioselected, toradioselected, todirectorylabel):
-        logger.info("Copying Content")
+        logger.info("[Content] Copying Content")
         if toradioselected == -3 or toradioselected == -4:  # Admin or Global folders selected
             toadminmode = True
         else:
@@ -698,7 +717,7 @@ If you are absolutely sure, type "DELETE" in the box below.
         try:
             if (not ContentListWidget.currentcontent) or (currentdir['id'] == 'TOP'):
                 if radioselected == -2:  # if "Personal Folder" radio button is selected
-                    logger.info("Updating Personal Folder List")
+                    logger.info("[Content] Updating Personal Folder List")
                     ContentListWidget.currentcontent = sumo.get_personal_folder()
 
                     ContentListWidget.currentdirlist = []
@@ -711,7 +730,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                         self.mainwindow.errorbox('Incorrect Credentials or Wrong Endpoint.')
 
                 elif radioselected == -3:  # if "Global Folders" radio button is selected
-                    logger.info("Updating Global Folder List")
+                    logger.info("[Content] Updating Global Folder List")
                     ContentListWidget.currentcontent = sumo.get_global_folder_sync(adminmode=True)
 
                     # Rename dict key from "data" to "children" for consistency
@@ -726,7 +745,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                         self.mainwindow.errorbox('Incorrect Credentials or Wrong Endpoint.')
 
                 else:  # "Admin Folders" must be selected
-                    logger.info("Updating Admin Folder List")
+                    logger.info("[Content] Updating Admin Folder List")
                     ContentListWidget.currentcontent = sumo.get_admin_folder_sync(adminmode=True)
 
                     ContentListWidget.currentdirlist = []
@@ -758,9 +777,8 @@ If you are absolutely sure, type "DELETE" in the box below.
         return
 
     def doubleclickedcontentlist(self, item, ContentListWidget, url, id, key, radioselected, directorylabel):
-        logger.info("Going Down One Content Folder")
+        logger.info("[Content] Going Down One Content Folder")
         sumo = SumoLogic(id, key, endpoint=url)
-        print(radioselected)
         currentdir = ContentListWidget.currentdirlist[-1]
         if radioselected == -3 or radioselected == -4:
             adminmode = True
@@ -781,7 +799,7 @@ If you are absolutely sure, type "DELETE" in the box below.
 
     def parentdircontentlist(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         if ContentListWidget.updated:
-            logger.info("Going Up One Content Folder")
+            logger.info("[Content] Going Up One Content Folder")
             sumo = SumoLogic(id, key, endpoint=url)
             currentdir = ContentListWidget.currentdirlist[-1]
             if currentdir['id'] != 'TOP':
@@ -860,7 +878,7 @@ If you are absolutely sure, type "DELETE" in the box below.
         return
 
     def backupcontent(self, ContentListWidget, url, id, key, radioselected):
-        logger.info("Backing Up Content")
+        logger.info("[Content] Backing Up Content")
         if radioselected == -3 or radioselected == -4:  # Admin or Global folders selected
             adminmode = True
         else:
@@ -895,7 +913,7 @@ If you are absolutely sure, type "DELETE" in the box below.
         return
 
     def restorecontent(self, ContentListWidget, url, id, key, radioselected, directorylabel):
-        logger.info("Restoring Content")
+        logger.info("[Content] Restoring Content")
         if ContentListWidget.updated == True:
             if 'id' in ContentListWidget.currentcontent:  # make sure the current folder has a folder id
                 filter = "JSON (*.json)"
@@ -933,4 +951,32 @@ If you are absolutely sure, type "DELETE" in the box below.
                 return
         else:
             self.mainwindow.errorbox("Please update the directory list before restoring content")
+        return
+
+    def view_json(self, ContentListWidget, url, id, key, radioselected):
+        logger.info("[Content] Viewing JSON")
+        if radioselected == -3 or radioselected == -4:  # Admin or Global folders selected
+            adminmode = True
+        else:
+            adminmode = False
+        selecteditems = ContentListWidget.selectedItems()
+        if len(selecteditems) > 0:  # make sure something was selected
+            json_text = ''
+            sumo = SumoLogic(id, key, endpoint=url)
+            for selecteditem in selecteditems:
+                for child in ContentListWidget.currentcontent['children']:
+                    if child['name'] == str(selecteditem.text()):
+                        item_id = child['id']
+                        try:
+                            content = sumo.export_content_job_sync(item_id, adminmode=adminmode)
+                            json_text = json_text + json.dumps(content, indent=4, sort_keys=True) + '\n\n'
+                        except Exception as e:
+                            logger.exception(e)
+                            self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+                            return
+            self.json_window = ShowTextDialog('JSON', json_text, self.mainwindow.basedir)
+            self.json_window.show()
+
+        else:
+            self.mainwindow.errorbox('No content selected.')
         return

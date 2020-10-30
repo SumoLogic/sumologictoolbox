@@ -161,6 +161,22 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pushButtonCollectorJSONLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>View collector(s) as JSON</string>
+         </property>
+         <property name="text">
+          <string>JSON</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_3">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -258,6 +274,22 @@
          </property>
          <property name="text">
           <string>Restore Source(s)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonSourceJSONLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>View source(s) as JSON</string>
+         </property>
+         <property name="text">
+          <string>JSON</string>
          </property>
         </widget>
        </item>
@@ -527,6 +559,22 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pushButtonCollectorJSONRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>View collector(s) as JSON</string>
+         </property>
+         <property name="text">
+          <string>JSON</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_8">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -627,6 +675,22 @@
          </property>
          <property name="text">
           <string>Restore Source(s)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonSourceJSONRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>View source(s) as JSON</string>
+         </property>
+         <property name="text">
+          <string>JSON</string>
          </property>
         </widget>
        </item>
