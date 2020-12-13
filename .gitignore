@@ -57,3 +57,7 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+/Pipfile.lock
+/dist/linux/
+/dist/mac/
+/dest/windows/

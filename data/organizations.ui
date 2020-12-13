@@ -24,16 +24,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBoxOrgDetails">
-       <property name="text">
-        <string>Get Org Details</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QCheckBox" name="checkBoxShowActive">
        <property name="text">
         <string>Only Show Active</string>
@@ -83,28 +73,7 @@
       <enum>QLayout::SetMinAndMaxSize</enum>
      </property>
      <item>
-      <widget class="QPushButton" name="pushButtonCreateCloudFlexOrg">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>83</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Create an org&lt;/p&gt;&lt;p&gt;based on daily &lt;/p&gt;&lt;p&gt;ingest.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Create
-CloudFlex 
-Org</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonCreateCreditsOrg">
+      <widget class="QPushButton" name="pushButtonCreateOrg">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -119,7 +88,6 @@ Org</string>
        </property>
        <property name="text">
         <string>Create
-Credits
 Org</string>
        </property>
       </widget>

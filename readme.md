@@ -5,19 +5,13 @@ Sumotoolbox
  it easier to perform common API tasks such as copying sources and generating CSV files from
  searches.
 
-Installing the Binaries
-=======================
+Recommended Method of Getting and Running Sumotoolbox, download the binaries
+============================================================================
 
-One way to use sumotoolbox is to look in the "dist" directory of this repo and grab the executable for your 
-platform. Make a new directory, copy the executable into it, and run the executable. 
+The easiest way to download and use this tool is to download the latest binary release from the "releases"
+section of this page. 
 
-The first time you run the executable it will create a "sumotoolbox.ini" file and if you choose to use the credential
-store feature it will also create a "credentials.db" file.
-
-Note: The executables are built for 64-bit only and may not run on less than current operating systems. 
-In the case of Windows my build is for a very recent version of Windows 10 and has failed to work on older versions.
-Unfortunately I do not have access to an older version of Windows 10 to build against. If it doesn't work your only
-option may be to install the source as described below. 
+http://github.com/voltaire321/sumologictoolbox/releases
 
 Updating the Binaries
 =====================
@@ -33,11 +27,11 @@ in the dependency section.
 
 The steps are as follows: 
 
-    1. Download and install python 3.6 or higher from python.org. 
+    1. Download and install python 3.6, 3.7, 3.8 from python.org.  
        Make sure to choose the "add python to the default "path" checkbox in the installer (may be in 
        advanced settings.)
 
-       Note: If you have Linux you can skip this step, but ensure you have python3 installed for your distro. 
+       Note: If you have Linux you can usually skip this step, but ensure you have python3 installed for your distro. 
 
        Note: If you have OS X you cannot use the python that comes with the OS, it is too old.
 
@@ -92,16 +86,32 @@ See the contents of "pipfile"
 Features and Usage
 ==================
 
+SAML Copying/Backup/Restore: !NEW! 
+
+    The SAML tab is intended for service providers that may need to deploy a SAML config to one of the 
+    many orgs they are managing. It is unlikely you'll want to use this tab unless you are a Sumo Logic
+    service provider partner. 
+
+    NOTE: Please be very careful with this feature as you could potentially grant access to users/orgs 
+    that you didn't intend to.
+    
+    NOTE: If you copy a SAML config to a new org the Sp initiated login configuration will be stripped
+    from the config before the copy. This happens because the Sp inituated login config data must be
+    unique por Sumo org. You'll have to add that config manually in the Sumo Logic UI.
+
+Monitors and Connections Copying/Backup/Restore: !NEW! 
+
+    This tab merges Monitor and Connection functionality because in Sumo Logic monitors are often dependent
+    in connections, as connections often provide the alerting mechanism for the monitor. As this is the case
+    you can choose to include or not include any related connections when copying or importing monitor(s). 
+
 Partition Copying/Backup/Restore: !NEW! 
 
-    1. Input/select Credentials for your source and destination orgs
-    2. Select your regions for source and destination orgs
-    3. Click "Update" for source and destination to populate the list of partitions.
-    
+    The Partitions Tab is used to copy/backup/restore partition configurations. Note that copying partition configs
+    between orgs is typically only done by those (service providers) that are managing multiple Sumo Logic orgs/customers.
+
     NOTE: Currently neither the general index nor decommissioned partitions will appear in this list. 
-    The general index should be added soon. 
-    
-    4. Click "Copy" or "Backup" or "Restore" to perform these functions to the selected partition(s)
+    The general index should be added soon.
     
     NOTE: These only copy/backup/restore the partition config, NOT THE DATA stored in the partition.  
     
@@ -276,21 +286,18 @@ Content Find/Replace/Copy:  (New and Improved Algorithm)
     11. Once the pop-up window closes your content should be copied to the current folder in the 
         destination pane.
 
-Multi Account Management Support: !Alpha! (!Temporaily Disabled due to API Changes!)
+Sumo Organizations Support: !Alpha!
  
     SumoLogic now provides an account provisioning API for SumoLogic partners and Large Customers. This feature
     must be enabled by SumoLogic and will not be available to most customers. Please contact your SumoLogic rep
     for more info. 
-    
-    0. Add credentials to the credential store for your master account. Then edit the sumotoolbox.ini file
-    and populate the two fields under the "Multi Account Management" section according to the instructions in the
-    comments.
-    1. Start Sumotoolbox, load your credential database, and switch to the preset that represents your "master"
-    org/account. I.E. the account that is authorized to provision new accounts (what you entered in the 
-    "authorized_preset" option in your ini file.)
+
+    1. Start Sumotoolbox, load your credential database, and switch to the preset that represents your "parent"
+    org/account. Note that this feature is not turned on for all accounts. If you are not a service provider then
+    it's likely this is not turn on for your account and you can safely ignore this feature. 
     2. Click Update to see a list of currently provisioned orgs (this will return nothing if you have never used
     the MAM API to provision an org.)
-    3. Use the "Create Cloudflex Org" button to provison a new Cloudflex org. 
+    3. Use the "Create Org" button to provison a new  org. 
     4. Use the "Update Org" button to modify an existing org. 
     5. Use "Cancel Subscription" deactivate an org. 
     
@@ -313,7 +320,7 @@ Source Update: !New! !Experimental!:
     4. Select any comibnation of entries from the source list and add them to the target list. Don't worry if you think
        your selections might result in a particular source being targeted multiple times, the list will be deduped when you 
        apply the update. 
-    5. Add updates to perform. Currently you can either add or remove processing rules. 
+    5. Add updates to perform. Currently you can either add or remove processing rules or change source Categories. 
     
         A. If you add a rule you'll need to enter the details into the dialog box that comes up. Note that what you
         enter here is not tested for valid syntax. It is highly recommended that you test your processing rule in the
@@ -322,6 +329,7 @@ Source Update: !New! !Experimental!:
         aggregate list of existing rules on your targeted sources. it's possible that some or most of your targeted
         sources will not have all the rules in the list. Note You cannot remove rules while in absolute mode as
         it clears all rules from the source by default anyway. 
+        C. You can specify a new Source Category for all of the targets
     6. Once you've added all the updates you like click "Apply Changes". This will start the process of applying the
        changes to your org. This can take a long time if you are updating many sources. If you are adding rule(s) and your
        new rules have bad syntax then you will have failures now. Always test your rules first in the Sumo Logic UI!
@@ -480,13 +488,15 @@ To Do:
 
 * add "copy org" tab
 
-* Add "SAML" tab
+* Add deploy templates for Sumo Orgs Tab
 
-* add "connections" tab
+* Add lookup table upload support to Content Tab
 
-* Re-enable MAM tab with ability to deploy users/roles/content/etc... as part of org provision
+* Add support for copying user global folders to Content Tab
 
-* add addition update options to "source update" tab, such as updating sourceCategory or field info
+* Add field support to Source Update Tab
+
+* Handle saved search connections better in Content Tab
 
 License
 =======

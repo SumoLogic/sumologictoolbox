@@ -38,6 +38,79 @@
         </widget>
        </item>
        <item>
+        <widget class="QFrame" name="frame">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButtonFilterAllLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+          </font>
+         </property>
+         <property name="text">
+          <string>Show All</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupFilterLeft</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButtonFilterHostedLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+          </font>
+         </property>
+         <property name="text">
+          <string>Hosted</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupFilterLeft</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButtonFilterInstalledLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+          </font>
+         </property>
+         <property name="text">
+          <string>Installed</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupFilterLeft</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButtonFilterDeadLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+          </font>
+         </property>
+         <property name="text">
+          <string>Dead</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupFilterLeft</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -326,30 +399,6 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLabel" name="labelCollectorLegend">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <family>Noto Sans Gothic</family>
-         <pointsize>10</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Box</enum>
-       </property>
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Collector&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Legend:&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;------------&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Bold: Hosted&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;Normal: Installed&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:400; font-style:italic;&quot;&gt;Italics: Disconnected&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="verticalSpacer_6">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -436,6 +485,69 @@
          <property name="text">
           <string>Update</string>
          </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButtonFilterAllRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+          </font>
+         </property>
+         <property name="text">
+          <string>Show All</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupFilterRight</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButtonFilterHostedRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+          </font>
+         </property>
+         <property name="text">
+          <string>Hosted</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupFilterRight</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButtonFilterInstalledRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+          </font>
+         </property>
+         <property name="text">
+          <string>Installed</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupFilterRight</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButtonFilterDeadRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+          </font>
+         </property>
+         <property name="text">
+          <string>Dead</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroupFilterRight</string>
+         </attribute>
         </widget>
        </item>
        <item>
@@ -715,4 +827,8 @@
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroupFilterLeft"/>
+  <buttongroup name="buttonGroupFilterRight"/>
+ </buttongroups>
 </ui>

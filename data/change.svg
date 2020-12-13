@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 1000 1000"
+   enable-background="new 0 0 1000 1000"
+   xml:space="preserve"
+   id="svg8"
+   sodipodi:docname="change.svg"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"><defs
+   id="defs12" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="2371"
+   inkscape:window-height="1350"
+   id="namedview10"
+   showgrid="false"
+   inkscape:zoom="0.949"
+   inkscape:cx="500"
+   inkscape:cy="500"
+   inkscape:window-x="0"
+   inkscape:window-y="0"
+   inkscape:window-maximized="0"
+   inkscape:current-layer="svg8" />
+<metadata
+   id="metadata2"> Svg Vector Icons : http://www.onlinewebfonts.com/icon <rdf:RDF><cc:Work
+     rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+       rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata>
+<g
+   id="g6"
+   style="fill:#808080"><path
+     d="M866.3,408C825,241.5,674.7,117.6,495.6,117.6c-132.6,0-253.7,67.1-324.2,179.5c-8.8,14.1-4.6,32.7,9.5,41.5c14.1,8.9,32.7,4.6,41.5-9.5c59.4-94.8,161.5-151.3,273.2-151.3c145.4,0,267.2,97.5,307.1,230.2H691.4L840.7,592L990,408L866.3,408L866.3,408z M819.1,661.4c-14.1-8.8-32.7-4.5-41.5,9.5c-59.4,94.8-161.5,151.3-273.1,151.3c-145.5,0-267.3-97.5-307.2-230.2h111.4L159.3,408L10,592h123.7C175,758.5,325.4,882.4,504.4,882.4c132.4,0,253.7-67.1,324.2-179.5C837.5,688.8,833.2,670.2,819.1,661.4L819.1,661.4L819.1,661.4z"
+     id="path4"
+     style="fill:#808080" /></g>
+</svg>

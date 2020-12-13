@@ -381,6 +381,22 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pushButtonChangeSourceCategory">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Add Update: Change Source Category</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_13"/>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
           <widget class="QPushButton" name="pushButtonAddRule">

@@ -1,5 +1,5 @@
 __author__ = 'Tim MacDonald'
-__version__ = '0.8'
+__version__ = '0.9'
 # Copyright 2015 Timothy MacDonald
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -29,20 +29,22 @@ import shutil
 import qtmodern.styles
 import qtmodern.windows
 import time
-# import tabs here
-from modules.scheduled_view import scheduled_view_tab
-from modules.field_extration_rule import field_extraction_rule_tab
-from modules.content import content_tab
-from modules.collector import collector_tab
-from modules.source_update import source_update_tab
-from modules.organizations import organizations_tab
-from modules.users_and_roles import users_and_roles_tab
-from modules.partitions import partitions_tab
-
+import importlib
 #local imports
 from modules.sumologic import SumoLogic
 from modules.credentials import CredentialsDB
 
+
+# from modules.scheduled_view_tab import scheduled_view_tab
+# from modules.field_extraction_rule_tab import field_extraction_rule_tab
+# from modules.content_tab import content_tab
+# from modules.collector_tab import collector_tab
+# from modules.source_update_tab import source_update_tab
+# from modules.organizations_tab import organizations_tab
+# from modules.users_and_roles_tab import users_and_roles_tab
+# from modules.partitions_tab import partitions_tab
+# from modules.monitors_and_connections_tab import monitors_and_connections_tab
+# from modules.saml_tab import saml_tab
 
 # detect if in Pyinstaller package and build appropriate base directory path
 if getattr(sys, 'frozen', False):
@@ -53,10 +55,11 @@ else:
 logzero.logfile("sumotoolbox.log")
 logzero.loglevel(level=20)  #  Info Logging
 # Log messages
-logger.info("SumoLogicToolBox started.")
+logger.info("SumoLogicToolBox started. Version %s", __version__)
 # This script uses Qt Designer files to define the UI elements which must be loaded
 qtMainWindowUI = os.path.join(basedir, 'data/sumotoolbox.ui')
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtMainWindowUI)
+
 
 
 class ShowTextDialog(QtWidgets.QDialog):
@@ -74,9 +77,6 @@ class ShowTextDialog(QtWidgets.QDialog):
         self.textedit.setText(self.text)
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.textedit)
-
-
-
 
 class NewPasswordDialog(QtWidgets.QDialog):
 
@@ -229,7 +229,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             self.basedir = sys._MEIPASS
         else:
             self.basedir = os.path.dirname(os.path.abspath(__file__))
-
+        logger.info("basedir is: " + str(self.basedir))
         self.setupUi(self)
 
         # initialize variable to hold whether we've authenticated the cred database
@@ -247,28 +247,41 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.set_creddbbuttons()
 
         # load additional Tabs from available modules
-        self.collector = collector_tab(self)
-        self.tabWidget.addTab(self.collector, "Collectors")
-        self.source_update = source_update_tab(self)
-        self.tabWidget.addTab(self.source_update, "Source Update")
-        self.content = content_tab(self)
-        self.tabWidget.addTab(self.content, "Content")
-        self.users_and_roles = users_and_roles_tab(self)
-        self.tabWidget.addTab(self.users_and_roles, "Users and Roles")
-        self.field_extraction_rule = field_extraction_rule_tab(self)
-        self.tabWidget.addTab(self.field_extraction_rule, "Field Extraction Rules")
-        self.scheduled_view = scheduled_view_tab(self)
-        self.tabWidget.addTab(self.scheduled_view, "Scheduled Views")
-        self.partitions = partitions_tab(self)
-        self.tabWidget.addTab(self.partitions, "Partitions")
+        self.tabs = []
+        # find all of the tab modules and import them
+        modules_dir = pathlib.Path(self.basedir + '/modules')
+        modules_dir_contents = modules_dir.glob('*tab.py')
+        modules_to_load = []
+        for module_name in modules_dir_contents:
+           modules_to_load.append(str(str(module_name.name).split('.')[0]))
+        modules_to_load.sort()
+        for module_to_load in modules_to_load:
+            module_name = 'modules.' + module_to_load
+            globals()[module_name] = importlib.import_module(module_name)
+            #  These following three lines are confusing:
+            #  First we get the name of the class as a string from the module
+            #  Then we use that string to get the class itself
+            #  Then we instantiate it.
+            class_name = getattr(globals()[module_name], 'class_name')
+            class_ = getattr(globals()[module_name], class_name)
+            self.tabs.append(class_(self))
+            logger.info('[Sumotoolbox] Found and imported %s class.', module_name)
 
-        # Commented out org tab until v1.0 or org API release
-        # self.organizations = organizations_tab(self)
-        # self.tabWidget.addTab(self.organizations, "Multi Account Mgmt")
+        for tab in self.tabs:
+            self.tabWidget.addTab(tab, tab.tab_name)
+            logger.info('[Sumotoolbox] Added %s tab to UI.', tab.tab_name)
 
         # disable right credential box because we always start on the search tab
         # which only uses the left credentials
         self.tabchange(0)
+
+        # Check to see if the keystore password exists in the environmental variable "STB_PASS" and if so,
+        # automatically unlock the keystore. Set this up mostly for testing. DO NOT keep your keystore password
+        # in .bashrc or .profile or whatever file in plaintext. That is bad times.
+        env_password = os.environ.get('STB_PASS')
+        if env_password:
+            logger.info('Found Password in $STB_PASS. Trying it...')
+            self.loadcreddb(env_password=env_password)
 
         # initial clear of all stateful objects (This makes sure all of the tabs are cleared and initialized)
         self.reset_stateful_objects()
@@ -387,14 +400,9 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # method to reset all objects that are dependent on creds (such as collectors and content lists)
     def reset_stateful_objects(self, side='both'):
+        for tab in self.tabs:
+            tab.reset_stateful_objects(side)
 
-        self.collector.reset_stateful_objects(side)
-        self.source_update.reset_stateful_objects(side)
-        self.content.reset_stateful_objects(side)
-        self.scheduled_view.reset_stateful_objects(side)
-        self.field_extraction_rule.reset_stateful_objects(side)
-        #self.organizations.reset_stateful_objects()
-        self.users_and_roles.reset_stateful_objects(side)
         return
 
     def clear_creds(self):
@@ -445,12 +453,16 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                 return
         return
 
-    def loadcreddb(self):
+    def loadcreddb(self, env_password=None):
         logger.info('Loading credential store')
         db_file = pathlib.Path('credentials.db')
         if db_file.is_file():
-            message = "Please enter your credentials database password."
-            password, result = QtWidgets.QInputDialog.getText(self, 'Enter password', message, QtWidgets.QLineEdit.Password)
+            if type(env_password) is bool:
+                message = "Please enter your credentials database password."
+                password, result = QtWidgets.QInputDialog.getText(self, 'Enter password', message, QtWidgets.QLineEdit.Password)
+            else:
+                password = env_password
+                result = True
             if result:
                 try:
                     # create the cred store instance
@@ -489,9 +501,9 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.errorbox(str(e))
                     self.cred_db_authenticated = False
                     if hasattr(self, 'credentialstore'):
-                        print('deleting credstore var')
                         del self.credentialstore
                     self.set_creddbbuttons()
+                    self.clear_creds()
                     self.reset_stateful_objects()
                 return
             else:
@@ -499,7 +511,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.errorbox("You don't appear to have a credentials database. You must create one first.")
             return
-        return
+
 
     def deletecreddb(self):
         db_file = pathlib.Path('credentials.db')
@@ -542,7 +554,7 @@ If so type 'DELETE' in the box below:"
         self.comboBoxPresetLeft.removeItem(index)
         index = self.comboBoxPresetRight.findText(preset)
         self.comboBoxPresetRight.removeItem(index)
-        if self.comboBoxPresetLeft.count() is 0:
+        if self.comboBoxPresetLeft.count() == 0:
             self.clear_creds()
         return
 
@@ -557,7 +569,7 @@ If so type 'DELETE' in the box below:"
             db_file_exists = False
         # The search tab only uses the left credentials, so don't enable the right ones if we are in the search tab
         tab = self.tabWidget.currentIndex()
-        if tab is 2:  # Index 2 from the tab widget is the search tab
+        if tab == 2:  # Index 2 from the tab widget is the search tab
             disable_right_cred__buttons = True
         else:
             disable_right_cred__buttons = False
@@ -695,7 +707,7 @@ If so type 'DELETE' in the box below:"
     # This solves this problem
     # called when the user selects an item from the preset dropdown
     def preset_activated(self, preset, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side):
-        if comboBoxPreset.count() is 1:
+        if comboBoxPreset.count() == 1:
             self.load_preset(preset, comboBoxRegion, lineEditUserName, lineEditPassword, comboBoxPreset, side)
 
     # called when the preset combobox index changes
@@ -790,7 +802,7 @@ If so type 'DELETE' in the box below:"
             savefilepath = pathlib.Path(filename)
 
         if (re.match(regexprog, id) != None) and (re.match(regexprog, key) != None):
-            sumo = SumoLogic(id, key, endpoint=url)
+            sumo = SumoLogic(id, key, endpoint=url, log_level=self.log_level)
 
             if (re.match(regexprog, searchstring)) != None:
                 try:
@@ -816,7 +828,7 @@ If so type 'DELETE' in the box below:"
                     except Exception as e:
                         logger.exception(e)
                         self.errorbox("Something went wrong\n\n" + str(e))
-                    if nummessages is not 0:
+                    if nummessages != 0:
 
                         # return messages
                         if self.buttonGroupOutputType.checkedId() == -2:
@@ -948,12 +960,12 @@ If so type 'DELETE' in the box below:"
         return
 
 
-    # Start Methods for FER Tab
-    
-
     # Start Misc/Utility Methods
     def tabchange(self, index):
-        if index == 0 or index == 2:
+        # We do this to disable the right creds box for tabs that don't use it. Index zero is always the search tab,
+        # for which the right creds box should be disable. The other tabs are loaded dynamically and so we check their
+        # usage dynamically
+        if (index == 0) or (self.tabs[index - 1].cred_usage == "left"):
             self.comboBoxRegionRight.setEnabled(False)
             self.lineEditUserNameRight.setEnabled(False)
             self.lineEditPasswordRight.setEnabled(False)
@@ -1063,12 +1075,6 @@ If so type 'DELETE' in the box below:"
                     template_API_dict.update(config_API_dict)
                 new_ini['API']['api_endpoints'] = json.dumps(template_API_dict)
 
-                # save the MAM settings from the current ini file if they exist
-                if config.has_option('Multi Account Management','partner_name'):
-                    new_ini['Multi Account Management']['partner_name'] = config['Multi Account Management']['partner_name']
-                if config.has_option('Multi Account Management','authorized_preset'):
-                    new_ini['Multi Account Management']['authorized_preset'] = config['Multi Account Management']['authorized_preset']
-
                 # write the new ini file
                 with open(config_file, 'w') as f:
                     new_ini.write(f)
@@ -1087,8 +1093,10 @@ If so type 'DELETE' in the box below:"
         level = self.loggingmenugroup.checkedAction()
         if level.text() == "Informational":
             logzero.loglevel(level=20)
+            self.log_level = 'info'
         elif level.text() == "Debug":
             logzero.loglevel(level=10)
+            self.log_level = 'debug'
 
     def change_theme(self):
         theme = self.thememenugroup.checkedAction()

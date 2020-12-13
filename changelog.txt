@@ -1,15 +1,40 @@
 Changelog for SumoToolBox
 
+12-12-2020 0.9
+*   [Source Update] Added the ability to update the source category of all sources in your target list. Please be careful
+    as you can cause all sorts of mayhem with this feature if you don't know what you are doing. Also remember, don't
+    exit the tool until you've checked your work. The undo button will work until you exit the tool.
+*   [Monitors and Connections] Added "Monitors and Connections" tab which allows the manipulation and viewing of webhook
+    connections as well as monitors (the new alerting feature.) These were added in the same tab as monitors are
+    potentially dependent on connections. The tab is designed to optionally copy the connections upon which a monitor
+    depends along with the monitor itself.
+*   [Collectors] Added cloud and server icons to represent hosted and installed collectors.
+*   [Collectors] Added a set of radio buttons to filter collectors based on type and status. You can now choose between
+    All Collectors, Only Hosted Collectors, Only Installed Collectors, and Installed Collectors that are "dead" (no
+    longer sending.)
+*   [General] Made the starting size of the JSON viewer window a bit bigger.
+*   [SDK] Added Support for Monitors
+*   [SDK] Added Support for SAML Configs
+*   [General] Changed how tabs are loaded. They are now loaded dynamically from the modules dir. This has had some
+    impact on the order of the tabs in the UI. It's alphabetical now (except for search.) Sorry if you were used to
+    the old way.
+*   [Orgs SDK] Updated the orgs SDK to work with the new Orgs Beta API.
+*   [Organizations] The triumphant return of the Organizations tab. The orgs API is restricted to Credits licenses
+    now so only one "create org" button. More to come here as the beta starts up and v1.0 of orgs is released.
+    Also note that the buttons on this tab will be disabled unless you are in the Organizations beta, the launch date
+    of which is TBA as of this entry.
+
+
 10-29-2020 0.8
 *   Fixed this file (the changelog) to be descending (new stuff at the top instead of the bottom.)
-*   Fixed the content find/replace/copy functionality to work with new style dashboards
+*   [Content] Fixed the content find/replace/copy functionality to work with new style dashboards
 *   Added JSON view button to most panes. This will show you the JSON that defines the selected object. The viewer
 is pretty basic but it does have search capability. Type in your search term and click the Up or Down arrow to search
 in that direction. There is currently no context menu but you can copy from the window using ctrl-c or command-c
 depending on your computer. I may update this viewer later to be a bit more advanced (maybe an alternate collapsible
 tree view?)
-*   Fixed bug where the right side of scheduled views pane was disabled
-*   Updated font for source updated pane to match the app standard font (Waree 12)
+*   [Scheduled Views] Fixed bug where the right side of scheduled views pane was disabled
+*   [Source Update] Updated font to match the app standard font (Waree 12)
 *   Added shared module for classes and functions that are shared by all panes (for instance the new JSON viewer)
 *   Fixed a bug that was preventing mask rule updates from working in the "source update" tab.
 *   Fixed a bug that was preventing debug mode from working

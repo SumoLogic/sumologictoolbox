@@ -56,9 +56,12 @@ def backoff(func):
 
 class SumoLogic(object):
 
-    def __init__(self, accessId, accessKey, endpoint=None, cookieFile='cookies.txt'):
+    def __init__(self, accessId, accessKey, endpoint=None, log_level='info', log_file=None, cookieFile='cookies.txt'):
         self.session = requests.Session()
-        # logzero.loglevel(level=20) # info level, debug is 10
+        self.log_level = log_level
+        self.set_log_level(self.log_level)
+        if log_file:
+            logzero.logfile(str(log_file))
         self.session.auth = (accessId, accessKey)
         self.session.headers = {'content-type': 'application/json', 'accept': 'application/json'}
         cj = cookielib.FileCookieJar(cookieFile)
@@ -73,6 +76,24 @@ class SumoLogic(object):
         if endpoint[-1:] == "/":
             self.endpoint = self.endpoint[:-1]
             warnings.warn("Endpoint should not end with a slash character, it has been removed from your endpoint string.")
+
+    def set_log_level(self, log_level):
+        if log_level == 'info':
+            self.log_level = log_level
+            logzero.loglevel(level=20)
+            return True
+        elif log_level == 'debug':
+            self.log_level = log_level
+            logzero.loglevel(level=10)
+            logger.debug("[Sumologic SDK] Setting logging level to 'debug'")
+        else:
+            raise Exception("Bad Logging Level")
+            logger.info("[Sumologic SDK] Attempt to set undefined logging level.")
+            return False
+
+    def get_log_level(self):
+        return self.log_level
+
 
     def _get_endpoint(self):
         """
@@ -612,10 +633,10 @@ class SumoLogic(object):
     # This call gets the user and then all roles the user belongs to. This is useful for exporting or copying a user
     # to a new org.
     def get_user_and_roles(self, user_id):
-        user = self.get_user(user_id)
+        user = self.get_user(str(user_id))
         user['roles'] = []
         for role_id in user['roleIds']:
-            role = self.get_role(role_id)
+            role = self.get_role(str(role_id))
             user['roles'].append(role)
         return user
 
@@ -665,11 +686,35 @@ class SumoLogic(object):
     def get_connections_sync(self, limit=1000):
         token = None
         results = []
-        while not(token):
+        while True:
             r = self.get_connections(limit=limit, token=token)
             token = r['next']
             results = results + r['data']
+            if token is None:
+                break
         return results
+
+    def create_connection(self, connection):
+        r = self.post('/v1/connections', connection)
+        return r.json()
+
+    def test_connection(self, connection):
+        r = self.post('/v1/connections/test', connection)
+        return r.json()
+
+    def get_connection(self, item_id, type):
+        params = {'type': str(type)}
+        r = self.get('/v1/connections/' + str(item_id), params=params)
+        return r.json()
+
+    def update_connection(self, item_id, connection):
+        r = self.put('/v1/connections/' + str(item_id), connection)
+        return r.json()
+
+    def delete_connection(self, item_id, item_type):
+        params = {'type': str(item_type)}
+        r = self.delete('/v1/connections/' + str(item_id), params=params)
+        return r
 
     # Field Extraction Rules API
 
@@ -793,3 +838,161 @@ class SumoLogic(object):
         data ={}
         r = self.post('/v1/partitions/' + str(item_id) + '/decommission', data)
         return r
+
+    # Monitors API
+
+    def get_usage_info(self):
+        r = self.get('/v1/monitors/usageInfo')
+        return r.json()
+
+    def bulk_get_monitors(self, item_ids):
+        item_ids_string = ''
+        for item_id in item_ids:
+            item_ids_string = item_ids_string + str(item_id) + ','
+        item_ids_string = item_ids_string[:-1]
+        params = {'ids': item_ids_string}
+        r = self.get('/v1/monitors', params=params)
+        return r.json()
+
+    def create_monitor(self, parent_id, monitor):
+        params = { 'parentId': str(parent_id)}
+        r = self.post('/v1/monitors', monitor, params=params)
+        return r.json()
+
+    def create_monitor_folder(self, parent_id, name, description=''):
+        data = {'name': str(name),
+                'description': str(description),
+                'type': 'MonitorsLibraryFolder'}
+        r = self.create_monitor(parent_id, data)
+        return r
+
+    def bulk_delete_monitors(self, item_ids):
+        item_ids_string = ''
+        for item_id in item_ids:
+            item_ids_string = item_ids_string + str(item_id) + ','
+        item_ids_string = item_ids_string[:-1]
+        params = {'ids': item_ids_string}
+        r = self.delete('/v1/monitors', params=params)
+        return r
+
+    def get_monitor_folder_root(self):
+        r = self.get('/v1/monitors/root')
+        return r.json()
+
+    def get_monitor_by_path(self, path):
+        params = {'path': str(path)}
+        r = self.get('/v1/monitors/path', params=params)
+        return r.json()
+
+    def search_monitors(self, query, limit=100, offset=0):
+        params = {'query': str(query),
+                  'limit': int(limit),
+                  'offset': int(offset)}
+        r = self.get('/v1/monitors/search', params=params)
+        return r.json()
+
+    def search_monitors_sync(self, query, limit=100):
+        offset = 0
+        results = []
+        r = self.search_monitors(query, limit=limit, offset=offset)
+        offset = offset + limit
+        results = results + r
+        while not (len(r) < limit):
+            r = self.search_monitors(query, limit=limit, offset=offset)
+            offset = offset + limit
+            results = results + r
+        return results
+
+    def get_monitor(self, item_id):
+        r = self.get('/v1/monitors/' + str(item_id))
+        return r.json()
+
+    def update_monitor(self, item_id, name, version, type, description=''):
+        data = {'name': str(name),
+                'description': str(description),
+                'version': int(version),
+                'type': str(type)}
+        r = self.put('/v1/monitors/' + str(item_id), data)
+        return r.json()
+
+    def delete_monitor(self, item_id):
+        r = self.delete('/v1/monitors/' + str(item_id))
+        return r
+
+    def get_monitor_path(self, item_id):
+        r = self.get('/v1/monitors/' + str(item_id) + '/path')
+        return r.json()
+
+    def move_monitor(self, item_id, parent_id):
+        params = { 'parentId': str(parent_id)}
+        r = self.post('/v1/monitors/' + str(item_id) + '/move', params=params)
+        return r.json()
+
+    def copy_monitor(self, item_id, parent_id, name=None, description=''):
+        data = {'parentId': str(parent_id),
+                'description': str(description)}
+        if name:
+            data['name'] = str(name)
+        r = self.post('/v1/monitors/' + str(item_id) + '/copy')
+        return r.json()
+
+    def export_monitor(self, item_id):
+        r = self.get('/v1/monitors/' + str(item_id) + '/export')
+        return r.json()
+
+    def import_monitor(self, parent_id, monitor):
+        r = self.post('/v1/monitors/' + str(parent_id) + '/import', monitor)
+        return r.json()
+
+    # SAML Config API
+
+    def get_saml_configs(self):
+        r = self.get('/v1/saml/identityProviders')
+        return r.json()
+
+    def get_saml_config_by_name(self, name):
+        configs = self.get_saml_configs()
+        for config in configs:
+            if config['name'] == str(name):
+                return config
+        return False
+
+    def get_saml_config_by_id(self, item_id):
+        configs = self.get_saml_configs()
+        for config in configs:
+            if config['id'] == str(item_id):
+                return config
+        return False
+
+    def create_saml_config(self, saml_config):
+        r = self.post('/v1/saml/identityProviders', saml_config)
+        return r.json()
+
+    def update_saml_config(self, item_id, saml_config):
+        r = self.put('/v1/saml/identityProviders/' + str(item_id), saml_config)
+        return r.json()
+
+    def delete_saml_config(self, item_id):
+        r = self.delete('/v1/saml/identityProviders/' + str(item_id))
+        return r
+
+    def get_whitelisted_users(self):
+        r = self.get('/v1/saml/whitelistedUsers')
+        return r.json()
+
+    def set_whitelisted_user(self, user_id):
+        r = self.post('/v1/saml/whitelistedUsers' + str(user_id))
+        return r.json()
+
+    def remove_whitelisted_user(self, user_id):
+        r = self.delete('/v1/saml/whitelistedUsers/' + str(user_id))
+        return r.json()
+
+    def enable_saml_lockdown(self):
+        r = self.post('/v1/saml/lockdown/enable')
+        return r.json()
+
+    def disable_saml_lockdown(self):
+        r = self.post('/v1/saml/lockdown/disable')
+        return r.json()
+

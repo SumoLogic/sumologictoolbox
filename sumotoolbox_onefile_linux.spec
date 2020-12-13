@@ -6,7 +6,8 @@ block_cipher = None
 
 added_files = [
     ( 'data/*', 'data' ),
-    ( 'qtmodern', 'qtmodern' )
+    ( 'qtmodern', 'qtmodern' ),
+    ( 'modules/*', 'modules' )
     ]
 
 a = Analysis(['sumotoolbox.py'],
@@ -27,7 +28,7 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='sumotoolbox',
+          name='sumotoolbox_linux',
           debug=False,
           strip=None,
           upx=True,

@@ -19,15 +19,34 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QPushButton" name="pushButtonUpdateMonitorsAndConnectionsLeft">
+        <widget class="QPushButton" name="pushButtonUpdateMonitorsLeft">
          <property name="font">
           <font>
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Update the list of monitors. </string>
+         </property>
          <property name="text">
           <string>Update</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonParentDirMonitorsLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Go up one level to the parent directory of the current directory. </string>
+         </property>
+         <property name="text">
+          <string>Parent Dir</string>
          </property>
         </widget>
        </item>
@@ -82,12 +101,28 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Filter what's in the monitors list (case sensitive).</string>
+         </property>
          <property name="placeholderText">
           <string>Search</string>
          </property>
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelMonitorPathLeft">
+       <property name="font">
+        <font>
+         <family>Waree</family>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QListWidget" name="listWidgetMonitorsLeft">
@@ -108,12 +143,28 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
+        <widget class="QPushButton" name="pushButtonMonitorNewFolderLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>New Folder</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="pushButtonBackupMonitorLeft">
          <property name="font">
           <font>
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Backup the selected monitor(s) and associated webhook connections to a file. </string>
          </property>
          <property name="text">
           <string>Backup</string>
@@ -128,6 +179,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Restore monitor from a file and optionally also restore any connections that were associated with that monitor (if &quot;include connections&quot; is checked.)</string>
+         </property>
          <property name="text">
           <string>Restore</string>
          </property>
@@ -140,6 +194,9 @@
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Delete the selected monitor(s). Be careful, this is permanent. </string>
          </property>
          <property name="text">
           <string>Delete</string>
@@ -155,7 +212,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Display Monitor(s) JSON</string>
+          <string>Display Monitor(s) as JSON</string>
          </property>
          <property name="text">
           <string>JSON</string>
@@ -164,6 +221,46 @@
        </item>
        <item>
         <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_12">
+       <item>
+        <widget class="QPushButton" name="pushButtonUpdateConnectionsLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Update the list of connections.</string>
+         </property>
+         <property name="text">
+          <string>Update</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_11">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -246,6 +343,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Backup the selected connection(s).</string>
+         </property>
          <property name="text">
           <string>Backup</string>
          </property>
@@ -259,6 +359,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Restore connection(s) from file. </string>
+         </property>
          <property name="text">
           <string>Restore</string>
          </property>
@@ -271,6 +374,9 @@
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Delete the selected connection(s). Be careful, this is permanent. </string>
          </property>
          <property name="text">
           <string>Delete</string>
@@ -286,7 +392,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Display Connection(s) JSON</string>
+          <string>Display Connection(s) as JSON</string>
          </property>
          <property name="text">
           <string>JSON</string>
@@ -333,6 +439,9 @@
          <pointsize>12</pointsize>
         </font>
        </property>
+       <property name="toolTip">
+        <string>Copy monitor(s) from one org to another (with or without associated webhook connections)</string>
+       </property>
        <property name="text">
         <string>Copy -&gt;</string>
        </property>
@@ -346,8 +455,31 @@
          <pointsize>12</pointsize>
         </font>
        </property>
+       <property name="toolTip">
+        <string>Copy monitor(s) from one org to another (with or without associated webhook connections)</string>
+       </property>
        <property name="text">
         <string>&lt;- Copy</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBoxCopyRestoreConnections">
+       <property name="font">
+        <font>
+         <family>Waree</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check this if you want to copy/restore any webhook &lt;/p&gt;&lt;p&gt;connections used by the selected monitor(s). &lt;br/&gt;&lt;br/&gt;This will look for monitors of the same name in the&lt;/p&gt;&lt;p&gt;target org and attach them to the monitor if they exist.&lt;/p&gt;&lt;p&gt;If they don't exist then they will be created from the&lt;/p&gt;&lt;p&gt;connections exported from the source org.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Include
+Connections</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -368,19 +500,15 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_4">
-       <property name="text">
-        <string>PushButton</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="pushButtonCopyConnectionLeftToRight">
        <property name="font">
         <font>
          <family>Waree</family>
          <pointsize>12</pointsize>
         </font>
+       </property>
+       <property name="toolTip">
+        <string>Copy connection(s) from org to org. </string>
        </property>
        <property name="text">
         <string>Copy -&gt;</string>
@@ -394,6 +522,9 @@
          <family>Waree</family>
          <pointsize>12</pointsize>
         </font>
+       </property>
+       <property name="toolTip">
+        <string>Copy connection(s) from org to org. </string>
        </property>
        <property name="text">
         <string>&lt;- Copy</string>
@@ -420,15 +551,34 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QPushButton" name="pushButtonUpdateMonitorsAndConnectionsRight">
+        <widget class="QPushButton" name="pushButtonUpdateMonitorsRight">
          <property name="font">
           <font>
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Update the list of monitors. </string>
+         </property>
          <property name="text">
           <string>Update</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonParentDirMonitorsRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Go up one level to the parent directory of the current directory. </string>
+         </property>
+         <property name="text">
+          <string>Parent Dir</string>
          </property>
         </widget>
        </item>
@@ -483,12 +633,28 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Filter what's in the monitors list (case sensitive).</string>
+         </property>
          <property name="placeholderText">
           <string>Search</string>
          </property>
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelMonitorPathRight">
+       <property name="font">
+        <font>
+         <family>Waree</family>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QListWidget" name="listWidgetMonitorsRight">
@@ -509,12 +675,28 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
+        <widget class="QPushButton" name="pushButtonMonitorNewFolderRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>New Folder</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="pushButtonBackupMonitorRight">
          <property name="font">
           <font>
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Backup the selected monitor(s) and associated webhook connections to a file. </string>
          </property>
          <property name="text">
           <string>Backup</string>
@@ -529,6 +711,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Restore monitor from a file and optionally also restore any connections that were associated with that monitor (if &quot;include connections&quot; is checked.)</string>
+         </property>
          <property name="text">
           <string>Restore</string>
          </property>
@@ -541,6 +726,9 @@
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Delete the selected monitor(s). Be careful, this is permanent. </string>
          </property>
          <property name="text">
           <string>Delete</string>
@@ -556,7 +744,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Display Monitor(s) JSON</string>
+          <string>Display Monitor(s) as JSON</string>
          </property>
          <property name="text">
           <string>JSON</string>
@@ -565,6 +753,46 @@
        </item>
        <item>
         <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="Line" name="line_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_13">
+       <item>
+        <widget class="QPushButton" name="pushButtonUpdateConnectionsRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>Update the list of connections.</string>
+         </property>
+         <property name="text">
+          <string>Update</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_12">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -647,6 +875,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Backup the selected connection(s).</string>
+         </property>
          <property name="text">
           <string>Backup</string>
          </property>
@@ -660,6 +891,9 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Restore connection(s) from file. </string>
+         </property>
          <property name="text">
           <string>Restore</string>
          </property>
@@ -672,6 +906,9 @@
            <family>Waree</family>
            <pointsize>12</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Delete the selected connection(s). Be careful, this is permanent. </string>
          </property>
          <property name="text">
           <string>Delete</string>
@@ -687,7 +924,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Display Connection(s) JSON</string>
+          <string>Display Connection(s) as JSON</string>
          </property>
          <property name="text">
           <string>JSON</string>
