@@ -127,12 +127,13 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
         if left:
             self.FERListWidgetLeft.clear()
             self.FERListWidgetLeft.currentcontent = {}
+            self.FERListWidgetLeft.updated = False
 
 
         if right:
             self.FERListWidgetRight.clear()
             self.FERListWidgetRight.currentcontent = {}
-
+            self.FERListWidgetRight.updated = False
 
         return
 

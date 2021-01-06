@@ -1,5 +1,18 @@
 Changelog for SumoToolBox
 
+1-6-2021 0.9.1
+*   [Collectors] The new Cloud 2 Cloud sources added by Sumo Logic have a different JSON definition/schema than other
+    source types. This change caused errors when attempting access/manipulate these types of sources in previous versions.
+    This is now fixed in 0.9.1
+*   [Source Update] The new Cloud 2 Cloud sources added by Sumo Logic have a different JSON definition/schema than other
+    source types. This change caused errors when attempting access/manipulate these types of sources in previous versions.
+    This is now fixed in 0.9.1
+*   [Collectors] Fixed bug where if 2 folders had the same name it got confused. This was possible in global folders
+    because 2 users can have the same name and the root level folders are represented by user names.
+*   [Users and Roles] Fixed bug where if 2 users had the same name it got confused. This is possible because e-mail
+    address is actually the unique identifier for each account (along with the internal 'id' number.)
+
+
 12-12-2020 0.9
 *   [Source Update] Added the ability to update the source category of all sources in your target list. Please be careful
     as you can cause all sorts of mayhem with this feature if you don't know what you are doing. Also remember, don't

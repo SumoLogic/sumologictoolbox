@@ -491,9 +491,7 @@ class content_tab(QtWidgets.QWidget):
 
                 contents = []
                 for selecteditem in selecteditemsfrom:
-                    for child in ContentListWidgetFrom.currentcontent['children']:
-                        if child['name'] == str(selecteditem.text()):
-                            item_id = child['id']
+                            item_id = selecteditem.details['id']
                             contents.append(fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode))
                             exportsuccessful = True
             except Exception as e:
@@ -593,11 +591,9 @@ class content_tab(QtWidgets.QWidget):
                 currentdir = ContentListWidgetTo.currentdirlist[-1]
                 tofolderid = ContentListWidgetTo.currentcontent['id']
                 for selecteditem in selecteditems:
-                    for child in ContentListWidgetFrom.currentcontent['children']:
-                        if child['name'] == str(selecteditem.text()):
-                            item_id = child['id']
-                            content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
-                            status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
+                        item_id = selecteditem.details['id']
+                        content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
+                        status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
                 self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
 
@@ -670,13 +666,8 @@ If you are absolutely sure, type "DELETE" in the box below.
                 try:
                     sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
                     for selecteditem in selecteditems:
-
-                        for child in ContentListWidget.currentcontent['children']:
-                            if child['name'] == str(selecteditem.text()):
-                                item_id = child['id']
-
+                        item_id = selecteditem.details['id']
                         result = sumo.delete_content_job_sync(item_id, adminmode=adminmode)
-
                     self.updatecontentlist(ContentListWidget, url, id, key, radioselected, directorylabel)
                     return
 
@@ -788,12 +779,10 @@ If you are absolutely sure, type "DELETE" in the box below.
         else:
             adminmode = False
         try:
-            for child in ContentListWidget.currentcontent['children']:
-                if (child['name'] == item.text()) and (child['itemType'] == 'Folder'):
-                    ContentListWidget.currentcontent = sumo.get_folder(child['id'], adminmode=adminmode)
-
-                    dir = {'name': item.text(), 'id': child['id']}
-                    ContentListWidget.currentdirlist.append(dir)
+            if item.details['itemType'] == 'Folder':
+                ContentListWidget.currentcontent = sumo.get_folder(item.details['id'], adminmode=adminmode)
+                dir = {'name': item.text(), 'id': item.details['id']}
+                ContentListWidget.currentdirlist.append(dir)
 
         except Exception as e:
             logger.exception(e)
@@ -844,23 +833,17 @@ If you are absolutely sure, type "DELETE" in the box below.
                 item_name = item_name + object['name']
                 if object['itemType'] == 'Folder':
                     item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
-                    item.setIcon(self.icons['Folder'])
-                    ContentListWidget.addItem(item)  # populate the list widget in the GUI
                 elif object['itemType'] == 'Search':
                     item = QtWidgets.QListWidgetItem(self.icons['Search'], item_name)
-                    item.setIcon(self.icons['Search'])
-                    ContentListWidget.addItem(item)  # populate the list widget in the GUI
                 elif object['itemType'] == 'Dashboard' or object['itemType'] == 'Report':
                     item = QtWidgets.QListWidgetItem(self.icons['Dashboard'], item_name)
-                    item.setIcon(self.icons['Dashboard'])
-                    ContentListWidget.addItem(item)  # populate the list widget in the GUI
                 elif object['itemType'] == 'Lookups':
                     item = QtWidgets.QListWidgetItem(self.icons['Lookups'], item_name)
-                    item.setIcon(self.icons['Lookups'])
-                    ContentListWidget.addItem(item)  # populate the list widget in the GUI
                 else:
-                    ContentListWidget.addItem(
-                        item_name)  # populate the list widget in the GUI with no icon (fallthrough)
+                    item = QtWidgets.QListWidgetItem(item_name)
+                #attach the details about the object to the entry in listwidget, this makes like much easier
+                item.details = object
+                ContentListWidget.addItem(item)  # populate the list widget in the GUI with no icon (fallthrough)
 
             dirname = ''
             for dir in ContentListWidget.currentdirlist:
@@ -894,20 +877,18 @@ If you are absolutely sure, type "DELETE" in the box below.
                 message = ''
                 sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
                 for selecteditem in selecteditems:
-                    for child in ContentListWidget.currentcontent['children']:
-                        if child['name'] == str(selecteditem.text()):
-                            item_id = child['id']
-                            try:
-                                content = sumo.export_content_job_sync(item_id, adminmode=adminmode)
-                                savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.sumocontent.json')
-                                if savefilepath:
-                                    with savefilepath.open(mode='w') as filepointer:
-                                        json.dump(content, filepointer)
-                                    message = message + str(selecteditem.text()) + r'.sumocontent.json' + '\n'
-                            except Exception as e:
-                                logger.exception(e)
-                                self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
-                                return
+                    item_id = selecteditem.details['id']
+                    try:
+                        content = sumo.export_content_job_sync(item_id, adminmode=adminmode)
+                        savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.sumocontent.json')
+                        if savefilepath:
+                            with savefilepath.open(mode='w') as filepointer:
+                                json.dump(content, filepointer)
+                            message = message + str(selecteditem.text()) + r'.sumocontent.json' + '\n'
+                    except Exception as e:
+                        logger.exception(e)
+                        self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+                        return
                 self.mainwindow.infobox('Wrote files: \n\n' + message)
             else:
                 self.mainwindow.errorbox("You don't have permissions to write to that directory")
@@ -968,16 +949,14 @@ If you are absolutely sure, type "DELETE" in the box below.
             json_text = ''
             sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
             for selecteditem in selecteditems:
-                for child in ContentListWidget.currentcontent['children']:
-                    if child['name'] == str(selecteditem.text()):
-                        item_id = child['id']
-                        try:
-                            content = sumo.export_content_job_sync(item_id, adminmode=adminmode)
-                            json_text = json_text + json.dumps(content, indent=4, sort_keys=True) + '\n\n'
-                        except Exception as e:
-                            logger.exception(e)
-                            self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
-                            return
+                item_id = selecteditem.details['id']
+                try:
+                    content = sumo.export_content_job_sync(item_id, adminmode=adminmode)
+                    json_text = json_text + json.dumps(content, indent=4, sort_keys=True) + '\n\n'
+                except Exception as e:
+                    logger.exception(e)
+                    self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+                    return
             self.json_window = ShowTextDialog('JSON', json_text, self.mainwindow.basedir)
             self.json_window.show()
 

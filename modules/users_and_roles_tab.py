@@ -270,7 +270,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
     def update_users_and_roles_lists(self, UserListWidget, RoleListWidget, url, id, key):
         sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
         try:
-            logger.info("[Users and Roles]Updating Users and Roles Lists")
+            logger.info("[Users and Roles] Updating Users and Roles Lists")
             UserListWidget.currentcontent = sumo.get_users_sync()
             RoleListWidget.currentcontent = sumo.get_roles_sync()
             self.update_users_and_roles_listwidgets(UserListWidget, RoleListWidget)
@@ -289,11 +289,15 @@ class users_and_roles_tab(QtWidgets.QWidget):
             UserListWidget.setSortingEnabled(True)
             for object in UserListWidget.currentcontent:
                 item_name = object['firstName'] + ' ' + object['lastName']
-                UserListWidget.addItem(item_name)  # populate the list widget in the GUI
+                item = QtWidgets.QListWidgetItem(item_name)
+                item.details = object
+                UserListWidget.addItem(item)  # populate the list widget in the GUI
             UserListWidget.updated = True
             for object in RoleListWidget.currentcontent:
                 item_name = object['name']
-                RoleListWidget.addItem(item_name)  # populate the list widget in the GUI
+                item = QtWidgets.QListWidgetItem(item_name)
+                item.details = object
+                RoleListWidget.addItem(item)  # populate the list widget in the GUI
             RoleListWidget.updated = True
 
         except Exception as e:
@@ -315,34 +319,28 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 for selecteditem in selecteditems:
-                    for object in UserListWidgetFrom.currentcontent:
-                        if object['firstName'] + ' ' + object['lastName'] == str(selecteditem.text()):
-                            user_id = object['id']
-                            user = fromsumo.get_user_and_roles(user_id)
-                            #print('unmodified user: ' + str(user))
-                            dest_roles = tosumo.get_roles_sync()
-                            for source_role in user['roles']:
-                                role_already_exists_in_dest = False
-                                source_role_id = source_role['id']
-                                for dest_role in dest_roles:
-                                    if dest_role['name'] == source_role['name']:
-                                        role_already_exists_in_dest = True
-                                        dest_role_id = dest_role['id']
-                                if role_already_exists_in_dest:
-                                    #print('found role at target: ' + source_role['name'])
-                                    user['roleIds'].append(dest_role_id)
-                                    user['roleIds'].remove(source_role_id)
-                                else:
-                                    source_role['users'] = []
-                                    tosumo.create_role(source_role)
-                                    updated_dest_roles = tosumo.get_roles_sync()
-                                    for updated_dest_role in updated_dest_roles:
-                                        if updated_dest_role['name'] == source_role['name']:
-                                            user['roleIds'].append(updated_dest_role['id'])
-                                    user['roleIds'].remove(source_role_id)
-                                    #print('Did not find role at target. Added role:' + source_role['name'])
-                            #print('modified user: ' + str(user))
-                            tosumo.create_user(user['firstName'], user['lastName'], user['email'], user['roleIds'])
+                    user_id = selecteditem.details['id']
+                    user = fromsumo.get_user_and_roles(user_id)
+                    dest_roles = tosumo.get_roles_sync()
+                    for source_role in user['roles']:
+                        role_already_exists_in_dest = False
+                        source_role_id = source_role['id']
+                        for dest_role in dest_roles:
+                            if dest_role['name'] == source_role['name']:
+                                role_already_exists_in_dest = True
+                                dest_role_id = dest_role['id']
+                        if role_already_exists_in_dest:
+                            user['roleIds'].append(dest_role_id)
+                            user['roleIds'].remove(source_role_id)
+                        else:
+                            source_role['users'] = []
+                            tosumo.create_role(source_role)
+                            updated_dest_roles = tosumo.get_roles_sync()
+                            for updated_dest_role in updated_dest_roles:
+                                if updated_dest_role['name'] == source_role['name']:
+                                    user['roleIds'].append(updated_dest_role['id'])
+                            user['roleIds'].remove(source_role_id)
+                    tosumo.create_user(user['firstName'], user['lastName'], user['email'], user['roleIds'])
 
                 self.update_users_and_roles_lists(UserListWidgetTo, RoleListWidgetTo, tourl, toid, tokey)
                 return
@@ -366,21 +364,19 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 message = ''
                 sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
                 for selecteditem in selecteditems:
-                    for object in UserListWidget.currentcontent:
-                        if object['firstName'] + ' ' + object['lastName'] == str(selecteditem.text()):
-                            user_id = object['id']
-                            try:
-                                export = sumo.get_user_and_roles(user_id)
+                    user_id = selecteditem.details['id']
+                    try:
+                        export = sumo.get_user_and_roles(user_id)
 
-                                savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.user.json')
-                                if savefilepath:
-                                    with savefilepath.open(mode='w') as filepointer:
-                                        json.dump(export, filepointer)
-                                    message = message + str(selecteditem.text()) + r'.json' + '\n'
-                            except Exception as e:
-                                logger.exception(e)
-                                self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
-                                return
+                        savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.user.json')
+                        if savefilepath:
+                            with savefilepath.open(mode='w') as filepointer:
+                                json.dump(export, filepointer)
+                            message = message + str(selecteditem.text()) + r'.json' + '\n'
+                    except Exception as e:
+                        logger.exception(e)
+                        self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+                        return
                 self.mainwindow.infobox('Wrote files: \n\n' + message)
             else:
                 self.mainwindow.errorbox("You don't have permissions to write to that directory")
@@ -397,11 +393,9 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
                 json_text = ''
                 for selecteditem in selecteditems:
-                    for object in UserListWidget.currentcontent:
-                        if object['firstName'] + ' ' + object['lastName'] == str(selecteditem.text()):
-                            user_id = object['id']
-                            user = sumo.get_user(user_id)
-                            json_text = json_text + json.dumps(user, indent=4, sort_keys=True) + '\n\n'
+                    user_id = selecteditem.details['id']
+                    user = sumo.get_user(user_id)
+                    json_text = json_text + json.dumps(user, indent=4, sort_keys=True) + '\n\n'
                 self.json_window = ShowTextDialog('JSON', json_text, self.mainwindow.basedir)
                 self.json_window.show()
 
@@ -491,10 +485,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
 
                     sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
                     for selecteditem in selecteditems:
-                        for object in UserListWidget.currentcontent:
-                            if object['firstName'] + ' ' + object['lastName'] == str(selecteditem.text()):
-                                item_id = object['id']
-
+                        item_id = selecteditem.details['id']
                         result = sumo.delete_user(item_id)
 
                     self.update_users_and_roles_lists(UserListWidget, RoleListWidget, url, id, key)
@@ -519,11 +510,9 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 for selecteditem in selecteditems:
-                    for object in RoleListWidgetFrom.currentcontent:
-                        if object['name'] == str(selecteditem.text()):
-                            role_id = object['id']
-                            role = fromsumo.get_role(role_id)
-                            status = tosumo.create_role(role)
+                    role_id = selecteditem.details['id']
+                    role = fromsumo.get_role(role_id)
+                    status = tosumo.create_role(role)
                 self.update_users_and_roles_lists(UserListWidgetTo, RoleListWidgetTo, tourl, toid, tokey)
                 return
 
@@ -546,21 +535,19 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 message = ''
                 sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
                 for selecteditem in selecteditems:
-                    for object in RoleListWidget.currentcontent:
-                        if object['name'] == str(selecteditem.text()):
-                            item_id = object['id']
-                            try:
-                                export = sumo.get_role(item_id)
+                    item_id = selecteditem.details['id']
+                    try:
+                        export = sumo.get_role(item_id)
 
-                                savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.role.json')
-                                if savefilepath:
-                                    with savefilepath.open(mode='w') as filepointer:
-                                        json.dump(export, filepointer)
-                                    message = message + str(selecteditem.text()) + r'.json' + '\n'
-                            except Exception as e:
-                                logger.exception(e)
-                                self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
-                                return
+                        savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.role.json')
+                        if savefilepath:
+                            with savefilepath.open(mode='w') as filepointer:
+                                json.dump(export, filepointer)
+                            message = message + str(selecteditem.text()) + r'.json' + '\n'
+                    except Exception as e:
+                        logger.exception(e)
+                        self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+                        return
                 self.mainwindow.infobox('Wrote files: \n\n' + message)
             else:
                 self.mainwindow.errorbox("You don't have permissions to write to that directory")
@@ -577,11 +564,9 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
                 json_text = ''
                 for selecteditem in selecteditems:
-                    for object in RoleListWidget.currentcontent:
-                        if object['name'] == str(selecteditem.text()):
-                            role_id = object['id']
-                            role = sumo.get_role(role_id)
-                            json_text = json_text + json.dumps(role, indent=4, sort_keys=True) + '\n\n'
+                    role_id = selecteditem.details['id']
+                    role = sumo.get_role(role_id)
+                    json_text = json_text + json.dumps(role, indent=4, sort_keys=True) + '\n\n'
                 self.json_window = ShowTextDialog('JSON', json_text, self.mainwindow.basedir)
                 self.json_window.show()
 
@@ -647,18 +632,12 @@ class users_and_roles_tab(QtWidgets.QWidget):
             text, result = QtWidgets.QInputDialog.getText(self, 'Warning!!', message)
             if (result and (str(text) == 'DELETE')):
                 try:
-
                     sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
                     for selecteditem in selecteditems:
-                        for object in RoleListWidget.currentcontent:
-                            if object['name'] == str(selecteditem.text()):
-                                item_id = object['id']
-
+                        item_id = selecteditem.details['id']
                         result = sumo.delete_role(item_id)
-
                     self.update_users_and_roles_lists(UserListWidget, RoleListWidget, url, id, key)
                     return
-
 
                 except Exception as e:
                     logger.exception(e)

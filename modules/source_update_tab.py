@@ -294,7 +294,11 @@ class source_update_tab(QtWidgets.QWidget):
                 sources = sumo.get_sources_sync(collector['id'])
                 for source in sources:
                     #create a dict to lookup source ID by display name
-                    itemname = '[' + collector['name'] + "]" + " " + source['name']
+                    if 'name' in source:
+
+                        itemname = '[' + collector['name'] + "]" + " " + source['name']
+                    elif 'name' in source['config']:
+                        itemname = '[' + collector['name'] + "]" + " " + source['config']['name']
                     self.sources[itemname] = [{'collector_id': collector['id'], 'source_id': source['id']}]
                     #create a list of sources with the same source category
                     if 'category' in source:
@@ -304,8 +308,15 @@ class source_update_tab(QtWidgets.QWidget):
                         else:
                             self.sources[itemname] = [{'collector_id': collector['id'], 'source_id': source['id']}]
                     #Create a list of sources with the same field=value
-                    if source['fields']:
+                    if 'fields' in source and source['fields']:
                         for key, value in source['fields'].items():
+                            entry = "[" + str(key) + '=' + str(value) + "]"
+                            if entry in self.sources:
+                                self.sources[entry].append({'collector_id': collector['id'], 'source_id': source['id']})
+                            else:
+                                self.sources[entry] = [{'collector_id': collector['id'], 'source_id': source['id']}]
+                    elif 'config' in source and source['config']['fields']:
+                        for key, value in source['config']['fields'].items():
                             entry = "[" + str(key) + '=' + str(value) + "]"
                             if entry in self.sources:
                                 self.sources[entry].append({'collector_id': collector['id'], 'source_id': source['id']})
@@ -467,16 +478,30 @@ class source_update_tab(QtWidgets.QWidget):
                                                   'source_id': target_source_id['source_id'],
                                                   'source': copy.deepcopy(current_source)})
                             if overwrite_rules:
-                                current_source['source']['filters'] = []
+                                if 'filters' in current_source['source']:
+                                    current_source['source']['filters'] = []
+                                elif 'config' in current_source['source']:
+                                    current_source['source']['config']['filters'] = []
+                                else:
+                                    assert 'Source JSON does not match known schema'
                             for removerule in self.removerules:
-                                for index, filter in enumerate(current_source['source']['filters']):
-                                    if filter['name'] == removerule:
-                                        current_source['source']['filters'].pop(index)
-                                        break
+                                if 'filters' in current_source['source']:
+                                    for index, filter in enumerate(current_source['source']['filters']):
+                                        if filter['name'] == removerule:
+                                            current_source['source']['filters'].pop(index)
+                                            break
+
                             for addrule in self.addrules:
-                                current_source['source']['filters'].append(addrule)
+                                # C2C sources do not currently support filters as of 1/5/2021
+                                # Revisit this when filter support is added for filters in the future
+                                if 'filters' in current_source['source']:
+                                    current_source['source']['filters'].append(addrule)
+
                             if self.new_source_category:
-                                current_source['source']['category'] = self.new_source_category
+                                if 'name' in current_source['source']:
+                                    current_source['source']['category'] = self.new_source_category
+                                elif 'name' in current_source['source']['config']:
+                                    current_source['source']['config']['category'] = self.new_source_category
                             sumo.update_source(target_source_id['collector_id'], current_source, etag)
                         self.mainwindow.infobox('Your update completed successfully.')
                         self.pushButtonUndoChanges.setEnabled(True)
@@ -539,8 +564,9 @@ class source_update_tab(QtWidgets.QWidget):
                 if collector['id'] == source_id['collector_id']:
                     for source in collector['sources']:
                         if source['id'] == source_id['source_id']:
-                            for filter in source['filters']:
-                                filter_list.append(filter)
+                            if 'filters' in source:
+                                for filter in source['filters']:
+                                    filter_list.append(filter)
         return filter_list
 
     def load_icons(self):

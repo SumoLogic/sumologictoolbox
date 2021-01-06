@@ -10,6 +10,7 @@ from logzero import logger
 from modules.sumologic import SumoLogic
 from modules.shared import ShowTextDialog
 
+
 class restoreSourcesDialog(QtWidgets.QDialog):
 
     def __init__(self, sources_json, parent=None):
@@ -41,13 +42,9 @@ class restoreSourcesDialog(QtWidgets.QDialog):
         self.scrollAreaWidgetContents = QtWidgets.QFormLayout()
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
 
-
-
         # Create 1 set of (checkbox, label, combobox per fromcategory
 
-
         for index, source in enumerate(sources_json):
-
             objectdict = {'checkbox': None, 'label': None}
             layout = QtWidgets.QHBoxLayout()
             objectdict['checkbox'] = QtWidgets.QCheckBox()
@@ -56,10 +53,13 @@ class restoreSourcesDialog(QtWidgets.QDialog):
             objectdict['checkbox'].setObjectName("checkBox" + str(index))
             objectdict['checkbox'].setCheckState(2)
             layout.addWidget(objectdict['checkbox'])
-            objectdict['label']= QtWidgets.QLabel()
+            objectdict['label'] = QtWidgets.QLabel()
             objectdict['label'].setGeometry(QtCore.QRect(0, 0, 480, 25))
             objectdict['label'].setObjectName("label" + str(index))
-            objectdict['label'].setText(source['name'])
+            if 'name' in source:
+                objectdict['label'].setText(source['name'])
+            elif 'config' in source:
+                objectdict['label'].setText(source['config']['name'])
             layout.addWidget(objectdict['label'])
 
             self.objectlist.append(objectdict)
@@ -68,7 +68,6 @@ class restoreSourcesDialog(QtWidgets.QDialog):
         self.scrollAreaWidget.setLayout(self.scrollAreaWidgetContents)
         self.scrollArea.setWidget(self.scrollAreaWidget)
         self.scrollArea.show()
-
 
         self.retranslateUi(rsd)
         self.buttonBox.accepted.connect(rsd.accept)
@@ -88,6 +87,7 @@ class restoreSourcesDialog(QtWidgets.QDialog):
                 results.append(object['label'].text())
         return results
 
+
 class collector_tab(QtWidgets.QWidget):
 
     def __init__(self, mainwindow):
@@ -105,7 +105,6 @@ class collector_tab(QtWidgets.QWidget):
 
         # UI Buttons for Collection API tab
 
-
         # Setup the search bars to work and to clear when update button is pushed
         self.lineEditCollectorSearchLeft.textChanged.connect(lambda: self.set_listwidget_filter(
             self.listWidgetCollectorsLeft,
@@ -117,8 +116,8 @@ class collector_tab(QtWidgets.QWidget):
             self.lineEditCollectorSearchRight.text()
         ))
 
-        #self.pushButtonUpdateListLeft.clicked.connect(self.lineEditCollectorSearchLeft.clear)
-        #self.pushButtonUpdateListRight.clicked.connect(self.lineEditCollectorSearchRight.clear)
+        # self.pushButtonUpdateListLeft.clicked.connect(self.lineEditCollectorSearchLeft.clear)
+        # self.pushButtonUpdateListRight.clicked.connect(self.lineEditCollectorSearchRight.clear)
 
         #
 
@@ -141,17 +140,17 @@ class collector_tab(QtWidgets.QWidget):
         ))
 
         self.buttonGroupFilterLeft.buttonClicked.connect(lambda: self.update_collector_listwidget(
-            self.listWidgetCollectorsLeft, 
+            self.listWidgetCollectorsLeft,
             self.buttonGroupFilterLeft,
             self.lineEditCollectorSearchLeft.text()
         ))
-        
+
         self.buttonGroupFilterRight.buttonClicked.connect(lambda: self.update_collector_listwidget(
-            self.listWidgetCollectorsRight, 
+            self.listWidgetCollectorsRight,
             self.buttonGroupFilterRight,
             self.lineEditCollectorSearchRight.text()
         ))
-        
+
         self.pushButtonCopySourcesLeftToRight.clicked.connect(lambda: self.copysources(
             self.listWidgetCollectorsLeft,
             self.listWidgetCollectorsRight,
@@ -285,7 +284,7 @@ class collector_tab(QtWidgets.QWidget):
             str(self.mainwindow.lineEditUserNameRight.text()),
             str(self.mainwindow.lineEditPasswordRight.text())
         ))
-        
+
     def reset_stateful_objects(self, side='both'):
 
         if side == 'both':
@@ -348,7 +347,9 @@ class collector_tab(QtWidgets.QWidget):
             sumosources = sumo.sources(collectorid)
 
             for sumosource in sumosources:
-                if sumosource['name'] == sourcename:
+                if 'name' in sumosource and sumosource['name'] == sourcename:
+                    return sumosource['id']
+                elif 'config' in sumosource and sumosource['config']['name'] == sourcename:
                     return sumosource['id']
             return False
         except Exception as e:
@@ -364,12 +365,9 @@ class collector_tab(QtWidgets.QWidget):
             try:
                 CollectorListWidget.collectors = sumo.get_collectors_sync()  # get list of collectors
                 self.update_collector_listwidget(CollectorListWidget, radiobuttongroup, filter_text)
-
-
             except Exception as e:
                 logger.exception(e)
                 self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
-
         else:
             self.mainwindow.errorbox('No user and/or password.')
         return
@@ -395,7 +393,7 @@ class collector_tab(QtWidgets.QWidget):
                 if collector['collectorType'] == "Installable":
                     CollectorListWidget.addItem(item)  # populate the list widget in the GUI
             elif radiobuttongroup.checkedId() == -5:  # Show only dead collectors
-                if (collector['collectorType'] == "Installable") and (collector['alive'] == False ):
+                if (collector['collectorType'] == "Installable") and (collector['alive'] == False):
                     CollectorListWidget.addItem(item)  # populate the list widget in the GUI
             else:
                 logger.info('[Collectors]Fell through conditions in update_list_widget')
@@ -413,7 +411,10 @@ class collector_tab(QtWidgets.QWidget):
             # populate the list of sources
             sources = sumo.sources(collector)
             for source in sources:
-                SourceListWidget.addItem(source['name'])  # populate the display with sources
+                if 'name' in source:
+                    SourceListWidget.addItem(source['name'])  # populate the display with sources
+                elif 'config' in source:
+                    SourceListWidget.addItem(source['config']['name'])  # populate the display with sources
         return
 
     def copysources(self, CollectorListWidgetFrom, CollectorListWidgetTo, SourceListWidgetFrom, SourceListWidgetTo,
@@ -453,17 +454,23 @@ class collector_tab(QtWidgets.QWidget):
                             sumosources = fromsumo.sources(sourcecollectorid)
                             for source in fromsourcelist:  # iterate through the selected sources and copy them
                                 for sumosource in sumosources:
-                                    if sumosource['name'] == source:
+                                    # if sumosource['name'] == source:
+                                    if ('name' in sumosource and source == sumosource['name']) or (
+                                            'config' in sumosource and source == sumosource['config']['name']):
                                         if 'id' in sumosource:  # the API creates an ID so this must be deleted before sending
                                             del sumosource['id']
                                         if 'alive' in sumosource:
-                                            del sumosource['alive']  # the API sets this itself so this must be deleted before sending
+                                            del sumosource[
+                                                'alive']  # the API sets this itself so this must be deleted before sending
                                         template = {}
-                                        template['source'] = sumosource  # the API expects a dict with a key called 'source'
+                                        template[
+                                            'source'] = sumosource  # the API expects a dict with a key called 'source'
                                         notduplicate = True
                                         sumotosourcelist = tosumo.sources(destinationcollectorid)
                                         for sumotosource in sumotosourcelist:
-                                            if sumotosource['name'] == source:  # make sure the source doesn't already exist in the destination
+                                            # make sure the source doesn't already exist in the destination
+                                            if ('name' in sumotosource and sumotosource['name'] == source) or (
+                                                    'config' in sumotosource and sumotosource['config']['name'] == source):
                                                 notduplicate = False
                                         if notduplicate:  # finally lets copy this thing
                                             tosumo.create_source(destinationcollectorid, template)
@@ -551,7 +558,8 @@ class collector_tab(QtWidgets.QWidget):
                 sources = sumo.get_sources_sync(collector['id'])
                 for sourcename in sourcenames:
                     for source in sources:
-                        if str(sourcename.text()) == source['name']:
+                        if ('name' in source and str(sourcename.text()) == source['name']) or (
+                                'config' in source and str(sourcename.text()) == source['config']['name']):
                             json_text = json_text + json.dumps(source, indent=4, sort_keys=True) + '\n\n'
                 self.json_window = ShowTextDialog('JSON', json_text, self.mainwindow.basedir)
                 self.json_window.show()
@@ -602,9 +610,7 @@ If you are absolutely sure, type "DELETE" in the box below.
             destinationcollector = str(destinationcollectorqstring)
             destinationcollectorid = self.getcollectorid(destinationcollector, url, id, key)
             filter = "JSON (*.json)"
-            restorefile, status = QtWidgets.QFileDialog.getOpenFileName(self, "Open file(s)...", os.getcwd(),
-                                                                        filter)
-
+            restorefile, status = QtWidgets.QFileDialog.getOpenFileName(self, "Open file(s)...", os.getcwd(), filter)
             sources = None
             try:
                 with open(restorefile) as data_file:
@@ -628,7 +634,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                     sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
                     for selectedsource in selectedsources:
                         for sumosource in sources:
-                            if sumosource['name'] == str(selectedsource):
+                            if ('name' in sumosource and sumosource['name'] == str(selectedsource)) or ('config' in sumosource and sumosource['config']['name'] == str(selectedsource)):
                                 if 'id' in sumosource:
                                     del sumosource['id']
                                 if 'alive' in sumosource:
@@ -678,4 +684,3 @@ If you are absolutely sure, type "DELETE" in the box below.
         else:
             self.mainwindow.errorbox('You must select 1 and only 1 collector.')
         return
-
