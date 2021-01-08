@@ -464,15 +464,15 @@ Credential Database:
 Screen Shots:
 =============
 
-![Collector Source Copy](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_collector_example.png "Source Copy")
+![Collector Source Copy](https://github.com/SumoLogic/sumologictoolbox/blob/master/screenshots/sumotoolbox_collector_example.png "Source Copy")
 
-![Search API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_search_example.png "Search API")
+![Search API Example](https://github.com/SumoLogic/sumologictoolbox/sumologictoolbox/blob/master/screenshots/sumotoolbox_search_example.png "Search API")
 
-![Content API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_content_example.png "Content API")
+![Content API Example](https://github.com/SumoLogic/sumologictoolbox/sumologictoolbox/blob/master/screenshots/sumotoolbox_content_example.png "Content API")
 
-![Field Extraction Rule API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_FER_example.png "Content API")
+![Field Extraction Rule API Example](https://github.com/SumoLogic/sumologictoolbox/blob/master/screenshots/sumotoolbox_FER_example.png "Content API")
 
-![Scheduled View API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_SV_example.png "Content API")
+![Scheduled View API Example](https://https://github.com/SumoLogic/sumologictoolbox/blob/master/screenshots/sumotoolbox_SV_example.png "Content API")
 
 Known Issues:
 =============
