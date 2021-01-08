@@ -13,7 +13,7 @@ Recommended Method of Getting and Running Sumotoolbox, download the binaries
 The easiest way to download and use this tool is to download the latest binary release from the "releases"
 section of this page. 
 
-https://github.com/SumoLogic/sumologictoolbox
+https://github.com/SumoLogic/sumologictoolbox/releases
 
 Updating the Binaries
 =====================
