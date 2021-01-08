@@ -13,7 +13,7 @@ Recommended Method of Getting and Running Sumotoolbox, download the binaries
 The easiest way to download and use this tool is to download the latest binary release from the "releases"
 section of this page. 
 
-https://github.com/SumoLogic/sumologictoolbox
+https://github.com/SumoLogic/sumologictoolbox/releases
 
 Updating the Binaries
 =====================
@@ -54,7 +54,7 @@ The steps are as follows:
  
     5. Clone this repo using the following command:
     
-        git clone https://github.com/voltaire321/sumologictoolbox.git
+        git clone https://github.com/SumoLogic/sumologictoolbox.git
     
     This will create a new folder called sumotoolbox. 
     
@@ -72,7 +72,7 @@ Updating the Source
 
 When it's time to upgrade to a new version of sumotoolbox cd into the sumotoolbox directory and type:
     
-    1. git pull https://github.com/voltaire321/sumologictoolbox.git
+    1. git pull https://github.com/SumoLogic/sumologictoolbox.git
     
     2. pipenv install
     
