@@ -5,13 +5,15 @@ Sumotoolbox
  it easier to perform common API tasks such as copying sources and generating CSV files from
  searches.
 
+This version contains critical updates to the 'collectors' and 'source updates' tab. It is highly recommended that you upgrade to this version or later (0.9.1)
+
 Recommended Method of Getting and Running Sumotoolbox, download the binaries
 ============================================================================
 
 The easiest way to download and use this tool is to download the latest binary release from the "releases"
 section of this page. 
 
-http://github.com/voltaire321/sumologictoolbox/releases
+https://github.com/SumoLogic/sumologictoolbox
 
 Updating the Binaries
 =====================
@@ -462,15 +464,15 @@ Credential Database:
 Screen Shots:
 =============
 
-![Collector Source Copy](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_collector_example.png "Source Copy")
+![Collector Source Copy](https://github.com/SumoLogic/sumologictoolbox/blob/master/screenshots/sumotoolbox_collector_example.png "Source Copy")
 
-![Search API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_search_example.png "Search API")
+![Search API Example](https://github.com/SumoLogic/sumologictoolbox/sumologictoolbox/blob/master/screenshots/sumotoolbox_search_example.png "Search API")
 
-![Content API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_content_example.png "Content API")
+![Content API Example](https://github.com/SumoLogic/sumologictoolbox/sumologictoolbox/blob/master/screenshots/sumotoolbox_content_example.png "Content API")
 
-![Field Extraction Rule API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_FER_example.png "Content API")
+![Field Extraction Rule API Example](https://github.com/SumoLogic/sumologictoolbox/blob/master/screenshots/sumotoolbox_FER_example.png "Content API")
 
-![Scheduled View API Example](https://github.com/voltaire321/sumologictoolbox/blob/master/screenshots/sumotoolbox_SV_example.png "Content API")
+![Scheduled View API Example](https://https://github.com/SumoLogic/sumologictoolbox/blob/master/screenshots/sumotoolbox_SV_example.png "Content API")
 
 Known Issues:
 =============
