@@ -1,28 +1,17 @@
-__author__ = 'Tim MacDonald'
-__version__ = '0.9'
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
-# the License. You may obtain a copy of the License at:
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
-# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations under the License.
-
 import json
 import requests
+import urllib
 import time
+import os
+import sys
 import warnings
-import urllib.parse
-
-
 from logzero import logger
 import logzero
-
 try:
     import cookielib
 except ImportError:
     import http.cookiejar as cookielib
+
 
 # API RATE Limit constants
 MAX_TRIES = 10
@@ -54,9 +43,9 @@ def backoff(func):
 
     return limited
 
-class SumoLogic(object):
 
-    def __init__(self, accessId, accessKey, endpoint=None, log_level='info', log_file=None, cookieFile='cookies.txt'):
+class SumoLogic(object):
+    def __init__(self, accessId, accessKey, endpoint=None, log_level='info', log_file=None, caBundle=None, cookieFile='cookies.txt'):
         self.session = requests.Session()
         self.log_level = log_level
         self.set_log_level(self.log_level)
@@ -64,6 +53,8 @@ class SumoLogic(object):
             logzero.logfile(str(log_file))
         self.session.auth = (accessId, accessKey)
         self.session.headers = {'content-type': 'application/json', 'accept': 'application/json'}
+        if caBundle is not None:
+            self.session.verify = caBundle
         cj = cookielib.FileCookieJar(cookieFile)
         self.session.cookies = cj
         if endpoint is None:
@@ -72,10 +63,12 @@ class SumoLogic(object):
             self.endpoint = endpoint
         if self.endpoint[-4:] == "/v1":
             self.endpoint = self.endpoint[:-4]
-            warnings.warn('Endpoint should no longer end in "/v1/", it has been removed from your endpoint string.', DeprecationWarning)
+            warnings.warn('Endpoint should no longer end in "/v1/", it has been removed from your endpoint string.',
+                          DeprecationWarning)
         if endpoint[-1:] == "/":
             self.endpoint = self.endpoint[:-1]
-            warnings.warn("Endpoint should not end with a slash character, it has been removed from your endpoint string.")
+            warnings.warn(
+                "Endpoint should not end with a slash character, it has been removed from your endpoint string.")
 
     def set_log_level(self, log_level):
         if log_level == 'info':
@@ -86,6 +79,7 @@ class SumoLogic(object):
             self.log_level = log_level
             logzero.loglevel(level=10)
             logger.debug("[Sumologic SDK] Setting logging level to 'debug'")
+            return True
         else:
             raise Exception("Bad Logging Level")
             logger.info("[Sumologic SDK] Attempt to set undefined logging level.")
@@ -94,23 +88,28 @@ class SumoLogic(object):
     def get_log_level(self):
         return self.log_level
 
-
     def _get_endpoint(self):
         """
         SumoLogic REST API endpoint changes based on the geo location of the client.
         For example, If the client geolocation is Australia then the REST end point is
         https://api.au.sumologic.com/api/v1
-        When the default REST endpoint (https://api.sumologic.com/api) is used the server
+
+        When the default REST endpoint (https://api.sumologic.com/api/v1) is used the server
         responds with a 401 and causes the SumoLogic class instantiation to fail and this very
         unhelpful message is shown 'Full authentication is required to access this resource'
+
         This method makes a request to the default REST endpoint and resolves the 401 to learn
         the right endpoint
-        Note the endpoint no longer includes "/v1" at the end as some of the new APIs use "/v2"
         """
+
         self.endpoint = 'https://api.sumologic.com/api'
         self.response = self.session.get('https://api.sumologic.com/api/v1/collectors')  # Dummy call to get endpoint
-        endpoint = self.response.url.replace('/collectors', '')  # dirty hack to sanitise URI and retain domain
+        endpoint = self.response.url.replace('/v1/collectors', '')  # dirty hack to sanitise URI and retain domain
+        logger.info("SDK Endpoint {}".format(str(endpoint)))
         return endpoint
+
+    def get_versioned_endpoint(self, version):
+        return self.endpoint+'/%s' % version
 
     @backoff
     def delete(self, method, params=None, headers=None, data=None):
@@ -186,7 +185,29 @@ class SumoLogic(object):
         r.raise_for_status()
         return r
 
+    def post_file(self, method, params, headers=None):
+        """
+        Handle file uploads via a separate post request to avoid having to clear
+        the content-type header in the session.  
 
+        Requests (or urllib3) does not set a boundary in the header if the content-type
+        is already set to multipart/form-data.  Urllib will create a boundary but it 
+        won't be specified in the content-type header, producing invalid POST request.
+
+        Multi-threaded applications using self.session may experience issues if we 
+        try to clear the content-type from the session.  Thus we don't re-use the 
+        session for the upload, rather we create a new one off session.
+        """
+
+        post_params = {'merge': params['merge']}
+        file_data = open(params['full_file_path'], 'rb').read()  
+        files = {'file': (params['file_name'], file_data)} 
+        r = requests.post(self.endpoint + method, files=files, params=post_params,
+                auth=(self.session.auth[0], self.session.auth[1]), headers=headers)
+        if 400 <= r.status_code < 600:
+            r.reason = r.text
+        r.raise_for_status()
+        return r
 
     # Search API
 
@@ -259,19 +280,25 @@ class SumoLogic(object):
 
     # Collectors API
 
-    def get_collectors(self, limit=1000, offset=None):
-        params = {'limit': limit, 'offset': offset}
-        r = self.get('/v1/collectors', params)
-        return json.loads(r.text)['collectors']
+    # included for backwards compatibility with older community SDK
+    def collectors(self, limit=None, offset=None, filter_type=None):
+        return self.get_collectors(limit=limit, offset=offset)
 
-    def get_collectors_sync(self, limit=1000):
+    def get_collectors(self, limit=1000, offset=None, filter_type=None):
+        params = {'limit': limit, 'offset': offset}
+        if filter_type:
+            params['filter'] = filter_type
+        r = self.get('/v1/collectors', params)
+        return r.json()['collectors']
+
+    def get_collectors_sync(self, limit=1000, filter_type=None):
         offset = 0
         results = []
-        r = self.get_collectors(limit=limit, offset=offset)
+        r = self.get_collectors(limit=limit, offset=offset, filter_type=filter_type)
         offset = offset + limit
         results = results + r
-        while not(len(r) < limit):
-            r = self.get_collectors(limit=limit, offset=offset)
+        while not (len(r) < limit):
+            r = self.get_collectors(limit=limit, offset=offset, filter_type=filter_type)
             offset = offset + limit
             results = results + r
         return results
@@ -358,7 +385,12 @@ class SumoLogic(object):
         r = self.delete('/v1/collectors/' + str(collector_id) + '/sources/' + str(source_id))
         return r
 
-    # Unverified API calls. These are disabled as they are not documented by Sumo Logic.
+    ############################################
+
+    ###############################################
+
+
+    # Unverified API calls. These are disabled as they are not documented by Sumo Logic or have been replaced
     # def dashboards(self, monitors=False):
     #     params = {'monitors': monitors}
     #     r = self.get('/v1/dashboards', params)
@@ -371,7 +403,7 @@ class SumoLogic(object):
     # def dashboard_data(self, dashboard_id):
     #     r = self.get('/v1/dashboards/' + str(dashboard_id) + '/data')
     #     return json.loads(r.text)['dashboardMonitorDatas']
-    #
+
     # def search_metrics(self, query, fromTime=None, toTime=None, requestedDataPoints=600, maxDataPoints=800):
     #     '''Perform a single Sumo metrics query'''
     #     def millisectimestamp(ts):
@@ -382,36 +414,50 @@ class SumoLogic(object):
     #             ts = ts*10**(12-len(str(ts)))
     #         return int(ts)
     #
-    #     data = {'query': [{"query":query, "rowId":"A"}],
+    #     params = {'query': [{"query": query, "rowId": "A"}],
     #               'startTime': millisectimestamp(fromTime),
     #               'endTime': millisectimestamp(toTime),
     #               'requestedDataPoints': requestedDataPoints,
     #               'maxDataPoints': maxDataPoints}
-    #     r = self.post('/v1/metrics/results', data)
-    #     return json.loads(r.text)
+    #     r = self.post('/v1/metrics/results', params)
+    #     return r.json()
+
+    # def create_content(self, path, data):
+    #     r = self.post('/content/' + path, data)
+    #     return r.text
+
+    def get_available_builds(self):
+        r = self.get('/v1/collectors/upgrades/targets')
+        return r.json()['targets']
+
+    # def sync_folder(self, folder_id, content):
+    #     return self.post('/content/folders/%s/synchronize' % folder_id, params=content, version='v2')
+    #
+    # def check_sync_folder(self, folder_id, job_id):
+    #     return self.get('/content/folders/%s/synchronize/%s/status' % (folder_id, job_id), version='v2')
 
     # Permissions API
 
     def get_permissions(self, id, explicit_only=False, adminmode=False):
-        headers = {'isAdminMode': str(adminmode)}
+        headers = {'isAdminMode': str(adminmode).lower()}
         params = {'explicitOnly': bool(explicit_only)}
         r = self.get('/v2/content/' + str(id) + '/permissions', headers=headers, params=params)
         return r.json()
 
     def add_permissions(self, id, body, adminmode=False):
-        headers = {'isAdminMode': str(adminmode)}
+        headers = {'isAdminMode': str(adminmode).lower()}
         r = self.put('/v2/content/' + str(id) + '/permissions/add', body, headers=headers)
         return r.json()
 
     def remove_permissions(self, id, body, adminmode=False):
-        headers = {'isAdminMode': str(adminmode)}
+        headers = {'isAdminMode': str(adminmode).lower()}
         r = self.put('/v2/content/' + str(id) + '/permissions/remove', body, headers=headers)
         return r.json()
 
-    # Folder API
+        # Folder API
 
     def create_folder(self, folder_name, parent_id, adminmode=False):
-        headers = {'isAdminMode': str(adminmode)}
+        headers = {'isAdminMode': str(adminmode).lower()}
         data = {'name': str(folder_name), 'parentId': str(parent_id)}
         r = self.post('/v2/content/folders', data, headers=headers)
         return r.json()
@@ -463,7 +509,7 @@ class SumoLogic(object):
 
     def get_admin_folder(self, adminmode=False):
         headers = {'isAdminMode': str(adminmode).lower()}
-        r = self.get('/v2/content/folders/adminRecommended',  headers=headers)
+        r = self.get('/v2/content/folders/adminRecommended', headers=headers)
         return r.json()
 
     def get_admin_folder_job_result(self, job_id):
@@ -482,11 +528,29 @@ class SumoLogic(object):
         else:
             return status
 
-    # Content API
+    # Application API
 
+    def install_app(self, app_id, content):
+        return self.post('/apps/%s/install' % (app_id), params=content)
+
+    def check_app_install_status(self, job_id):
+        return self.get('/apps/install/%s/status' % job_id)
+
+        # Content API
+
+        # for backward compatibility with old community API
+
+    def get_content(self, path):
+        return self.get_content_by_path(path)
 
     def get_content_by_path(self, item_path):
-        r= self.get('/v2/content' + str(item_path))  #path should start with /Library or something else?
+        # item_path should start with /Library and use the user's email address if referencing a user home dir
+        # firstname + :space: + lastname will not work here, even though that's how it's displayed in the UI
+        # YES: "/Library/Users/user@demo.com/someItemOrFolder" could be a valid path
+        # NO: "/Library/Users/Demo User/someItemOrFolder" is not a valid path because user first/last names are not
+        # unique identifiers
+        params = {'path': str(item_path)}
+        r = self.get('/v2/content/path', params=params)
         return r.json()
 
     def get_item_path(self, item_id):
@@ -498,8 +562,13 @@ class SumoLogic(object):
         r = self.delete('/v2/content/' + str(item_id) + '/delete', headers=headers)
         return r.json()
 
+        # for backward compatibility with old community API
+
+    def check_delete_status(self, item_id, job_id, adminmode=False):
+        return self.get_delete_content_job_status(item_id, job_id, adminmode=adminmode)
+
     def get_delete_content_job_status(self, item_id, job_id, adminmode=False):
-        headers = {'isAdminMode': str(adminmode)}
+        headers = {'isAdminMode': str(adminmode).lower()}
         r = self.get('/v2/content/' + str(item_id) + '/delete/' + str(job_id) + '/status', headers=headers)
         return r.json()
 
@@ -511,22 +580,36 @@ class SumoLogic(object):
             status = self.get_delete_content_job_status(str(item_id), str(job_id), adminmode=adminmode)
         return status
 
+        # for backward compatibility with old community API
+
+    def export_content(self, item_id, adminmode=False):
+        return self.export_content_job(item_id, adminmode=adminmode)
+
     def export_content_job(self, item_id, adminmode=False):
         headers = {'isAdminMode': str(adminmode).lower()}
         data = {}
         r = self.post('/v2/content/' + str(item_id) + '/export', data, headers=headers)
         return r.json()
 
+        # for backward compatibility with old community API
+
+    def check_export_status(self, item_id, job_id, adminmode=False):
+        return self.get_export_content_job_status(item_id, job_id, adminmode=adminmode)
+
     def get_export_content_job_status(self, item_id, job_id, adminmode=False):
         headers = {'isAdminMode': str(adminmode).lower()}
         r = self.get('/v2/content/' + str(item_id) + '/export/' + str(job_id) + '/status', headers=headers)
         return r.json()
 
+        # for backward compatibility with old community API
+
+    def get_export_content_result(self, item_id, job_id, adminmode=False):
+        return self.get_export_content_job_result(item_id, job_id, adminmode=adminmode)
+
     def get_export_content_job_result(self, item_id, job_id, adminmode=False):
         headers = {'isAdminMode': str(adminmode).lower()}
         r = self.get('/v2/content/' + str(item_id) + '/export/' + str(job_id) + '/result', headers=headers)
         return r.json()
-
 
     def export_content_job_sync(self, item_id, adminmode=False):
         r = self.export_content_job(str(item_id), adminmode=adminmode)
@@ -542,7 +625,7 @@ class SumoLogic(object):
 
     def import_content_job(self, folder_id, content, adminmode=False, overwrite=False):
         headers = {'isAdminMode': str(adminmode).lower()}
-        params = {'overwrite' : str(overwrite).lower()}
+        params = {'overwrite': str(overwrite).lower()}
         r = self.post('/v2/content/folders/' + str(folder_id) + '/import', content, headers=headers, params=params)
         return r.json()
 
@@ -750,7 +833,7 @@ class SumoLogic(object):
 
     def delete_fer(self, item_id):
         r = self.delete('/v1/extractionRules/' + str(item_id))
-        return r.json()
+        return r
 
 
     # Scheduled View API
@@ -790,7 +873,7 @@ class SumoLogic(object):
 
     def disable_scheduled_view(self, item_id):
         r = self.delete('/v1/scheduledViews/' + str(item_id) + '/disable')
-        return r.json()
+        return r
 
 
     # Partitions API
@@ -996,3 +1079,32 @@ class SumoLogic(object):
         r = self.post('/v1/saml/lockdown/disable')
         return r.json()
 
+
+    # Lookup table API
+    def create_lookup_table(self, content):
+        return self.post('/v1/lookupTables', params=content)
+    
+    def get_lookup_table(self, id):
+        return self.get('/v1/lookupTables/%s' % id)
+    
+    def edit_lookup_table(self, id, content):
+        return self.put('/v1/lookupTables/%s' % id, params=content)
+
+    def delete_lookup_table(self, id):
+        return self.delete('/v1/lookupTables/%s' % id)
+
+    def upload_csv_lookup_table(self, id, file_path, file_name, merge='false'):
+        params={'file_name': file_name,
+                'full_file_path': os.path.join(file_path, file_name),
+                'merge': merge
+                }
+        return self.post_file('/v1/lookupTables/%s/upload' % id, params)
+    
+    def check_lookup_status(self, id):
+        return self.get('/v1/lookupTables/jobs/%s/status' % id)
+
+    def empty_lookup_table(self, id):
+        return self.post('/v1/lookupTables/%s/truncate'% id, params=None)
+    
+    def update_lookup_table(self, id, content):
+        return self.put('/v1/lookupTables/%s/row' % id, params=content)

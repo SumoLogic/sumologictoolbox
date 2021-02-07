@@ -35,17 +35,6 @@ from modules.sumologic import SumoLogic
 from modules.credentials import CredentialsDB
 
 
-# from modules.scheduled_view_tab import scheduled_view_tab
-# from modules.field_extraction_rule_tab import field_extraction_rule_tab
-# from modules.content_tab import content_tab
-# from modules.collector_tab import collector_tab
-# from modules.source_update_tab import source_update_tab
-# from modules.organizations_tab import organizations_tab
-# from modules.users_and_roles_tab import users_and_roles_tab
-# from modules.partitions_tab import partitions_tab
-# from modules.monitors_and_connections_tab import monitors_and_connections_tab
-# from modules.saml_tab import saml_tab
-
 # detect if in Pyinstaller package and build appropriate base directory path
 if getattr(sys, 'frozen', False):
     basedir = sys._MEIPASS
