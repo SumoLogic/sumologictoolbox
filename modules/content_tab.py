@@ -587,18 +587,15 @@ class content_tab(QtWidgets.QWidget):
         try:
             selecteditems = ContentListWidgetFrom.selectedItems()
             if len(selecteditems) > 0:  # make sure something was selected
-                logger.info("[Content] Copying Content - if len(selecteditems) > 0")
                 fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 currentdir = ContentListWidgetTo.currentdirlist[-1]
                 tofolderid = ContentListWidgetTo.currentcontent['id']
-
                 for selecteditem in selecteditems:
-                    dest_webhookId = ''
-                    item_id = selecteditem.details['id']
-                    content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
-                    content = self.update_content_webhookid(fromsumo, tosumo, content)  
-                    status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
+                        item_id = selecteditem.details['id']
+                        content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
+                        content = self.update_content_webhookid(fromsumo, tosumo, content)
+                        status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
                 self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
 
