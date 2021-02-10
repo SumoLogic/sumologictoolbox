@@ -8,7 +8,7 @@ import pathlib
 import json
 from logzero import logger
 from modules.sumologic import SumoLogic
-from modules.shared import ShowTextDialog, find_replace_specific_key_and_value
+from modules.shared import ShowTextDialog, find_replace_specific_key_and_value, contents_to_itemsPaths
 
 
 class findReplaceCopyDialog(QtWidgets.QDialog):
@@ -593,8 +593,11 @@ class content_tab(QtWidgets.QWidget):
                 tofolderid = ContentListWidgetTo.currentcontent['id']
                 for selecteditem in selecteditems:
                         item_id = selecteditem.details['id']
+                        basePath = fromsumo.get_item_path(item_id)['path']
                         content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
                         content = self.update_content_webhookid(fromsumo, tosumo, content)
+                        paths = contents_to_itemsPaths(content,basePath)
+                        logger.info(paths)
                         status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
                 self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return

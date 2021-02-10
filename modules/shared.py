@@ -181,6 +181,21 @@ def import_saml_config(saml_export, sumo):
     # End Hacky stuff
     status = sumo.create_saml_config(saml_export)
 
+def contents_to_itemsPaths(content, basePath='',paths=[]):
+    if isinstance(content, dict):
+        if 'type' in content and content['type'] in ('FolderSyncDefinition', 'SavedSearchWithScheduleSyncDefinition','DashboardSyncDefinition','DashboardV2SyncDefinition'):
+            for k, v in content.items():
+                if k == 'name':
+                        basePath = (basePath + '/' + v) if basePath else ('/' + v)
+                        paths.append(basePath)
+                elif isinstance(v, (dict,list)):
+                    contents_to_itemsPaths(v, basePath,paths)
+
+    elif isinstance(content, list):
+        for index, item in enumerate(content):
+            contents_to_itemsPaths(item, basePath,paths)
+    return paths
+
 
 
 
