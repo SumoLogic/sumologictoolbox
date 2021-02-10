@@ -8,7 +8,8 @@ import pathlib
 import json
 from logzero import logger
 from modules.sumologic import SumoLogic
-from modules.shared import ShowTextDialog
+from modules.shared import ShowTextDialog, find_replace_specific_key_and_value
+
 
 class findReplaceCopyDialog(QtWidgets.QDialog):
 
@@ -586,35 +587,17 @@ class content_tab(QtWidgets.QWidget):
         try:
             selecteditems = ContentListWidgetFrom.selectedItems()
             if len(selecteditems) > 0:  # make sure something was selected
+                logger.info("[Content] Copying Content - if len(selecteditems) > 0")
                 fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 currentdir = ContentListWidgetTo.currentdirlist[-1]
                 tofolderid = ContentListWidgetTo.currentcontent['id']
 
-                source_connections = fromsumo.get_connections_sync()
-                dest_connections = tosumo.get_connections_sync()
-
-                source_connections_dict = {connection['id']: connection['name'] for connection in source_connections}
-                dest_connections_dict = {connection['name']: connection['id'] for connection in dest_connections}
-                source_to_dest_dict = {id: dest_connections_dict[name] for id, name in source_connections_dict.items() if name in dest_connections_dict}
-
                 for selecteditem in selecteditems:
                     dest_webhookId = ''
                     item_id = selecteditem.details['id']
                     content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
-
-                    if content['type'] == "SavedSearchWithScheduleSyncDefinition" and content['searchSchedule']['notification']['taskType'] == 'WebhookSearchNotificationSyncDefinition':
-                        source_webhookId = content['searchSchedule']['notification']['webhookId']
-                        if source_webhookId in source_to_dest_dict:
-                            dest_webhookId = source_to_dest_dict[source_webhookId]
-                        else:
-                            source_connection = fromsumo.get_connection(source_webhookId, 'WebhookConnection')
-                            source_connection['type'] = str(source_connection['type']).replace('Connection', 'Definition')
-                            dest_connection = tosumo.create_connection(source_connection)
-                            dest_webhookId = dest_connection['id']
-                        
-                        content['searchSchedule']['notification']['webhookId'] = dest_webhookId
-                    
+                    content = self.update_content_webhookid(fromsumo, tosumo, content)  
                     status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
                 self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
@@ -627,6 +610,26 @@ class content_tab(QtWidgets.QWidget):
             logger.exception(e)
             self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
         return
+
+    def update_content_webhookid(self, fromsumo, tosumo, content):
+        source_connections = fromsumo.get_connections_sync()
+        dest_connections = tosumo.get_connections_sync()
+
+        source_connections_dict = {connection['id']: connection['name'] for connection in source_connections}
+        dest_connections_dict = {connection['name']: connection['id'] for connection in dest_connections}
+        source_to_dest_dict = {id: dest_connections_dict[name] for id, name in source_connections_dict.items() if name in dest_connections_dict}
+
+        for source_connection_id in source_connections_dict.keys():
+            if source_connection_id not in source_to_dest_dict:
+                source_connection = fromsumo.get_connection(source_connection_id, 'WebhookConnection')
+                source_connection['type'] = str(source_connection['type']).replace('Connection', 'Definition')
+                dest_connection = tosumo.create_connection(source_connection)
+                dest_webhookId = dest_connection['id']
+                source_to_dest_dict[source_connection_id] = dest_webhookId
+        
+        for source_connection_id, dest_connection_id in source_to_dest_dict.items():
+            content = find_replace_specific_key_and_value(content,'webhookId',source_connection_id, dest_connection_id)
+        return content        
 
     def create_folder(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         if ContentListWidget.updated == True:
@@ -857,6 +860,8 @@ If you are absolutely sure, type "DELETE" in the box below.
                     item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
                 elif object['itemType'] == 'Search':
                     item = QtWidgets.QListWidgetItem(self.icons['Search'], item_name)
+                elif object['itemType'] == 'Search':
+                    item = QtWidgets.QListWidgetItem(self.icons['scheduledsearch'], item_name)
                 elif object['itemType'] == 'Dashboard' or object['itemType'] == 'Report':
                     item = QtWidgets.QListWidgetItem(self.icons['Dashboard'], item_name)
                 elif object['itemType'] == 'Lookups':
