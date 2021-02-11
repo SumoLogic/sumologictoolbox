@@ -181,29 +181,30 @@ def import_saml_config(saml_export, sumo):
     # End Hacky stuff
     status = sumo.create_saml_config(saml_export)
 
-def contents_to_itemsPaths(logger, sumo, content, basePath='', isTopLevel=False, adminmode=False):
+def content_item_to_permissions(sumo, content, basePath='', isTopLevel=False, adminmode=False):
     folders = []
     currentPath = basePath
     if isinstance(content, dict):
         if 'id' in content and 'name' in content and 'itemType' in content:
-            if not isTopLevel:
-                id = content['id']
-                name = content['name']
-                itemType = content['itemType']
-                currentPath = currentPath + '/' + name
-                permissions = sumo.get_permissions(id,adminmode=adminmode)
-                details = {'id': id, 'name': name, 'itemType': itemType, 'path': currentPath,'permissions': permissions}
-                folders.append(details)
-                logger.info(details)
+            id = content['id']
+            name = content['name']
+            itemType = content['itemType']
+            permissions = sumo.get_permissions(id,explicit_only=True,adminmode=adminmode)
 
-            if 'children' in content and len(content['children']) > 0:
+            if not isTopLevel:
+                currentPath = currentPath + '/' + name
+
+            details = {'id': id, 'name': name, 'itemType': itemType, 'path': currentPath,'permissions': permissions['explicitPermissions']}
+            folders.append(details)
+
+            if itemType == 'Folder' and 'children' in content and len(content['children']) > 0:
                 for child in content['children']:
                     if child['itemType'] == 'Folder':
                         child = sumo.get_folder(child['id'], adminmode=adminmode)
-                    folders.append(contents_to_itemsPaths(logger, sumo, child, basePath=currentPath, adminmode=adminmode))
+                    folders = folders + content_item_to_permissions(sumo, child, basePath=currentPath, adminmode=adminmode)
     elif isinstance(content, list):
         for index, item in enumerate(content):
-            folders.append(contents_to_itemsPaths(logger, sumo,item, basePath=basePath, adminmode=adminmode))
+            folders = folders + content_item_to_permissions(sumo,item, basePath=basePath, adminmode=adminmode)
 
     return folders
 
