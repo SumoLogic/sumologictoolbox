@@ -591,23 +591,22 @@ class content_tab(QtWidgets.QWidget):
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 currentdir = ContentListWidgetTo.currentdirlist[-1]
                 tofolderid = ContentListWidgetTo.currentcontent['id']
-                # toBasePath = tosumo.get_item_path(tofolderid, adminmode=toadminmode)['path']
 
                 for selecteditem in selecteditems:
                         item_id = selecteditem.details['id']
-                        # fromBasePath = fromsumo.get_item_path(item_id, adminmode=fromadminmode)['path']
                         item_type = selecteditem.details['itemType']
 
                         if item_type == 'Folder':
                             fromFolder = fromsumo.get_folder(item_id, adminmode=fromadminmode)
-                            folders = contents_to_itemsPaths(logger, fromsumo, fromFolder, adminmode=fromadminmode)
-                            logger.info(folders)
+                            fromPermissions = contents_to_itemsPaths(logger, fromsumo, fromFolder, adminmode=fromadminmode)
+                        
                         content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
                         content = self.update_content_webhookid(fromsumo, tosumo, content)
                         status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
 
-                        # toPaths = contents_to_itemsPaths(tosumo, content,toBasePath, adminmode=toadminmode)
-                        # self.get_source_to_dest_content_id_lookup(fromsumo, tosumo, fromPaths, toPaths)
+                toFolder = tosumo.get_folder(tofolderid, adminmode=toadminmode)
+                toPermissions = contents_to_itemsPaths(logger, tosumo, toFolder, isTopLevel=True, adminmode=toadminmode)
+                logger.info(toPermissions)
                 self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
 
@@ -620,11 +619,11 @@ class content_tab(QtWidgets.QWidget):
             self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
         return
 
-    # def get_source_to_dest_content_id_lookup(self, fromsumo, tosumo, fromPaths, toPaths, fromadminmode,toadminmode):
-    #         source_contents_path_id = {fromsumo.get_content_by_path(path, adminmode=fromadminmode)['id']:path for path in fromPaths}
-    #         dest_contents_path_id = {tosumo.get_content_by_path(path, toadminmode=toadminmode)['id']:path for path in toPaths}
-    #         logger.info(source_contents_path_id)
-    #         logger.info(dest_contents_path_id)
+    def get_source_to_dest_content_id_lookup(self, fromsumo, tosumo, fromPaths, toPaths, fromadminmode,toadminmode):
+            source_contents_path_id = {fromsumo.get_content_by_path(path, adminmode=fromadminmode)['id']:path for path in fromPaths}
+            dest_contents_path_id = {tosumo.get_content_by_path(path, toadminmode=toadminmode)['id']:path for path in toPaths}
+            logger.info(source_contents_path_id)
+            logger.info(dest_contents_path_id)
 
 
     def update_content_webhookid(self, fromsumo, tosumo, content):

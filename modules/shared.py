@@ -181,26 +181,29 @@ def import_saml_config(saml_export, sumo):
     # End Hacky stuff
     status = sumo.create_saml_config(saml_export)
 
-def contents_to_itemsPaths(logger, sumo, content, adminmode=False):
+def contents_to_itemsPaths(logger, sumo, content, basePath='', isTopLevel=False, adminmode=False):
     folders = []
+    currentPath = basePath
     if isinstance(content, dict):
         if 'id' in content and 'name' in content and 'itemType' in content:
-            id = content['id']
-            name = content['name']
-            itemType = content['itemType']
-            permissions = sumo.get_permissions(id,adminmode=adminmode)
-            details = {'id': id, 'name': name, 'itemType': itemType, 'permissions': permissions}
-            folders.append(details)
-            logger.info(details)
+            if not isTopLevel:
+                id = content['id']
+                name = content['name']
+                itemType = content['itemType']
+                currentPath = currentPath + '/' + name
+                permissions = sumo.get_permissions(id,adminmode=adminmode)
+                details = {'id': id, 'name': name, 'itemType': itemType, 'path': currentPath,'permissions': permissions}
+                folders.append(details)
+                logger.info(details)
 
             if 'children' in content and len(content['children']) > 0:
                 for child in content['children']:
                     if child['itemType'] == 'Folder':
                         child = sumo.get_folder(child['id'], adminmode=adminmode)
-                    folders.append(contents_to_itemsPaths(logger, sumo, child, adminmode=adminmode))
+                    folders.append(contents_to_itemsPaths(logger, sumo, child, basePath=currentPath, adminmode=adminmode))
     elif isinstance(content, list):
         for index, item in enumerate(content):
-            folders.append(contents_to_itemsPaths(logger, sumo,item, adminmode=adminmode))
+            folders.append(contents_to_itemsPaths(logger, sumo,item, basePath=basePath, adminmode=adminmode))
 
     return folders
 
