@@ -591,6 +591,37 @@ class content_tab(QtWidgets.QWidget):
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 currentdir = ContentListWidgetTo.currentdirlist[-1]
                 tofolderid = ContentListWidgetTo.currentcontent['id']
+                fromUsers = fromsumo.get_users_sync()
+                toUsers = tosumo.get_users_sync()
+                fromRoles = fromsumo.get_roles_sync()
+                toRoles = tosumo.get_roles_sync()
+                source_org_id = fromsumo.get_org_id()
+                dest_org_id = tosumo.get_org_id()
+
+                source_user_id_to_email = {user['id']:str(user['email']).replace('teads.tv', 'teads.com') for user in fromUsers}
+                des_user_email_to_id = {user['email']:user['id'] for user in toUsers}
+
+                source_user_id_to_dest_user_id = {}
+                for userId, email in source_user_id_to_email.items():
+                    if email in des_user_email_to_id.keys():
+                        source_user_id_to_dest_user_id[userId] = des_user_email_to_id[email]
+                    else:
+                        logger.info("Failed to find user with e-mail: {} on the destination".format(email))
+
+                source_role_id_to_name = {role['id']:role['name'] for role in fromRoles}
+                des_role_name_to_id = {role['name']:role['id'] for role in toRoles}
+
+                source_role_id_to_dest_role_id = {}
+                for roleId, roleName in source_role_id_to_name.items():
+                    if roleName in des_role_name_to_id.keys():
+                        source_role_id_to_dest_role_id[roleId] = des_role_name_to_id[roleName]
+                    else:
+                        logger.info("Failed to find role with name: {} on the destination".format(roleName))
+
+                logger.info(source_user_id_to_dest_user_id)
+                logger.info(source_role_id_to_dest_role_id)
+                logger.info(source_org_id)
+                logger.info(dest_org_id)
 
                 for selecteditem in selecteditems:
                         item_id = selecteditem.details['id']
@@ -635,7 +666,12 @@ class content_tab(QtWidgets.QWidget):
             if sourceContentPath in dest_paths_to_ids.keys():
                 source_ids_to_dest_ids[sourceContentId] = dest_paths_to_ids[sourceContentPath] 
             else:
-                logger.warn("Failed to import content with path: {} for source source content with id {}".format(sourceContentPath, sourceContentId))
+                sourceContentPath = str(sourceContentPath).replace('teads.tv', 'teads.com')
+                sourceContentPath = str(sourceContentPath).replace('security+sumosupport+teadstv@sumologic.com', 'security+sumosupport+teads-1@sumologic.com')
+                if sourceContentPath in dest_paths_to_ids.keys():
+                    source_ids_to_dest_ids[sourceContentId] = dest_paths_to_ids[sourceContentPath]
+                else:
+                    logger.warn("Failed to import content with path: {} for source source content with id {}".format(sourceContentPath, sourceContentId))
         return source_ids_to_dest_ids
 
 

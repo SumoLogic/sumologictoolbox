@@ -999,3 +999,15 @@ class SumoLogic(object):
         r = self.post('/v1/saml/lockdown/disable')
         return r.json()
 
+
+    # Account Contract APIs
+    def get_account_contract(self):
+        r = self.get('/v1/account/contract')
+        return r.json()
+
+    def get_org_id(self):
+        r = self.get_account_contract()
+        return r['orgId']
+
+
+

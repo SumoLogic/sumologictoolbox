@@ -181,19 +181,15 @@ def import_saml_config(saml_export, sumo):
     # End Hacky stuff
     status = sumo.create_saml_config(saml_export)
 
-def content_item_to_permissions(sumo, content, basePath='', isTopLevel=False, adminmode=False):
+def content_item_to_permissions(sumo, content, isTopLevel=False, adminmode=False):
     folders = []
-    currentPath = basePath
     if isinstance(content, dict):
         if 'id' in content and 'name' in content and 'itemType' in content:
             id = content['id']
             name = content['name']
             itemType = content['itemType']
             permissions = sumo.get_permissions(id,explicit_only=True,adminmode=adminmode)
-
-            if not isTopLevel:
-                currentPath = currentPath + '/' + name
-
+            currentPath = sumo.get_item_path(id, adminmode=adminmode)['path']
             details = {'id': id, 'name': name, 'itemType': itemType, 'path': currentPath,'permissions': permissions['explicitPermissions']}
             folders.append(details)
 
@@ -201,10 +197,11 @@ def content_item_to_permissions(sumo, content, basePath='', isTopLevel=False, ad
                 for child in content['children']:
                     if child['itemType'] == 'Folder':
                         child = sumo.get_folder(child['id'], adminmode=adminmode)
-                    folders = folders + content_item_to_permissions(sumo, child, basePath=currentPath, adminmode=adminmode)
+                    folders = folders + content_item_to_permissions(sumo, child, adminmode=adminmode)
+
     elif isinstance(content, list):
         for index, item in enumerate(content):
-            folders = folders + content_item_to_permissions(sumo,item, basePath=basePath, adminmode=adminmode)
+            folders = folders + content_item_to_permissions(sumo,item, adminmode=adminmode)
 
     return folders
 
