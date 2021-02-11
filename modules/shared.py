@@ -181,20 +181,28 @@ def import_saml_config(saml_export, sumo):
     # End Hacky stuff
     status = sumo.create_saml_config(saml_export)
 
-def contents_to_itemsPaths(content, basePath='',paths=[]):
-    if isinstance(content, dict) and 'name' in content and 'type' in content:
-        if content['type'] in ('FolderSyncDefinition', 'SavedSearchWithScheduleSyncDefinition','DashboardSyncDefinition','DashboardV2SyncDefinition'):
-            for k, v in content.items():
-                if k == 'name':
-                        basePath = (basePath + '/' + v) if basePath else ('/' + v)
-                        paths.append(basePath)
-                elif isinstance(v, (dict,list)):
-                    contents_to_itemsPaths(v, basePath,paths)
+def contents_to_itemsPaths(logger, sumo, content, adminmode=False):
+    folders = []
+    if isinstance(content, dict):
+        if 'id' in content and 'name' in content and 'itemType' in content:
+            id = content['id']
+            name = content['name']
+            itemType = content['itemType']
+            permissions = sumo.get_permissions(id,adminmode=adminmode)
+            details = {'id': id, 'name': name, 'itemType': itemType, 'permissions': permissions}
+            folders.append(details)
+            logger.info(details)
 
+            if 'children' in content and len(content['children']) > 0:
+                for child in content['children']:
+                    if child['itemType'] == 'Folder':
+                        child = sumo.get_folder(child['id'], adminmode=adminmode)
+                    folders.append(contents_to_itemsPaths(logger, sumo, child, adminmode=adminmode))
     elif isinstance(content, list):
         for index, item in enumerate(content):
-            contents_to_itemsPaths(item, basePath,paths)
-    return paths
+            folders.append(contents_to_itemsPaths(logger, sumo,item, adminmode=adminmode))
+
+    return folders
 
 
 
