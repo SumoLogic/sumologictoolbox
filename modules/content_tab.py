@@ -591,14 +591,17 @@ class content_tab(QtWidgets.QWidget):
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 currentdir = ContentListWidgetTo.currentdirlist[-1]
                 tofolderid = ContentListWidgetTo.currentcontent['id']
+                toBasePath = tosumo.get_item_path(tofolderid, adminmode=toadminmode)['path']
+
                 for selecteditem in selecteditems:
                         item_id = selecteditem.details['id']
-                        basePath = fromsumo.get_item_path(item_id)['path']
+                        fromBasePath = fromsumo.get_item_path(item_id, adminmode=fromadminmode)['path']
                         content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
                         content = self.update_content_webhookid(fromsumo, tosumo, content)
-                        paths = contents_to_itemsPaths(content,basePath)
-                        logger.info(paths)
                         status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
+                        fromPaths = contents_to_itemsPaths(content,fromBasePath)
+                        toPaths = contents_to_itemsPaths(content,toBasePath)
+                        self.get_source_to_dest_content_id_lookup(fromsumo, tosumo, fromPaths, toPaths)
                 self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
 
@@ -610,6 +613,13 @@ class content_tab(QtWidgets.QWidget):
             logger.exception(e)
             self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
         return
+
+    def get_source_to_dest_content_id_lookup(self, fromsumo, tosumo, fromPaths, toPaths):
+            source_contents_path_id = {fromsumo.get_content_by_path(path)['id']:path for path in fromPaths}
+            dest_contents_path_id = {tosumo.get_content_by_path(path)['id']:path for path in toPaths}
+            logger.info(source_contents_path_id)
+            logger.info(dest_contents_path_id)
+
 
     def update_content_webhookid(self, fromsumo, tosumo, content):
         source_connections = fromsumo.get_connections_sync()

@@ -485,12 +485,15 @@ class SumoLogic(object):
     # Content API
 
 
-    def get_content_by_path(self, item_path):
-        r= self.get('/v2/content' + str(item_path))  #path should start with /Library or something else?
+    def get_content_by_path(self, item_path, adminmode=False):
+        headers = {'isAdminMode': str(adminmode)}
+        params = {'path': item_path}
+        r= self.get('/v2/content', headers=headers, params=params)  #path should start with /Library or something else?
         return r.json()
 
-    def get_item_path(self, item_id):
-        r = self.get('/v2/content/' + str(item_id) + '/path')
+    def get_item_path(self, item_id, adminmode=False):
+        headers = {'isAdminMode': str(adminmode)}
+        r = self.get('/v2/content/' + str(item_id) + '/path', headers=headers)
         return r.json()
 
     def delete_content_job(self, item_id, adminmode=False):

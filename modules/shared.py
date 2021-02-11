@@ -182,8 +182,8 @@ def import_saml_config(saml_export, sumo):
     status = sumo.create_saml_config(saml_export)
 
 def contents_to_itemsPaths(content, basePath='',paths=[]):
-    if isinstance(content, dict):
-        if 'type' in content and content['type'] in ('FolderSyncDefinition', 'SavedSearchWithScheduleSyncDefinition','DashboardSyncDefinition','DashboardV2SyncDefinition'):
+    if isinstance(content, dict) and 'name' in content and 'type' in content:
+        if content['type'] in ('FolderSyncDefinition', 'SavedSearchWithScheduleSyncDefinition','DashboardSyncDefinition','DashboardV2SyncDefinition'):
             for k, v in content.items():
                 if k == 'name':
                         basePath = (basePath + '/' + v) if basePath else ('/' + v)
