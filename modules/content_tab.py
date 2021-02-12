@@ -7,7 +7,6 @@ import re
 import pathlib
 import json
 import copy
-import pprint
 from logzero import logger
 from modules.sumologic import SumoLogic
 from modules.shared import ShowTextDialog, find_replace_specific_key_and_value, content_item_to_path
@@ -593,9 +592,10 @@ class content_tab(QtWidgets.QWidget):
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 currentSourceDir = ContentListWidgetFrom.currentdirlist[-1]
                 fromFolderId = ContentListWidgetFrom.currentcontent['id']
+
                 currentDestDir = ContentListWidgetTo.currentdirlist[-1]
                 toFolderId = ContentListWidgetTo.currentcontent['id']
-                pprint.pprint("The Destination Folder ID=:{}\n".format(toFolderId))
+                
                 fromPaths = []
 
                 for selecteditem in selecteditems:
@@ -611,7 +611,7 @@ class content_tab(QtWidgets.QWidget):
 
                 toFolder = tosumo.get_folder(toFolderId, adminmode=toadminmode)
                 toPaths = content_item_to_path(tosumo, toFolder, adminmode=toadminmode)
-                logger.info(self.sync_copied_contents_permissions(fromsumo, tosumo, fromFolderId, toFolderId, fromPaths, toPaths, fromAdminMode=fromadminmode, toAdminMode=toadminmode))
+                self.sync_copied_contents_permissions(fromsumo, tosumo, fromFolderId, toFolderId, fromPaths, toPaths, fromAdminMode=fromadminmode, toAdminMode=toadminmode)
                 self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
 
@@ -625,7 +625,7 @@ class content_tab(QtWidgets.QWidget):
         return
 
     def get_source_to_dest_meta_ids(self, fromsumo, tosumo):
-        logger.info('Getting Source <-> Destination Meta IDs')
+        logger.info('[Content] Getting Source To Destination Meta IDs')
         source_to_dest_ids = {}
 
         fromUsers = fromsumo.get_users_sync()
