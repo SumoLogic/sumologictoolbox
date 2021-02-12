@@ -591,8 +591,11 @@ class content_tab(QtWidgets.QWidget):
             if len(selecteditems) > 0:  # make sure something was selected
                 fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
-                currentdir = ContentListWidgetTo.currentdirlist[-1]
-                tofolderid = ContentListWidgetTo.currentcontent['id']
+                currentSourceDir = ContentListWidgetFrom.currentdirlist[-1]
+                fromFolderId = ContentListWidgetFrom.currentcontent['id']
+                currentDestDir = ContentListWidgetTo.currentdirlist[-1]
+                toFolderId = ContentListWidgetTo.currentcontent['id']
+                pprint.pprint("The Destination Folder ID=:{}\n".format(toFolderId))
                 fromPaths = []
 
                 for selecteditem in selecteditems:
@@ -604,11 +607,11 @@ class content_tab(QtWidgets.QWidget):
                         
                         content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
                         content = self.update_content_webhookid(fromsumo, tosumo, content)
-                        status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
+                        status = tosumo.import_content_job_sync(toFolderId, content, adminmode=toadminmode)
 
-                toFolder = tosumo.get_folder(tofolderid, adminmode=toadminmode)
+                toFolder = tosumo.get_folder(toFolderId, adminmode=toadminmode)
                 toPaths = content_item_to_path(tosumo, toFolder, adminmode=toadminmode)
-                logger.info(self.sync_copied_contents_permissions(fromsumo, tosumo, fromPaths, toPaths, fromAdminmode=fromadminmode, toAdminmode=toadminmode))
+                logger.info(self.sync_copied_contents_permissions(fromsumo, tosumo, fromFolderId, toFolderId, fromPaths, toPaths, fromAdminMode=fromadminmode, toAdminMode=toadminmode))
                 self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
 
@@ -656,30 +659,32 @@ class content_tab(QtWidgets.QWidget):
         source_to_dest_ids = {'org': {source_org_id:dest_org_id}, 'user': source_user_id_to_dest_user_id, 'role': source_role_id_to_dest_role_id}
         return source_to_dest_ids
 
-    def sync_copied_contents_permissions(self, fromsumo, tosumo, fromPaths, toPaths, fromAdminmode=False, toAdminmode=False):
+    def sync_copied_contents_permissions(self, fromsumo, tosumo, fromFolderId, toFolderId, fromPaths, toPaths, fromAdminMode=False, toAdminMode=False):
         logger.info('Syncing Copied Contents Permissions')
 
+        fromBasePath = fromsumo.get_item_path(fromFolderId, adminmode=fromAdminMode)['path']
+        toBasePath = tosumo.get_item_path(toFolderId, adminmode=toAdminMode)['path']
         source_to_dest_ids = self.get_source_to_dest_meta_ids(fromsumo, tosumo)
 
         source_ids_to_paths = {}
         for fromPerm in fromPaths:
             fromId= fromPerm['id']
             fromPath = fromPerm['path'] if fromPerm['path'] !='' else fromPerm['name']
+            fromPath = str(fromPath).replace(fromBasePath, '')
             source_ids_to_paths[fromId] = fromPath
 
         dest_paths_to_ids = {}
         for destPerm in toPaths:
-            path = destPerm['path'] if destPerm['path'] else destPerm['name']
-            dest_paths_to_ids[path] = destPerm['id']
+            toPath = destPerm['path'] if destPerm['path'] else destPerm['name']
+            toPath = str(toPath).replace(toBasePath, '')
+            dest_paths_to_ids[toPath] = destPerm['id']
 
         destPermissions = {}
         requestResults = {}
         for sourceContentId, sourceContentPath in source_ids_to_paths.items():
-            logger.info("The current source content id={} and path={}".format(sourceContentId, sourceContentPath))
             if sourceContentPath in dest_paths_to_ids.keys():
-                logger.info('Key found')
                 destContentId = dest_paths_to_ids[sourceContentPath]
-                sourcePermissions = fromsumo.get_permissions(sourceContentId, explicit_only=True,adminmode=fromAdminmode)['explicitPermissions']
+                sourcePermissions = fromsumo.get_permissions(sourceContentId, explicit_only=True,adminmode=fromAdminMode)['explicitPermissions']
 
                 currentDestPermissions = []
                 for permission in sourcePermissions:
@@ -689,13 +694,13 @@ class content_tab(QtWidgets.QWidget):
                     currentDestPermission['sourceId'] = source_to_dest_ids[currentSourceType][currentSourceId]
                     currentDestPermission['contentId'] = destContentId
                     currentDestPermissions.append(currentDestPermission)
+
                 permissionsBody = {'contentPermissionAssignments':[], 'notifyRecipients':False, 'notificationMessage':''}
                 permissionsBody['contentPermissionAssignments'] = currentDestPermissions
-                logger.info(pprint.pformat(permissionsBody, indent=4))
-                requestResult = tosumo.add_permissions(destContentId, permissionsBody, adminmode=toAdminmode)
+                requestResult = tosumo.add_permissions(destContentId, permissionsBody, adminmode=toAdminMode)
                 requestResults[sourceContentPath] = requestResult
             else:
-                logger.warn("Failed to import content with path: {} for source source content with id {}".format(sourceContentPath, sourceContentId))
+                logger.warn("Failed to import content {} from {} to {}, Source content id:{}".format(sourceContentPath,fromBasePath, toBasePath, sourceContentId))
         
         return requestResults
         
