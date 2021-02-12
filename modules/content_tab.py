@@ -957,8 +957,6 @@ If you are absolutely sure, type "DELETE" in the box below.
                     item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
                 elif object['itemType'] == 'Search':
                     item = QtWidgets.QListWidgetItem(self.icons['Search'], item_name)
-                elif object['itemType'] == 'Search':
-                    item = QtWidgets.QListWidgetItem(self.icons['scheduledsearch'], item_name)
                 elif object['itemType'] == 'Dashboard' or object['itemType'] == 'Report':
                     item = QtWidgets.QListWidgetItem(self.icons['Dashboard'], item_name)
                 elif object['itemType'] == 'Lookups':
