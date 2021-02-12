@@ -703,11 +703,7 @@ class content_tab(QtWidgets.QWidget):
                 logger.warn("Failed to import content {} from {} to {}, Source content id:{}".format(sourceContentPath,fromBasePath, toBasePath, sourceContentId))
         
         return requestResults
-        
 
-        
-
-        
 
     def update_content_webhookid(self, fromsumo, tosumo, content):
         source_connections = fromsumo.get_connections_sync()
