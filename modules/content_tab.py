@@ -704,7 +704,6 @@ class content_tab(QtWidgets.QWidget):
         
         return requestResults
 
-
     def update_content_webhookid(self, fromsumo, tosumo, content):
         source_connections = fromsumo.get_connections_sync()
         dest_connections = tosumo.get_connections_sync()
