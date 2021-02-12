@@ -6,9 +6,11 @@ import sys
 import re
 import pathlib
 import json
+import copy
+import pprint
 from logzero import logger
 from modules.sumologic import SumoLogic
-from modules.shared import ShowTextDialog, find_replace_specific_key_and_value, content_item_to_permissions
+from modules.shared import ShowTextDialog, find_replace_specific_key_and_value, content_item_to_path
 
 
 class findReplaceCopyDialog(QtWidgets.QDialog):
@@ -591,52 +593,22 @@ class content_tab(QtWidgets.QWidget):
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 currentdir = ContentListWidgetTo.currentdirlist[-1]
                 tofolderid = ContentListWidgetTo.currentcontent['id']
-                fromUsers = fromsumo.get_users_sync()
-                toUsers = tosumo.get_users_sync()
-                fromRoles = fromsumo.get_roles_sync()
-                toRoles = tosumo.get_roles_sync()
-                source_org_id = fromsumo.get_org_id()
-                dest_org_id = tosumo.get_org_id()
-
-                source_user_id_to_email = {user['id']:str(user['email']).replace('teads.tv', 'teads.com') for user in fromUsers}
-                des_user_email_to_id = {user['email']:user['id'] for user in toUsers}
-
-                source_user_id_to_dest_user_id = {}
-                for userId, email in source_user_id_to_email.items():
-                    if email in des_user_email_to_id.keys():
-                        source_user_id_to_dest_user_id[userId] = des_user_email_to_id[email]
-                    else:
-                        logger.info("Failed to find user with e-mail: {} on the destination".format(email))
-
-                source_role_id_to_name = {role['id']:role['name'] for role in fromRoles}
-                des_role_name_to_id = {role['name']:role['id'] for role in toRoles}
-
-                source_role_id_to_dest_role_id = {}
-                for roleId, roleName in source_role_id_to_name.items():
-                    if roleName in des_role_name_to_id.keys():
-                        source_role_id_to_dest_role_id[roleId] = des_role_name_to_id[roleName]
-                    else:
-                        logger.info("Failed to find role with name: {} on the destination".format(roleName))
-
-                logger.info(source_user_id_to_dest_user_id)
-                logger.info(source_role_id_to_dest_role_id)
-                logger.info(source_org_id)
-                logger.info(dest_org_id)
+                fromPaths = []
 
                 for selecteditem in selecteditems:
                         item_id = selecteditem.details['id']
                         item_type = selecteditem.details['itemType']
 
                         fromContentItem = fromsumo.get_folder(item_id, adminmode=fromadminmode) if item_type=='Folder'  else selecteditem.details
-                        fromPermissions = content_item_to_permissions(fromsumo, fromContentItem, adminmode=fromadminmode)
+                        fromPaths += content_item_to_path(fromsumo, fromContentItem, adminmode=fromadminmode)
                         
                         content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
                         content = self.update_content_webhookid(fromsumo, tosumo, content)
                         status = tosumo.import_content_job_sync(tofolderid, content, adminmode=toadminmode)
 
                 toFolder = tosumo.get_folder(tofolderid, adminmode=toadminmode)
-                toPermissions = content_item_to_permissions(tosumo, toFolder, isTopLevel=True, adminmode=toadminmode)
-                logger.info(self.get_source_to_dest_content_id_lookup(fromPermissions, toPermissions))
+                toPaths = content_item_to_path(tosumo, toFolder, adminmode=toadminmode)
+                logger.info(self.sync_copied_contents_permissions(fromsumo, tosumo, fromPaths, toPaths, fromAdminmode=fromadminmode, toAdminmode=toadminmode))
                 self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
 
@@ -649,31 +621,90 @@ class content_tab(QtWidgets.QWidget):
             self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
         return
 
-    def get_source_to_dest_content_id_lookup(self, fromPermissions, toPermissions):
+    def get_source_to_dest_meta_ids(self, fromsumo, tosumo):
+        logger.info('Getting Source <-> Destination Meta IDs')
+        source_to_dest_ids = {}
+
+        fromUsers = fromsumo.get_users_sync()
+        toUsers = tosumo.get_users_sync()
+        fromRoles = fromsumo.get_roles_sync()
+        toRoles = tosumo.get_roles_sync()
+        source_org_id = fromsumo.get_org_id()
+        dest_org_id = tosumo.get_org_id()
+
+
+        source_user_id_to_email = {user['id']:user['email'] for user in fromUsers}
+        des_user_email_to_id = {user['email']:user['id'] for user in toUsers}
+
+        source_user_id_to_dest_user_id = {}
+        for userId, email in source_user_id_to_email.items():
+            email = str(email).replace('teads.tv', 'teads.com')
+            email = str(email).replace('security+sumosupport+teadstv@sumologic.com', 'security+sumosupport+teads-1@sumologic.com')
+            if email in des_user_email_to_id.keys():
+                source_user_id_to_dest_user_id[userId] = des_user_email_to_id[email]
+            else:
+                logger.info("Failed to find user with e-mail: {} on the destination".format(email))
+
+        source_role_id_to_name = {role['id']:role['name'] for role in fromRoles}
+        des_role_name_to_id = {role['name']:role['id'] for role in toRoles}
+
+        source_role_id_to_dest_role_id = {}
+        for roleId, roleName in source_role_id_to_name.items():
+            if roleName in des_role_name_to_id.keys():
+                source_role_id_to_dest_role_id[roleId] = des_role_name_to_id[roleName]
+            else:
+                logger.info("Failed to find role with name: {} on the destination".format(roleName))
+        
+        source_to_dest_ids = {'org': {source_org_id:dest_org_id}, 'user': source_user_id_to_dest_user_id, 'role': source_role_id_to_dest_role_id}
+        return source_to_dest_ids
+
+    def sync_copied_contents_permissions(self, fromsumo, tosumo, fromPaths, toPaths, fromAdminmode=False, toAdminmode=False):
+        logger.info('Syncing Copied Contents Permissions')
+
+        source_to_dest_ids = self.get_source_to_dest_meta_ids(fromsumo, tosumo)
+
         source_ids_to_paths = {}
-        for fromPerm in fromPermissions:
+        for fromPerm in fromPaths:
             fromId= fromPerm['id']
             fromPath = fromPerm['path'] if fromPerm['path'] !='' else fromPerm['name']
             source_ids_to_paths[fromId] = fromPath
 
         dest_paths_to_ids = {}
-        for destPerm in toPermissions:
+        for destPerm in toPaths:
             path = destPerm['path'] if destPerm['path'] else destPerm['name']
             dest_paths_to_ids[path] = destPerm['id']
 
-        source_ids_to_dest_ids = {}
+        destPermissions = {}
+        requestResults = {}
         for sourceContentId, sourceContentPath in source_ids_to_paths.items():
+            logger.info("The current source content id={} and path={}".format(sourceContentId, sourceContentPath))
+            sourceContentPath = str(sourceContentPath).replace('teads.tv', 'teads.com')
+            sourceContentPath = str(sourceContentPath).replace('security+sumosupport+teadstv@sumologic.com', 'security+sumosupport+teads-1@sumologic.com')
             if sourceContentPath in dest_paths_to_ids.keys():
-                source_ids_to_dest_ids[sourceContentId] = dest_paths_to_ids[sourceContentPath] 
-            else:
-                sourceContentPath = str(sourceContentPath).replace('teads.tv', 'teads.com')
-                sourceContentPath = str(sourceContentPath).replace('security+sumosupport+teadstv@sumologic.com', 'security+sumosupport+teads-1@sumologic.com')
-                if sourceContentPath in dest_paths_to_ids.keys():
-                    source_ids_to_dest_ids[sourceContentId] = dest_paths_to_ids[sourceContentPath]
-                else:
-                    logger.warn("Failed to import content with path: {} for source source content with id {}".format(sourceContentPath, sourceContentId))
-        return source_ids_to_dest_ids
+                logger.info('Key found')
+                destContentId = dest_paths_to_ids[sourceContentPath]
+                sourcePermissions = fromsumo.get_permissions(sourceContentId, explicit_only=True,adminmode=fromAdminmode)['explicitPermissions']
 
+                currentDestPermissions = []
+                for permission in sourcePermissions:
+                    currentDestPermission = copy.deepcopy(permission)
+                    currentSourceType = permission['sourceType']
+                    currentSourceId = permission['sourceId']
+                    currentDestPermission['sourceId'] = source_to_dest_ids[currentSourceType][currentSourceId]
+                    currentDestPermission['contentId'] = destContentId
+                    currentDestPermissions.append(currentDestPermission)
+                permissionsBody = {'contentPermissionAssignments':[], 'notifyRecipients':False, 'notificationMessage':''}
+                permissionsBody['contentPermissionAssignments'] = currentDestPermissions
+                logger.info(pprint.pformat(permissionsBody, indent=4))
+                requestResult = tosumo.add_permissions(destContentId, permissionsBody, adminmode=toAdminmode)
+                requestResults[sourceContentPath] = requestResult
+            else:
+                logger.warn("Failed to import content with path: {} for source source content with id {}".format(sourceContentPath, sourceContentId))
+        
+        return requestResults
+        
+
+        
 
         
 
