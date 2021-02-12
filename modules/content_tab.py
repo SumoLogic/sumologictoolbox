@@ -638,8 +638,6 @@ class content_tab(QtWidgets.QWidget):
 
         source_user_id_to_dest_user_id = {}
         for userId, email in source_user_id_to_email.items():
-            email = str(email).replace('teads.tv', 'teads.com')
-            email = str(email).replace('security+sumosupport+teadstv@sumologic.com', 'security+sumosupport+teads-1@sumologic.com')
             if email in des_user_email_to_id.keys():
                 source_user_id_to_dest_user_id[userId] = des_user_email_to_id[email]
             else:
@@ -678,8 +676,6 @@ class content_tab(QtWidgets.QWidget):
         requestResults = {}
         for sourceContentId, sourceContentPath in source_ids_to_paths.items():
             logger.info("The current source content id={} and path={}".format(sourceContentId, sourceContentPath))
-            sourceContentPath = str(sourceContentPath).replace('teads.tv', 'teads.com')
-            sourceContentPath = str(sourceContentPath).replace('security+sumosupport+teadstv@sumologic.com', 'security+sumosupport+teads-1@sumologic.com')
             if sourceContentPath in dest_paths_to_ids.keys():
                 logger.info('Key found')
                 destContentId = dest_paths_to_ids[sourceContentPath]
