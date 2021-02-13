@@ -17,21 +17,24 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
         self.mainwindow = mainwindow
         self.tab_name = 'Field Extraction Rules'
         self.cred_usage = 'both'
-        scheduled_view_widget_ui = os.path.join(self.mainwindow.basedir, 'data/field_extraction_rule.ui')
-        uic.loadUi(scheduled_view_widget_ui, self)
+        self.left_right_fers = {'left':[], 'right': []}
+        field_extraction_rule_widget_ui = os.path.join(self.mainwindow.basedir, 'data/field_extraction_rule.ui')
+        uic.loadUi(field_extraction_rule_widget_ui, self)
 
         self.pushButtonUpdateFERLeft.clicked.connect(lambda: self.update_FER_list(
             self.FERListWidgetLeft,
             self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
             str(self.mainwindow.lineEditUserNameLeft.text()),
-            str(self.mainwindow.lineEditPasswordLeft.text())
+            str(self.mainwindow.lineEditPasswordLeft.text()),
+            'left'
         ))
 
         self.pushButtonUpdateFERRight.clicked.connect(lambda: self.update_FER_list(
             self.FERListWidgetRight,
             self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionRight.currentText())],
             str(self.mainwindow.lineEditUserNameRight.text()),
-            str(self.mainwindow.lineEditPasswordRight.text())
+            str(self.mainwindow.lineEditPasswordRight.text()),
+            'right'
         ))
 
         self.pushButtonFERDeleteLeft.clicked.connect(lambda: self.delete_fer(
@@ -112,6 +115,12 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
             str(self.mainwindow.lineEditPasswordRight.text())
         ))
 
+        self.buttonGroupContentLeft.buttonClicked.connect(lambda: self.update_FER_listwidgets(
+            self.FERListWidgetLeft,
+            self.FERListWidgetRight,
+            self.buttonGroupContentLeft.checkedId(),
+        ))
+
     def reset_stateful_objects(self, side='both'):
 
         if side == 'both':
@@ -137,11 +146,13 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
 
         return
 
-    def update_FER_list(self, FERListWidget, url, id, key):
+    def update_FER_list(self, FERListWidget, url, id, key, side=None):
         sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
         try:
             logger.info("[Field Extraction Rules]Updating FER List")
             FERListWidget.currentcontent = sumo.get_fers_sync()
+            self.left_right_fers[side] = FERListWidget.currentcontent
+            
             FERListWidget.clear()
             if len(FERListWidget.currentcontent) > 0:
                 self.update_FER_listwidget(FERListWidget)
@@ -161,6 +172,72 @@ class field_extraction_rule_tab(QtWidgets.QWidget):
                 FERListWidget.addItem(item_name)  # populate the list widget in the GUI
 
             FERListWidget.updated = True
+
+        except Exception as e:
+            logger.exception(e)
+        return
+
+    def update_FER_listwidgets(self, FERLisLefttWidget, FERLisRightWidget, radioselected):
+        try:
+            if not self.left_right_fers['left'] or not self.left_right_fers['right']:
+                self.mainwindow.errorbox('You need need to update both left and right sides')
+                return
+
+            FERLisLefttWidget.clear()
+            FERLisLefttWidget.setSortingEnabled(True)
+
+            FERLisRightWidget.clear()
+            FERLisRightWidget.setSortingEnabled(True)
+
+            left_fers = {fer['name']: {'scope':fer['scope'], 'parseExpression': fer['parseExpression'], 'fieldNames': fer['fieldNames']} for fer in self.left_right_fers['left']}
+            right_fers = {fer['name']: {'scope':fer['scope'], 'parseExpression': fer['parseExpression'], 'fieldNames': fer['fieldNames']} for fer in self.left_right_fers['right']}
+
+            if radioselected == -2:
+                for name in left_fers.keys():
+                    FERLisLefttWidget.addItem(name)  # populate the list widget in the GUI
+
+                FERLisLefttWidget.updated = True
+                
+                for name in right_fers.keys():
+                    FERLisRightWidget.addItem(name)  # populate the list widget in the GUI
+
+                FERLisRightWidget.updated = True
+
+            elif radioselected == -3:
+                for name in left_fers.keys():
+                    if name not in right_fers.keys():
+                        logger.info("The {} FER found in the left but not right side".format(name))
+                        FERLisLefttWidget.addItem(name)  # populate the list widget in the GUI
+                FERLisLefttWidget.updated = True
+            
+            elif radioselected == -4:
+                for name in right_fers.keys():
+                    if name not in left_fers.keys():
+                        logger.info("The {} FER found in the right but not left side".format(name))
+                        FERLisRightWidget.addItem(name)  # populate the list widget in the GUI
+                FERLisRightWidget.updated = True
+
+            elif radioselected == -5:
+                for left_name, left_fer in left_fers.items():
+                    if left_name in right_fers.keys():
+                        left_scope = left_fer['scope']
+                        left_parseExpression = left_fer['parseExpression']
+                        left_fieldNames = left_fer['fieldNames']
+                        right_scope = right_fers[left_name]['scope']
+                        right_parseExpression = right_fers[left_name]['parseExpression']
+                        right_fieldNames = right_fers[left_name]['fieldNames']
+
+                        misMatchingFields = len([rfn for rfn, lfn in zip(left_fieldNames, right_fieldNames) if rfn != lfn])
+
+                        if left_scope != right_scope or \
+                        left_parseExpression != right_parseExpression or \
+                        len(left_fieldNames) != len(right_fieldNames) or \
+                        misMatchingFields > 0:
+                            logger.info("The {} FER found in both however it differ in either scope, parse Expression or field Names".format(left_name))
+                            FERLisLefttWidget.addItem(left_name)  # populate the list widget in the GUI
+                            FERLisRightWidget.addItem(left_name)  # populate the list widget in the GUI
+                FERLisLefttWidget.updated = True
+                FERLisRightWidget.updated = True
 
         except Exception as e:
             logger.exception(e)
