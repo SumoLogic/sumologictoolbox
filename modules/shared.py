@@ -204,6 +204,30 @@ def content_item_to_path(sumo, content, adminmode=False):
 
     return paths
 
+def CopyUsersAndAssignedRoles(user_id, fromsumo, tosumo):       
+    user = fromsumo.get_user_and_roles(user_id)
+    dest_roles = tosumo.get_roles_sync()
+    for source_role in user['roles']:
+        role_already_exists_in_dest = False
+        source_role_id = source_role['id']
+        for dest_role in dest_roles:
+            if dest_role['name'] == source_role['name']:
+                role_already_exists_in_dest = True
+                dest_role_id = dest_role['id']
+        if role_already_exists_in_dest:
+            user['roleIds'].append(dest_role_id)
+            user['roleIds'].remove(source_role_id)
+        else:
+            source_role['users'] = []
+            tosumo.create_role(source_role)
+            updated_dest_roles = tosumo.get_roles_sync()
+            for updated_dest_role in updated_dest_roles:
+                if updated_dest_role['name'] == source_role['name']:
+                    user['roleIds'].append(updated_dest_role['id'])
+            user['roleIds'].remove(source_role_id)
+    
+    return tosumo.create_user(user['firstName'], user['lastName'], email, user['roleIds'])
+
 
 
 

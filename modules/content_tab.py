@@ -9,7 +9,7 @@ import json
 import copy
 from logzero import logger
 from modules.sumologic import SumoLogic
-from modules.shared import ShowTextDialog, find_replace_specific_key_and_value, content_item_to_path
+from modules.shared import ShowTextDialog, find_replace_specific_key_and_value, content_item_to_path,  CopyUsersAndAssignedRoles
 
 
 class findReplaceCopyDialog(QtWidgets.QDialog):
@@ -644,7 +644,9 @@ class content_tab(QtWidgets.QWidget):
             if email in des_user_email_to_id.keys():
                 source_user_id_to_dest_user_id[userId] = des_user_email_to_id[email]
             else:
-                logger.info("Failed to find user with e-mail: {} on the destination".format(email))
+                destUserId = CopyUsersAndAssignedRoles(userId, fromsumo, tosumo)['id']
+                source_user_id_to_dest_user_id[userId] = destUserId
+                logger.info("Failed to find user with e-mail: {} on the destination and it was copied over along with any assigned roles".format(email))
 
         source_role_id_to_name = {role['id']:role['name'] for role in fromRoles}
         des_role_name_to_id = {role['name']:role['id'] for role in toRoles}
@@ -654,7 +656,11 @@ class content_tab(QtWidgets.QWidget):
             if roleName in des_role_name_to_id.keys():
                 source_role_id_to_dest_role_id[roleId] = des_role_name_to_id[roleName]
             else:
-                logger.info("Failed to find role with name: {} on the destination".format(roleName))
+                missingRole = fromsumo.get_role(roleId)
+                destUsersAssignedTorle = [source_user_id_to_dest_user_id[sourceUserId] for sourceUserId in missingRole['users'] if sourceUserId in source_user_id_to_dest_user_id.keys()]
+                missingRole['users'] = destUsersAssignedTorle
+                tosumo.create_role(missingRole)
+                logger.info("Failed to find role with name: {} on the destination and it was copied over and assigned existing destination users to it".format(roleName))
         
         source_to_dest_ids = {'org': {source_org_id:dest_org_id}, 'user': source_user_id_to_dest_user_id, 'role': source_role_id_to_dest_role_id}
         return source_to_dest_ids
