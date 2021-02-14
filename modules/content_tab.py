@@ -9,7 +9,7 @@ import json
 import copy
 from logzero import logger
 from modules.sumologic import SumoLogic
-from modules.shared import ShowTextDialog, find_replace_specific_key_and_value, content_item_to_path,  CopyUsersAndAssignedRoles
+from modules.shared import ShowTextDialog, find_replace_specific_key_and_value, content_item_to_path
 
 
 class findReplaceCopyDialog(QtWidgets.QDialog):
@@ -583,31 +583,37 @@ class content_tab(QtWidgets.QWidget):
         try:
             selecteditems = ContentListWidgetFrom.selectedItems()
             if len(selecteditems) > 0:  # make sure something was selected
-                fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
-                tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
-                currentSourceDir = ContentListWidgetFrom.currentdirlist[-1]
-                fromFolderId = ContentListWidgetFrom.currentcontent['id']
+                from_sumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
+                to_sumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
+                current_source_dir = ContentListWidgetFrom.currentdirlist[-1]
+                from_folder_id = ContentListWidgetFrom.currentcontent['id']
 
-                currentDestDir = ContentListWidgetTo.currentdirlist[-1]
-                toFolderId = ContentListWidgetTo.currentcontent['id']
+                current_dest_dir = ContentListWidgetTo.currentdirlist[-1]
+                to_folder_id = ContentListWidgetTo.currentcontent['id']
                 
                 fromPaths = []
 
                 for selecteditem in selecteditems:
-                        item_id = selecteditem.details['id']
-                        item_type = selecteditem.details['itemType']
+                    item_id = selecteditem.details['id']
+                    item_type = selecteditem.details['itemType']
 
-                        fromContentItem = fromsumo.get_folder(item_id, adminmode=fromadminmode) if item_type=='Folder'  else selecteditem.details
-                        fromPaths += content_item_to_path(fromsumo, fromContentItem, adminmode=fromadminmode)
-                        
-                        content = fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode)
-                        content = self.update_content_webhookid(fromsumo, tosumo, content)
-                        status = tosumo.import_content_job_sync(toFolderId, content, adminmode=toadminmode)
+                    if item_type == 'Folder':
+                        from_content_item = from_sumo.get_folder(item_id, adminmode=fromadminmode)
+                    else:
+                        from_content_item = selecteditem.details
 
-                toFolder = tosumo.get_folder(toFolderId, adminmode=toadminmode)
-                toPaths = content_item_to_path(tosumo, toFolder, adminmode=toadminmode)
-                self.sync_copied_contents_permissions(fromsumo, tosumo, fromFolderId, toFolderId, fromPaths, toPaths, fromAdminMode=fromadminmode, toAdminMode=toadminmode)
-                self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
+                    fromPaths.append(content_item_to_path(from_sumo, from_content_item, adminmode=fromadminmode))
+                    print(fromPaths)
+
+                    content = from_sumo.export_content_job_sync(item_id, adminmode=fromadminmode)
+                    content = self.update_content_webhookid(from_sumo, to_sumo, content)
+                    status = to_sumo.import_content_job_sync(to_folder_id, content, adminmode=toadminmode)
+
+                toFolder = to_sumo.get_folder(to_folder_id, adminmode=toadminmode)
+                toPaths = content_item_to_path(to_sumo, toFolder, adminmode=toadminmode)
+                print(toPaths)
+                #self.sync_copied_contents_permissions(from_sumo, to_sumo, from_folder_id, to_folder_id, fromPaths, toPaths, fromAdminMode=fromadminmode, toAdminMode=toadminmode)
+                #self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
 
             else:
@@ -637,8 +643,8 @@ class content_tab(QtWidgets.QWidget):
             if email in des_user_email_to_id.keys():
                 source_user_id_to_dest_user_id[userId] = des_user_email_to_id[email]
             else:
-                destUserId = CopyUsersAndAssignedRoles(userId, fromsumo, tosumo)['id']
-                source_user_id_to_dest_user_id[userId] = destUserId
+                #destUserId = CopyUsersAndAssignedRoles(userId, fromsumo, tosumo)['id']
+                #source_user_id_to_dest_user_id[userId] = destUserId
                 logger.info("Failed to find user with e-mail: {} on the destination and it was copied over along with any assigned roles".format(email))
 
         source_role_id_to_name = {role['id']:role['name'] for role in fromRoles}
@@ -708,6 +714,7 @@ class content_tab(QtWidgets.QWidget):
         dest_connections = tosumo.get_connections_sync()
 
         source_connections_dict = {connection['id']: connection['name'] for connection in source_connections}
+        print(source_connections)
         dest_connections_dict = {connection['name']: connection['id'] for connection in dest_connections}
         source_to_dest_dict = {id: dest_connections_dict[name] for id, name in source_connections_dict.items() if name in dest_connections_dict}
 

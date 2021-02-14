@@ -12,8 +12,9 @@ something other than the master.
 I know that the source code has a TON of PEP8 violations in it. I am working on cleaning these up slowly.
 Please don't add anymore. I suggest using an editor with a built in PEP8 linter like Pycharm.
 
-3. Tabs should strive to be independent from each other. If something needs to be shared between tabs 
-put that in the shared.py file. This includes methods that import things in the org.  The the "orgs tab" 
-will need access to import methods for all object types so they should go in shared.py. 
+3. Tabs should not be imported into each other. If a function should be shared put it in the shared.py file.
 
-
+4. all "copy" operations should be split into 2 methods, an export and an import. These export and import 
+functions should reside in shared.py. All copy/backup/restore methods should leverage the import/export
+functions. This way if you improve or modify export/import then all copy/backup/restore methods
+will get the improvement. 

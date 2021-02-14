@@ -552,8 +552,8 @@ class SumoLogic(object):
         # Content API
 
         # for backward compatibility with old community API
-    def get_content(self, path):
-        return self.get_content_by_path(path)
+    def get_content(self, path, adminmode=False):
+        return self.get_content_by_path(path, adminmode=adminmode)
 
     def get_content_by_path(self, item_path, adminmode=False):
         # item_path should start with /Library and use the user's email address if referencing a user home dir

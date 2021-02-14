@@ -30,8 +30,6 @@ class ShowTextDialog(QtWidgets.QDialog):
             self.searchbox.text()
         ))
 
-
-
     def setupUi(self, Dialog):
         Dialog.setObjectName("JSONDisplay")
         self.setWindowTitle(self.title)
@@ -54,7 +52,6 @@ class ShowTextDialog(QtWidgets.QDialog):
         self.layout.addLayout(self.searchlayout)
         self.layout.addWidget(self.textedit)
         self.setLayout(self.layout)
-
 
     def search(self, search_text):
         self.textedit.textCursor().clearSelection()
@@ -125,6 +122,7 @@ class Worker(QtCore.QRunnable):
         finally:
             self.signals.finished.emit()  # Done
 
+
 # functions that are shared by multiple tabs. These are mostly import/export functions that will be used by their own tab
 # (import monitors is used by the monitor tab for instance) and also be used by the orgs tab, when deploying config
 # to a newly provisioned org.
@@ -150,6 +148,7 @@ def find_keys(obj, key):
     results = extract(obj, arr, key)
     return results
 
+
 # Recursively find all instances of a key in a dict/list object and replace the value with a new value IF it
 # matches the old value
 def find_replace_specific_key_and_value(obj, key, old_value, new_value):
@@ -164,6 +163,7 @@ def find_replace_specific_key_and_value(obj, key, old_value, new_value):
             obj[index] = find_replace_specific_key_and_value(item, key, old_value, new_value)
     return obj
 
+
 def find_replace_keys(obj, key, new_value):
     if isinstance(obj, dict):
         for k, v in obj.items():
@@ -176,6 +176,7 @@ def find_replace_keys(obj, key, new_value):
         for index, item in enumerate(obj):
             obj[index] = find_replace_keys(item, key, new_value)
     return obj
+
 
 # This call gets the monitor(s) and then all connections used by that monitor. This is useful for exporting or copying a monitor
 # to a new org. This is a bit messy due to the requirement to specify connectionType in the get_connection method.
@@ -199,6 +200,7 @@ def export_monitor_and_connections(item_id, sumo):
                 monitor['connections'].append(exported_connection)
                 break
     return monitor
+
 
 def import_monitors_with_connections(parent_id, monitor, sumo):
 
@@ -225,9 +227,11 @@ def import_monitors_with_connections(parent_id, monitor, sumo):
         monitor = find_replace_specific_key_and_value(monitor, 'connectionId', connection_lookup['old_id'], connection_lookup['new_id'])
     result = sumo.import_monitor(parent_id, monitor)
 
+
 def import_monitors_without_connections(parent_id, monitor, sumo):
     monitor = find_replace_keys(monitor, 'notifications', [])
     result = sumo.import_monitor(parent_id, monitor)
+
 
 def import_saml_config(saml_export, sumo):
     # Hacky stuff to get create to work
@@ -236,6 +240,7 @@ def import_saml_config(saml_export, sumo):
     saml_export['spInitiatedLoginEnabled'] = False
     # End Hacky stuff
     status = sumo.create_saml_config(saml_export)
+
 
 def content_item_to_path(sumo, content, adminmode=False):
     paths = []
@@ -260,9 +265,17 @@ def content_item_to_path(sumo, content, adminmode=False):
 
     return paths
 
-def CopyUsersAndAssignedRoles(user_id, fromsumo, tosumo):       
-    user = fromsumo.get_user_and_roles(user_id)
-    dest_roles = tosumo.get_roles_sync()
+
+def export_user_and_roles(user_id, sumo):
+    user = sumo.get_user(str(user_id))
+    user['roles'] = []
+    for role_id in user['roleIds']:
+        role = sumo.get_role(str(role_id))
+        user['roles'].append(role)
+    return user
+
+def import_user_and_roles(user, sumo):
+    dest_roles = sumo.get_roles_sync()
     for source_role in user['roles']:
         role_already_exists_in_dest = False
         source_role_id = source_role['id']
@@ -271,19 +284,25 @@ def CopyUsersAndAssignedRoles(user_id, fromsumo, tosumo):
                 role_already_exists_in_dest = True
                 dest_role_id = dest_role['id']
         if role_already_exists_in_dest:
+            # print('found role at target: ' + source_role['name'])
             user['roleIds'].append(dest_role_id)
             user['roleIds'].remove(source_role_id)
         else:
             source_role['users'] = []
-            tosumo.create_role(source_role)
-            updated_dest_roles = tosumo.get_roles_sync()
+            sumo.create_role(source_role)
+            updated_dest_roles = sumo.get_roles_sync()
             for updated_dest_role in updated_dest_roles:
                 if updated_dest_role['name'] == source_role['name']:
                     user['roleIds'].append(updated_dest_role['id'])
             user['roleIds'].remove(source_role_id)
-    
-    return tosumo.create_user(user['firstName'], user['lastName'], email, user['roleIds'])
+            # print('Did not find role at target. Added role:' + source_role['name'])
+        # print('modified user: ' + str(user))
+    sumo.create_user(user['firstName'], user['lastName'], user['email'], user['roleIds'])
 
+
+def export_content(item_id, item_details, sumo, adminmode, export_connections=True, export_permissions=True):
+
+    content = sumo.export_content_job_sync(item_id, adminmode=adminmode)
 
 
 

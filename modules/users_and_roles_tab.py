@@ -1,5 +1,3 @@
-class_name = 'users_and_roles_tab'
-
 from qtpy import QtCore, QtGui, QtWidgets, uic
 import os
 import sys
@@ -8,7 +6,9 @@ import pathlib
 import json
 from logzero import logger
 from modules.sumologic import SumoLogic
-from modules.shared import ShowTextDialog, CopyUsersAndAssignedRoles
+from modules.shared import ShowTextDialog, export_user_and_roles, import_user_and_roles
+
+class_name = 'users_and_roles_tab'
 
 
 class users_and_roles_tab(QtWidgets.QWidget):
@@ -20,6 +20,10 @@ class users_and_roles_tab(QtWidgets.QWidget):
         self.cred_usage = 'both'
         users_and_roles_widget_ui = os.path.join(self.mainwindow.basedir, 'data/users_and_roles.ui')
         uic.loadUi(users_and_roles_widget_ui, self)
+        self.listWidgetUsersLeft.side = 'Left'
+        self.listWidgetUsersRight.side = 'Right'
+        self.listWidgetRolesLeft.side = 'Left'
+        self.listWidgetRolesRight.side = 'Right'
 
         # Connect the UI buttons to methods
 
@@ -249,7 +253,6 @@ class users_and_roles_tab(QtWidgets.QWidget):
             self.listWidgetRolesLeft.currentcontent = {}
             self.listWidgetRolesLeft.updated = False
 
-
         if right:
             self.listWidgetUsersRight.clear()
             self.listWidgetUsersRight.currentcontent = {}
@@ -292,12 +295,32 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 item = QtWidgets.QListWidgetItem(item_name)
                 item.details = object
                 UserListWidget.addItem(item)  # populate the list widget in the GUI
+                if UserListWidget.side == 'Left':
+                    self.set_listwidget_filter(
+                        UserListWidget,
+                        self.lineEditSearchUsersLeft.text()
+                    )
+                elif UserListWidget.side == 'Right':
+                    self.set_listwidget_filter(
+                        UserListWidget,
+                        self.lineEditSearchUsersRight.text()
+                    )
             UserListWidget.updated = True
             for object in RoleListWidget.currentcontent:
                 item_name = object['name']
                 item = QtWidgets.QListWidgetItem(item_name)
                 item.details = object
                 RoleListWidget.addItem(item)  # populate the list widget in the GUI
+                if RoleListWidget.side == 'Left':
+                    self.set_listwidget_filter(
+                        RoleListWidget,
+                        self.lineEditSearchRolesLeft.text()
+                    )
+                elif RoleListWidget.side == 'Right':
+                    self.set_listwidget_filter(
+                        RoleListWidget,
+                        self.lineEditSearchRolesRight.text()
+                    )
             RoleListWidget.updated = True
 
         except Exception as e:
@@ -320,7 +343,8 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 for selecteditem in selecteditems:
                     user_id = selecteditem.details['id']
-                    CopyUsersAndAssignedRoles(user_id, fromsumo, tosumo)
+                    user_and_roles = export_user_and_roles(user_id, fromsumo)
+                    result = import_user_and_roles(user_and_roles, tosumo)
 
                 self.update_users_and_roles_lists(UserListWidgetTo, RoleListWidgetTo, tourl, toid, tokey)
                 return
@@ -346,7 +370,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 for selecteditem in selecteditems:
                     user_id = selecteditem.details['id']
                     try:
-                        export = sumo.get_user_and_roles(user_id)
+                        export = export_user_and_roles(user_id, sumo)
 
                         savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.user.json')
                         if savefilepath:
@@ -406,29 +430,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
                             "Something went wrong reading the file. Do you have the right file permissions? Does it contain valid JSON?")
                         return
                     try:
-                        dest_roles = sumo.get_roles_sync()
-                        for source_role in user['roles']:
-                            role_already_exists_in_dest = False
-                            source_role_id = source_role['id']
-                            for dest_role in dest_roles:
-                                if dest_role['name'] == source_role['name']:
-                                    role_already_exists_in_dest = True
-                                    dest_role_id = dest_role['id']
-                            if role_already_exists_in_dest:
-                                # print('found role at target: ' + source_role['name'])
-                                user['roleIds'].append(dest_role_id)
-                                user['roleIds'].remove(source_role_id)
-                            else:
-                                source_role['users'] = []
-                                sumo.create_role(source_role)
-                                updated_dest_roles = sumo.get_roles_sync()
-                                for updated_dest_role in updated_dest_roles:
-                                    if updated_dest_role['name'] == source_role['name']:
-                                        user['roleIds'].append(updated_dest_role['id'])
-                                user['roleIds'].remove(source_role_id)
-                                # print('Did not find role at target. Added role:' + source_role['name'])
-                            # print('modified user: ' + str(user))
-                        sumo.create_user(user['firstName'], user['lastName'], user['email'], user['roleIds'])
+                        result = import_user_and_roles(user, sumo)
 
                     except Exception as e:
                         logger.exception(e)
