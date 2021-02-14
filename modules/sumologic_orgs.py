@@ -55,7 +55,7 @@ class SumoLogic_Orgs:
                  accessId,
                  accessKey,
                  parent_deployment,
-                 endpoint="https://nite-reg-manager.sumologic.net/api",
+                 endpoint="https://organizations.sumologic.com/api",
                  cookieFile='cookies_org.txt',
                  log_level='info',
                  log_file=None):

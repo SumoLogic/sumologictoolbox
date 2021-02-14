@@ -1,5 +1,10 @@
 Changelog for SumoToolBox
 
+2-?-2021 0.9.2
+*   [Orgs SDK] Added the correct endpoint to the SDK
+*   [Organizations] Removed CSE credits and storage from the view as they don't exist in the API at the moment.
+
+
 1-6-2021 0.9.1
 *   [Collectors] The new Cloud 2 Cloud sources added by Sumo Logic have a different JSON definition/schema than other
     source types. This change caused errors when attempting access/manipulate these types of sources in previous versions.

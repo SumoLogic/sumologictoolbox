@@ -340,7 +340,6 @@ class organizations_tab(QtWidgets.QWidget):
         selected = self.tableWidgetOrgs.selectedItems()
         row_dict = self.create_dict_from_qtable_row(selected)
 
-
     def create_dict_from_qtable_row(self, list_of_qtableitems):
         row_dict = {}
         for qtableitem in list_of_qtableitems:
@@ -351,13 +350,12 @@ class organizations_tab(QtWidgets.QWidget):
 
     def reset_stateful_objects(self, side='both'):
 
-
         self.tableWidgetOrgs.clearContents()
         self.tableWidgetOrgs.raw_orgs =[]
         self.tableWidgetOrgs.horizontalHeader().hide()
         self.tableWidgetOrgs.setRowCount(0)
         parent_deployment = str(self.mainwindow.comboBoxRegionLeft.currentText().lower())
-        id =  str(self.mainwindow.lineEditUserNameLeft.text())
+        id = str(self.mainwindow.lineEditUserNameLeft.text())
         key = str(self.mainwindow.lineEditPasswordLeft.text())
         self.pushButtonGetOrgs.setEnabled(True)
         self.checkBoxShowActive.setEnabled(True)
@@ -367,7 +365,10 @@ class organizations_tab(QtWidgets.QWidget):
         try:
             sumo_mam = SumoLogic_Orgs(id, key, parent_deployment, log_level=self.mainwindow.log_level)
             test = sumo_mam.get_deployments()
-        except:
+            logger.info('Current org has Multi Org Management enabled.')
+        except Exception as e:
+            logger.info('Current org does not have Multi Org Management enabled.')
+            logger.debug('Exception calling Orgs API: {}'.format(str(e)))
             self.pushButtonGetOrgs.setEnabled(False)
             self.checkBoxShowActive.setEnabled(False)
             self.pushButtonCreateOrg.setEnabled(False)
@@ -399,7 +400,6 @@ class organizations_tab(QtWidgets.QWidget):
         self.tableWidgetOrgs.clear()
         orgs = []
         for raw_org in self.tableWidgetOrgs.raw_orgs:
-
             org = { 'Org Name': raw_org['organizationName'],
                     'Org ID': raw_org['orgId'],
                     'Owner Email': raw_org['email'],
@@ -412,8 +412,8 @@ class organizations_tab(QtWidgets.QWidget):
                     'Frequent Storage': raw_org['subscription']['baselines']['frequentStorage'],
                     'Infrequent Ingest': raw_org['subscription']['baselines']['infrequentIngest'],
                     'Infrequent Storage': raw_org['subscription']['baselines']['infrequentStorage'],
-                    'CSE Ingest': raw_org['subscription']['baselines']['cseIngest'],
-                    'CSE Storage': raw_org['subscription']['baselines']['cseStorage'],
+                    #'CSE Ingest': raw_org['subscription']['baselines']['cseIngest'],
+                    #'CSE Storage': raw_org['subscription']['baselines']['cseStorage'],
                     'Metrics': raw_org['subscription']['baselines']['metrics']
                     }
             orgs.append(org)
