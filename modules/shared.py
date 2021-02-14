@@ -237,6 +237,53 @@ def import_saml_config(saml_export, sumo):
     # End Hacky stuff
     status = sumo.create_saml_config(saml_export)
 
+def content_item_to_path(sumo, content, adminmode=False):
+    paths = []
+    if isinstance(content, dict):
+        if 'id' in content and 'name' in content and 'itemType' in content:
+            id = content['id']
+            name = content['name']
+            itemType = content['itemType']
+            currentPath = sumo.get_item_path(id, adminmode=adminmode)['path']
+            details = {'id': id, 'name': name, 'itemType': itemType, 'path': currentPath}
+            paths.append(details)
+
+            if itemType == 'Folder' and 'children' in content and len(content['children']) > 0:
+                for child in content['children']:
+                    if child['itemType'] == 'Folder':
+                        child = sumo.get_folder(child['id'], adminmode=adminmode)
+                    paths = paths + content_item_to_path(sumo, child, adminmode=adminmode)
+
+    elif isinstance(content, list):
+        for index, item in enumerate(content):
+            paths = paths + content_item_to_path(sumo,item, adminmode=adminmode)
+
+    return paths
+
+def CopyUsersAndAssignedRoles(user_id, fromsumo, tosumo):       
+    user = fromsumo.get_user_and_roles(user_id)
+    dest_roles = tosumo.get_roles_sync()
+    for source_role in user['roles']:
+        role_already_exists_in_dest = False
+        source_role_id = source_role['id']
+        for dest_role in dest_roles:
+            if dest_role['name'] == source_role['name']:
+                role_already_exists_in_dest = True
+                dest_role_id = dest_role['id']
+        if role_already_exists_in_dest:
+            user['roleIds'].append(dest_role_id)
+            user['roleIds'].remove(source_role_id)
+        else:
+            source_role['users'] = []
+            tosumo.create_role(source_role)
+            updated_dest_roles = tosumo.get_roles_sync()
+            for updated_dest_role in updated_dest_roles:
+                if updated_dest_role['name'] == source_role['name']:
+                    user['roleIds'].append(updated_dest_role['id'])
+            user['roleIds'].remove(source_role_id)
+    
+    return tosumo.create_user(user['firstName'], user['lastName'], email, user['roleIds'])
+
 
 
 

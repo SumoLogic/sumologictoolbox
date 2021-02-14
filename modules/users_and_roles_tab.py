@@ -8,7 +8,7 @@ import pathlib
 import json
 from logzero import logger
 from modules.sumologic import SumoLogic
-from modules.shared import ShowTextDialog
+from modules.shared import ShowTextDialog, CopyUsersAndAssignedRoles
 
 
 class users_and_roles_tab(QtWidgets.QWidget):
@@ -320,27 +320,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 for selecteditem in selecteditems:
                     user_id = selecteditem.details['id']
-                    user = fromsumo.get_user_and_roles(user_id)
-                    dest_roles = tosumo.get_roles_sync()
-                    for source_role in user['roles']:
-                        role_already_exists_in_dest = False
-                        source_role_id = source_role['id']
-                        for dest_role in dest_roles:
-                            if dest_role['name'] == source_role['name']:
-                                role_already_exists_in_dest = True
-                                dest_role_id = dest_role['id']
-                        if role_already_exists_in_dest:
-                            user['roleIds'].append(dest_role_id)
-                            user['roleIds'].remove(source_role_id)
-                        else:
-                            source_role['users'] = []
-                            tosumo.create_role(source_role)
-                            updated_dest_roles = tosumo.get_roles_sync()
-                            for updated_dest_role in updated_dest_roles:
-                                if updated_dest_role['name'] == source_role['name']:
-                                    user['roleIds'].append(updated_dest_role['id'])
-                            user['roleIds'].remove(source_role_id)
-                    tosumo.create_user(user['firstName'], user['lastName'], user['email'], user['roleIds'])
+                    CopyUsersAndAssignedRoles(user_id, fromsumo, tosumo)
 
                 self.update_users_and_roles_lists(UserListWidgetTo, RoleListWidgetTo, tourl, toid, tokey)
                 return
@@ -354,7 +334,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
             self.mainwindow.errorbox('Something went wrong:' + str(e))
             self.update_users_and_roles_lists(UserListWidgetTo, RoleListWidgetTo, tourl, toid, tokey)
         return
-    
+
     def backup_user(self, UserListWidget, url, id, key):
         logger.info("[Users and Roles]Backing Up User(s)")
         selecteditems = UserListWidget.selectedItems()
