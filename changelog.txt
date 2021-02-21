@@ -3,6 +3,13 @@ Changelog for SumoToolBox
 2-?-2021 0.9.2
 *   [Orgs SDK] Added the correct endpoint to the SDK
 *   [Organizations] Removed CSE credits and storage from the view as they don't exist in the API at the moment.
+*   [Content] Add an "Include Connections" checkbox. If checked this will make sure that any connections used by
+    a scheduled search will also be copied/imported along with the saved search. If unchecked then the scheduled search
+    will be stripped of it's connections, in effect making it just a regular search.
+*   [Users and Roles] Added an "Include Roles" checkbox. If checked then copying/importing the user will replicate
+    all of that user's roles to the target org. If unchecked then only "Administrators" and/or "Analysts" membership
+    will be replicated to the destination org. If the user was not a member of either of these roles and this box
+    is unchecked then the user will be made an "Analyst" in the destination org. 
 
 
 1-6-2021 0.9.1

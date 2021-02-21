@@ -3,9 +3,9 @@ Just a few simple guidelines for now, more to come later.
 
 -Tim MacDonald, tmacdonald@sumologic.com
 
-1. Always issue your pull requests against the master branch. The default branch of the repo will always 
-be 1 branch older than the master. This means if you take the default clone options you will be cloning 
-something other than the master. 
+1. When contributing, always fork from the master branch, not the current default. The default branch of 
+the repo will always be 1 branch older than the master. This means if you take the default clone option
+you will be cloning something other than the master. 
 
 2. Follow PEP8 ( https://www.python.org/dev/peps/pep-0008/ )
 

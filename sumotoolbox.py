@@ -1,5 +1,5 @@
 __author__ = 'Tim MacDonald'
-__version__ = '0.9.1'
+__version__ = '0.9.2'
 # Copyright 2015 Timothy MacDonald
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with

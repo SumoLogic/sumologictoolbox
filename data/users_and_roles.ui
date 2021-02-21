@@ -352,6 +352,23 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="checkBoxIncludeRoles">
+       <property name="font">
+        <font>
+         <family>Waree</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When checked all roles the user is a member of will also be copied/restored to the target org.&lt;/p&gt;&lt;p&gt;When unchecked the copied/restored user will only retain it's membership in &amp;quot;Adminstrators&amp;quot; and/or &amp;quot;Analysts&amp;quot; roles. &lt;/p&gt;&lt;p&gt;If unchecked and the user was in neither &amp;quot;Administrators&amp;quot; or &amp;quot;Analysts&amp;quot; then the copied/restored user will be made an analyst. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Include
+Roles</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>

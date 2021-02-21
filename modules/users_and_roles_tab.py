@@ -6,7 +6,7 @@ import pathlib
 import json
 from logzero import logger
 from modules.sumologic import SumoLogic
-from modules.shared import ShowTextDialog, export_user_and_roles, import_user_and_roles
+from modules.shared import ShowTextDialog, export_user, import_user, export_role, import_role
 
 class_name = 'users_and_roles_tab'
 
@@ -343,8 +343,8 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 for selecteditem in selecteditems:
                     user_id = selecteditem.details['id']
-                    user_and_roles = export_user_and_roles(user_id, fromsumo)
-                    result = import_user_and_roles(user_and_roles, tosumo)
+                    user_and_roles = export_user(user_id, fromsumo)
+                    result = import_user(user_and_roles, tosumo, include_roles=self.checkBoxIncludeRoles.isChecked())
 
                 self.update_users_and_roles_lists(UserListWidgetTo, RoleListWidgetTo, tourl, toid, tokey)
                 return
@@ -370,7 +370,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 for selecteditem in selecteditems:
                     user_id = selecteditem.details['id']
                     try:
-                        export = export_user_and_roles(user_id, sumo)
+                        export = export_user(user_id, sumo)
 
                         savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.user.json')
                         if savefilepath:
@@ -430,7 +430,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
                             "Something went wrong reading the file. Do you have the right file permissions? Does it contain valid JSON?")
                         return
                     try:
-                        result = import_user_and_roles(user, sumo)
+                        result = import_user(user, sumo, include_roles=self.checkBoxIncludeRoles.isChecked())
 
                     except Exception as e:
                         logger.exception(e)
@@ -493,8 +493,8 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 for selecteditem in selecteditems:
                     role_id = selecteditem.details['id']
-                    role = fromsumo.get_role(role_id)
-                    status = tosumo.create_role(role)
+                    role = export_role(role_id, fromsumo)
+                    status = import_role(role, tosumo)
                 self.update_users_and_roles_lists(UserListWidgetTo, RoleListWidgetTo, tourl, toid, tokey)
                 return
 
@@ -519,8 +519,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
                 for selecteditem in selecteditems:
                     item_id = selecteditem.details['id']
                     try:
-                        export = sumo.get_role(item_id)
-
+                        export = export_role(item_id, sumo)
                         savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.role.json')
                         if savefilepath:
                             with savefilepath.open(mode='w') as filepointer:
@@ -579,9 +578,7 @@ class users_and_roles_tab(QtWidgets.QWidget):
                             "Something went wrong reading the file. Do you have the right file permissions? Does it contain valid JSON?")
                         return
                     try:
-                        role_backup['users'] = []
-                        status = sumo.create_role(role_backup)
-
+                        status = import_role(role_backup, sumo)
                     except Exception as e:
                         logger.exception(e)
                         self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))

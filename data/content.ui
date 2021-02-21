@@ -405,23 +405,6 @@ Connections</string>
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBoxIncludePermissions">
-       <property name="font">
-        <font>
-         <family>Waree</family>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checking this box will include any global permissions on the selected objects. Additionally any user or role specific permissions will also be copied IF those users and roles exist in the target org. &lt;/p&gt;&lt;p&gt;If you want to copy user and role permissions it is advisable to copy the users and roles to the target org first before copying content. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Include
-Permissions</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="verticalSpacer_2">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -810,7 +793,7 @@ Folders</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupContentRight"/>
   <buttongroup name="buttonGroupContentLeft"/>
+  <buttongroup name="buttonGroupContentRight"/>
  </buttongroups>
 </ui>

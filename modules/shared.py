@@ -123,8 +123,8 @@ class Worker(QtCore.QRunnable):
             self.signals.finished.emit()  # Done
 
 
-# functions that are shared by multiple tabs. These are mostly import/export functions that will be used by their own tab
-# (import monitors is used by the monitor tab for instance) and also be used by the orgs tab, when deploying config
+# functions that are shared by multiple tabs. These are mostly import/export functions that will be used by their own
+# tab (import monitors is used by the monitor tab for instance) and also be used by the orgs tab, when deploying config
 # to a newly provisioned org.
 
 # Recursively find all instances of a key in a dict/list object. Thanks Stackoverflow. Yoink!
@@ -177,10 +177,25 @@ def find_replace_keys(obj, key, new_value):
             obj[index] = find_replace_keys(item, key, new_value)
     return obj
 
+def find_delete_keys(obj, key):
+    obj_copy = obj.copy()
+    if isinstance(obj, dict):
+        for k, v in obj_copy.items():
+            if k == key:
+                del(obj[k])
+            elif isinstance(v, (dict,list)):
+                obj[k] = find_delete_keys(v, key)
 
-# This call gets the monitor(s) and then all connections used by that monitor. This is useful for exporting or copying a monitor
-# to a new org. This is a bit messy due to the requirement to specify connectionType in the get_connection method.
-def export_monitor_and_connections(item_id, sumo):
+    elif isinstance(obj, list):
+        for index, item in enumerate(obj_copy):
+            obj[index] = find_delete_keys(item, key)
+    return obj
+
+
+# This call gets the monitor(s) and then all connections used by that monitor. This is useful for exporting or copying a
+# monitor to a new org. This is a bit messy due to the requirement to specify connectionType in the get_connection
+# method.
+def export_monitor(item_id, sumo):
     # export the monitor/folder (the easy part)
     monitor = sumo.export_monitor(str(item_id))
     # find every connectionId key in the exported JSON
@@ -196,41 +211,54 @@ def export_monitor_and_connections(item_id, sumo):
             # if we find a match export the connection and attach it to the monitor JSON
             if connection['id'] == connection_id:
                 connection_type = connection['type']
-                exported_connection = sumo.get_connection(connection_id, connection_type)
+                exported_connection = export_connection(connection_id, connection_type, sumo)
                 monitor['connections'].append(exported_connection)
                 break
     return monitor
 
 
-def import_monitors_with_connections(parent_id, monitor, sumo):
+def import_monitors(parent_id, monitor, sumo, include_connection=False):
+    if include_connection:
+        connection_lookups = []
+        org_connection_list = sumo.get_connections_sync()
+        for monitor_connection in monitor['connections']:
+            connection_found = False
+            # iterate through the connections already in the org, if any of them match the name of the exported connection
+            # then take note of it's connectionId and which name it pairs with
+            while not connection_found:
+                for org_connection in org_connection_list:
+                    if monitor_connection['name'] == org_connection['name']:
+                        connection_lookups_entry = {'name': monitor_connection['name'],
+                                                   'old_id': monitor_connection['id'],
+                                                   'new_id': org_connection['id']}
+                        connection_lookups.append(connection_lookups_entry)
+                        connection_found =True
+                        break
+                if not connection_found:
+                    result = import_connection(monitor_connection, sumo)
+                    org_connection_list = sumo.get_connections_sync()
 
-    connection_lookups = []
-    org_connection_list = sumo.get_connections_sync()
-    for monitor_connection in monitor['connections']:
-        connection_found = False
-        # iterate through the connections already in the org, if any of them match the name of the exported connection
-        # then take note of it's connectionId and which name it pairs with
-        while not connection_found:
-            for org_connection in org_connection_list:
-                if monitor_connection['name'] == org_connection['name']:
-                    connection_lookups_entry = {'name': monitor_connection['name'],
-                                               'old_id': monitor_connection['id'],
-                                               'new_id': org_connection['id']}
-                    connection_lookups.append(connection_lookups_entry)
-                    connection_found =True
-                    break
-            if not connection_found:
-                result = sumo.create_connection(monitor_connection)
-                org_connection_list = sumo.get_connections_sync()
+        for connection_lookup in connection_lookups:
+            monitor = find_replace_specific_key_and_value(monitor, 'connectionId', connection_lookup['old_id'], connection_lookup['new_id'])
+        for index, connection in enumerate(monitor['connections']):
+            monitor['connections'][index]['type'] = str(connection['type']).replace('Connection',
+                                                                                    'Definition')
+        result = sumo.import_monitor(parent_id, monitor)
+    else:
+        monitor = find_replace_keys(monitor, 'notifications', [])
+        result = sumo.import_monitor(parent_id, monitor)
 
-    for connection_lookup in connection_lookups:
-        monitor = find_replace_specific_key_and_value(monitor, 'connectionId', connection_lookup['old_id'], connection_lookup['new_id'])
-    result = sumo.import_monitor(parent_id, monitor)
+    return result
 
 
-def import_monitors_without_connections(parent_id, monitor, sumo):
-    monitor = find_replace_keys(monitor, 'notifications', [])
-    result = sumo.import_monitor(parent_id, monitor)
+def export_connection(connection_id, connection_type, sumo):
+    return sumo.get_connection(connection_id, connection_type)
+
+
+def import_connection(connection, sumo):
+    connection['type'] = str(connection['type']).replace('Connection', 'Definition')
+    status = sumo.create_connection(connection)
+    return status
 
 
 def import_saml_config(saml_export, sumo):
@@ -242,67 +270,120 @@ def import_saml_config(saml_export, sumo):
     status = sumo.create_saml_config(saml_export)
 
 
-def content_item_to_path(sumo, content, adminmode=False):
-    paths = []
-    if isinstance(content, dict):
-        if 'id' in content and 'name' in content and 'itemType' in content:
-            id = content['id']
-            name = content['name']
-            itemType = content['itemType']
-            currentPath = sumo.get_item_path(id, adminmode=adminmode)['path']
-            details = {'id': id, 'name': name, 'itemType': itemType, 'path': currentPath}
-            paths.append(details)
-
-            if itemType == 'Folder' and 'children' in content and len(content['children']) > 0:
-                for child in content['children']:
-                    if child['itemType'] == 'Folder':
-                        child = sumo.get_folder(child['id'], adminmode=adminmode)
-                    paths = paths + content_item_to_path(sumo, child, adminmode=adminmode)
-
-    elif isinstance(content, list):
-        for index, item in enumerate(content):
-            paths = paths + content_item_to_path(sumo,item, adminmode=adminmode)
-
-    return paths
-
-
-def export_user_and_roles(user_id, sumo):
+def export_user(user_id, sumo):
     user = sumo.get_user(str(user_id))
     user['roles'] = []
     for role_id in user['roleIds']:
-        role = sumo.get_role(str(role_id))
+        role = export_role(role_id, sumo)
         user['roles'].append(role)
     return user
 
-def import_user_and_roles(user, sumo):
+
+def import_user(user, sumo, include_roles=False):
     dest_roles = sumo.get_roles_sync()
-    for source_role in user['roles']:
-        role_already_exists_in_dest = False
-        source_role_id = source_role['id']
-        for dest_role in dest_roles:
-            if dest_role['name'] == source_role['name']:
-                role_already_exists_in_dest = True
-                dest_role_id = dest_role['id']
-        if role_already_exists_in_dest:
-            # print('found role at target: ' + source_role['name'])
-            user['roleIds'].append(dest_role_id)
-            user['roleIds'].remove(source_role_id)
-        else:
-            source_role['users'] = []
-            sumo.create_role(source_role)
-            updated_dest_roles = sumo.get_roles_sync()
-            for updated_dest_role in updated_dest_roles:
-                if updated_dest_role['name'] == source_role['name']:
-                    user['roleIds'].append(updated_dest_role['id'])
-            user['roleIds'].remove(source_role_id)
-            # print('Did not find role at target. Added role:' + source_role['name'])
-        # print('modified user: ' + str(user))
-    sumo.create_user(user['firstName'], user['lastName'], user['email'], user['roleIds'])
+    if include_roles:
+        for source_role in user['roles']:
+            role_already_exists_in_dest = False
+            source_role_id = source_role['id']
+            for dest_role in dest_roles:
+                if dest_role['name'] == source_role['name']:
+                    role_already_exists_in_dest = True
+                    dest_role_id = dest_role['id']
+            if role_already_exists_in_dest:
+                user['roleIds'].append(dest_role_id)
+                user['roleIds'].remove(source_role_id)
+            else:
+                import_role(source_role, sumo)
+                updated_dest_roles = sumo.get_roles_sync()
+                for updated_dest_role in updated_dest_roles:
+                    if updated_dest_role['name'] == source_role['name']:
+                        user['roleIds'].append(updated_dest_role['id'])
+                user['roleIds'].remove(source_role_id)
+        result = sumo.create_user(user['firstName'], user['lastName'], user['email'], user['roleIds'])
+    else:
+        #  if the user is an admin or analyst find that ID in the list of roles from the destination org
+        #  and add it to the new role list
+        new_role_list = []
+        for source_role in user['roles']:
+            if source_role['name'] == 'Administrator':
+                for dest_role in dest_roles:
+                    if dest_role['name'] == 'Administrator':
+                        new_role_list.append(dest_role['id'])
+            if source_role['name'] == 'Analyst':
+                for dest_role in dest_roles:
+                    if dest_role['name'] == 'Analyst':
+                        new_role_list.append(dest_role['id'])
+        #  at this point hopefully we should have at least one new role for the user. If not make them
+        #  an analyst
+        if not(len(new_role_list) > 0):
+            for dest_role in dest_roles:
+                if dest_role['name'] == 'Analyst':
+                    new_role_list.append(dest_role['id'])
+        user['roleIds'] = new_role_list
+        result = sumo.create_user(user['firstName'], user['lastName'], user['email'], user['roleIds'])
+    return result
 
 
-def export_content(item_id, item_details, sumo, adminmode, export_connections=True, export_permissions=True):
+
+
+def export_role(role_id, sumo):
+    return sumo.get_role(str(role_id))
+
+
+def import_role(role, sumo):
+    role['users'] = []
+    return sumo.create_role(role)
+
+
+def export_content(item_id, sumo, adminmode):
 
     content = sumo.export_content_job_sync(item_id, adminmode=adminmode)
+    connection_ids = find_keys(content, 'webhookId')
+    content['connections'] = []
+    connections = sumo.get_connections_sync()
+    for connection_id in connection_ids:
+        # and iterate through list of all connections in the org
+        for connection in connections:
+            # if we find a match export the connection and attach it to the monitor JSON
+            if connection['id'] == connection_id:
+                connection_type = connection['type']
+                exported_connection = export_connection(connection_id, connection_type, sumo)
+                content['connections'].append(exported_connection)
+                break
+    return content
+
+
+def import_content(content, folder_id, sumo, adminmode, include_connections=False):
+    if include_connections:
+        connection_lookups = []
+        org_connection_list = sumo.get_connections_sync()
+        for content_connection in content['connections']:
+            connection_found = False
+            # iterate through the connections already in the org, if any of them match the name of the exported connection
+            # then take note of it's connectionId and which name it pairs with
+            while not connection_found:
+                for org_connection in org_connection_list:
+                    if content_connection['name'] == org_connection['name']:
+                        connection_lookups_entry = {'name': content_connection['name'],
+                                                    'old_id': content_connection['id'],
+                                                    'new_id': org_connection['id']}
+                        connection_lookups.append(connection_lookups_entry)
+                        connection_found = True
+                        break
+                if not connection_found:
+                    result = import_connection(content_connection, sumo)
+                    org_connection_list = sumo.get_connections_sync()
+
+        for connection_lookup in connection_lookups:
+            content = find_replace_specific_key_and_value(content, 'webhookId', connection_lookup['old_id'],
+                                                          connection_lookup['new_id'])
+
+        result = sumo.import_content_job_sync(folder_id, content, adminmode=adminmode)
+
+    else:
+        find_delete_keys(content, 'searchSchedule')
+        result = sumo.import_content_job_sync(folder_id, content, adminmode=adminmode)
+    return result
 
 
 

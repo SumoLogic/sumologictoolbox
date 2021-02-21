@@ -1,23 +1,10 @@
-__author__ = 'Tim MacDonald'
-__version__ = '0.9'
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
-# the License. You may obtain a copy of the License at:
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
-# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations under the License.
-
 import json
 import requests
 import urllib
 import time
 import os
+import sys
 import warnings
-import urllib.parse
-
-
 from logzero import logger
 import logzero
 try:
@@ -201,20 +188,20 @@ class SumoLogic(object):
     def post_file(self, method, params, headers=None):
         """
         Handle file uploads via a separate post request to avoid having to clear
-        the content-type header in the session.
+        the content-type header in the session.  
 
         Requests (or urllib3) does not set a boundary in the header if the content-type
-        is already set to multipart/form-data.  Urllib will create a boundary but it
+        is already set to multipart/form-data.  Urllib will create a boundary but it 
         won't be specified in the content-type header, producing invalid POST request.
 
-        Multi-threaded applications using self.session may experience issues if we
-        try to clear the content-type from the session.  Thus we don't re-use the
+        Multi-threaded applications using self.session may experience issues if we 
+        try to clear the content-type from the session.  Thus we don't re-use the 
         session for the upload, rather we create a new one off session.
         """
 
         post_params = {'merge': params['merge']}
-        file_data = open(params['full_file_path'], 'rb').read()
-        files = {'file': (params['file_name'], file_data)}
+        file_data = open(params['full_file_path'], 'rb').read()  
+        files = {'file': (params['file_name'], file_data)} 
         r = requests.post(self.endpoint + method, files=files, params=post_params,
                 auth=(self.session.auth[0], self.session.auth[1]), headers=headers)
         if 400 <= r.status_code < 600:
@@ -225,7 +212,7 @@ class SumoLogic(object):
     # Search API
 
     def search_job(self, query, fromTime=None, toTime=None, timeZone='UTC', byReceiptTime=False):
-        data = {'query': str(query), 'from': str(fromTime), 'to': str(toTime), 'timeZone': str(timeZone), 'byReceiptTime': str(byReceiptTime)}
+        data = {'query': str(query), 'from': str(fromTime), 'to': str(toTime), 'timeZone': str(timeZone), 'byReceiptTime': str(byReceiptTime).lower()}
         r = self.post('/v1/search/jobs', data)
         return r.json()
 
@@ -233,7 +220,7 @@ class SumoLogic(object):
         r = self.get('/v1/search/jobs/' + str(search_job['id']))
         return r.json()
 
-    def search_job_records_sync(self, query, fromTime=None, toTime=None, timeZone=None, byReceiptTime=None):
+    def search_job_records_sync(self, query, fromTime=None, toTime=None, timeZone=None, byReceiptTime=False):
         searchjob = self.search_job(query, fromTime=fromTime, toTime=toTime, timeZone=timeZone, byReceiptTime=byReceiptTime)
         status = self.search_job_status(searchjob)
         numrecords = status['recordCount']
@@ -255,7 +242,7 @@ class SumoLogic(object):
         else:
             return status
 
-    def search_job_messages_sync(self, query, fromTime=None, toTime=None, timeZone=None, byReceiptTime=None):
+    def search_job_messages_sync(self, query, fromTime=None, toTime=None, timeZone=None, byReceiptTime=False):
         searchjob = self.search_job(query, fromTime=fromTime, toTime=toTime, timeZone=timeZone, byReceiptTime=byReceiptTime)
         status = self.search_job_status(searchjob)
         nummessages = status['messageCount']
@@ -552,23 +539,22 @@ class SumoLogic(object):
         # Content API
 
         # for backward compatibility with old community API
-    def get_content(self, path, adminmode=False):
-        return self.get_content_by_path(path, adminmode=adminmode)
 
-    def get_content_by_path(self, item_path, adminmode=False):
+    def get_content(self, path):
+        return self.get_content_by_path(path)
+
+    def get_content_by_path(self, item_path):
         # item_path should start with /Library and use the user's email address if referencing a user home dir
         # firstname + :space: + lastname will not work here, even though that's how it's displayed in the UI
         # YES: "/Library/Users/user@demo.com/someItemOrFolder" could be a valid path
         # NO: "/Library/Users/Demo User/someItemOrFolder" is not a valid path because user first/last names are not
         # unique identifiers
-        headers = {'isAdminMode': str(adminmode).lower()}
-        params = {'path': item_path}
-        r= self.get('/v2/content', headers=headers, params=params)  #path should start with /Library or something else?
+        params = {'path': str(item_path)}
+        r = self.get('/v2/content/path', params=params)
         return r.json()
 
-    def get_item_path(self, item_id, adminmode=False):
-        headers = {'isAdminMode': str(adminmode).lower()}
-        r = self.get('/v2/content/' + str(item_id) + '/path', headers=headers)
+    def get_item_path(self, item_id):
+        r = self.get('/v2/content/' + str(item_id) + '/path')
         return r.json()
 
     def delete_content_job(self, item_id, adminmode=False):
@@ -595,6 +581,7 @@ class SumoLogic(object):
         return status
 
         # for backward compatibility with old community API
+
     def export_content(self, item_id, adminmode=False):
         return self.export_content_job(item_id, adminmode=adminmode)
 
@@ -605,6 +592,7 @@ class SumoLogic(object):
         return r.json()
 
         # for backward compatibility with old community API
+
     def check_export_status(self, item_id, job_id, adminmode=False):
         return self.get_export_content_job_status(item_id, job_id, adminmode=adminmode)
 
@@ -1095,10 +1083,10 @@ class SumoLogic(object):
     # Lookup table API
     def create_lookup_table(self, content):
         return self.post('/v1/lookupTables', params=content)
-
+    
     def get_lookup_table(self, id):
         return self.get('/v1/lookupTables/%s' % id)
-
+    
     def edit_lookup_table(self, id, content):
         return self.put('/v1/lookupTables/%s' % id, params=content)
 
@@ -1111,24 +1099,12 @@ class SumoLogic(object):
                 'merge': merge
                 }
         return self.post_file('/v1/lookupTables/%s/upload' % id, params)
-
+    
     def check_lookup_status(self, id):
         return self.get('/v1/lookupTables/jobs/%s/status' % id)
 
     def empty_lookup_table(self, id):
         return self.post('/v1/lookupTables/%s/truncate'% id, params=None)
-
+    
     def update_lookup_table(self, id, content):
         return self.put('/v1/lookupTables/%s/row' % id, params=content)
-
-    # Account Contract APIs
-    def get_account_contract(self):
-        r = self.get('/v1/account/contract')
-        return r.json()
-
-    def get_org_id(self):
-        r = self.get_account_contract()
-        return r['orgId']
-
-
-

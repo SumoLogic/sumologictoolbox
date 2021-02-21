@@ -9,7 +9,7 @@ import json
 import copy
 from logzero import logger
 from modules.sumologic import SumoLogic
-from modules.shared import ShowTextDialog, find_replace_specific_key_and_value, content_item_to_path
+from modules.shared import ShowTextDialog, export_content, import_content
 
 
 class findReplaceCopyDialog(QtWidgets.QDialog):
@@ -480,42 +480,38 @@ class content_tab(QtWidgets.QWidget):
             fromadminmode = True
         else:
             fromadminmode = False
+        from_sumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
+        to_sumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
         if len(selecteditemsfrom) > 0:  # make sure something was selected
             try:
-                exportsuccessful = False
-                fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
-                tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
-
+                export_successful = False
                 contents = []
                 for selecteditem in selecteditemsfrom:
-                            item_id = selecteditem.details['id']
-                            contents.append(fromsumo.export_content_job_sync(item_id, adminmode=fromadminmode))
-                            exportsuccessful = True
+                    item_id = selecteditem.details['id']
+                    contents.append(export_content(item_id, from_sumo, fromadminmode))
+                    export_successful = True
             except Exception as e:
                 logger.exception(e)
                 self.mainwindow.errorbox('Something went wrong with the Source:\n\n' + str(e))
                 return
-            if exportsuccessful:
-                categoriesfrom = []
+            if export_successful:
+                categories_from = []
                 for content in contents:
                     query_list = self.find_keys(content, 'queryText')
                     query_list = query_list + self.find_keys(content, 'query')
                     query_list = query_list + self.find_keys(content, 'queryString')
                     for query in query_list:
-                        categoriesfrom = categoriesfrom + re.findall(r'_sourceCategory\s*=\s*\\?\"?([^\s^"^)]*)\"?',
+                        categories_from = categories_from + re.findall(r'_sourceCategory\s*=\s*\\?\"?([^\s^"^)]*)\"?',
                                                                       query)
-                #    contentstring = json.dumps(content)
-                #    categoriesfrom = categoriesfrom + re.findall(r'\"_sourceCategory\s*=\s*\\?\"?([^\s\\|]*)',
-                #                                                 contentstring)
-                uniquecategoriesfrom = list(set(categoriesfrom))  # dedupe the list
+                uniquecategoriesfrom = list(set(categories_from))  # dedupe the list
                 try:
                     fromtime = str(QtCore.QDateTime.currentDateTime().addSecs(-3600).toString(QtCore.Qt.ISODate))
                     totime = str(QtCore.QDateTime.currentDateTime().toString(QtCore.Qt.ISODate))
 
                     # We query the destination org to get a sample of active source categories
                     query = r'* | count by _sourceCategory | fields _sourceCategory'
-                    searchresults = tosumo.search_job_records_sync(query, fromTime=fromtime, toTime=totime,
-                                                                   timeZone='UTC', byReceiptTime='false')
+                    searchresults = to_sumo.search_job_records_sync(query, fromTime=fromtime, toTime=totime,
+                                                                   timeZone='UTC', byReceiptTime=False)
                     categoriesto = []
                     for record in searchresults:
                         categoriesto.append(record['map']['_sourcecategory'])
@@ -545,9 +541,13 @@ class content_tab(QtWidgets.QWidget):
                         newcontents = contents
 
                     try:
-                        tofolderid = ContentListWidgetTo.currentcontent['id']
+                        to_folder_id = ContentListWidgetTo.currentcontent['id']
                         for newcontent in newcontents:
-                            status = tosumo.import_content_job_sync(tofolderid, newcontent, adminmode=toadminmode)
+                            status = import_content(newcontent,
+                                                    to_folder_id,
+                                                    to_sumo,
+                                                    toadminmode,
+                                                    include_connections=self.checkBoxIncludeConnects.isChecked())
 
                         self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected,
                                                todirectorylabel)
@@ -560,8 +560,6 @@ class content_tab(QtWidgets.QWidget):
                 else:
                     dialog.close()
                     return
-
-
 
         else:
             self.mainwindow.errorbox('You have not made any selections.')
@@ -585,35 +583,17 @@ class content_tab(QtWidgets.QWidget):
             if len(selecteditems) > 0:  # make sure something was selected
                 from_sumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
                 to_sumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
-                current_source_dir = ContentListWidgetFrom.currentdirlist[-1]
-                from_folder_id = ContentListWidgetFrom.currentcontent['id']
-
-                current_dest_dir = ContentListWidgetTo.currentdirlist[-1]
                 to_folder_id = ContentListWidgetTo.currentcontent['id']
-                
-                fromPaths = []
-
                 for selecteditem in selecteditems:
                     item_id = selecteditem.details['id']
-                    item_type = selecteditem.details['itemType']
+                    content = export_content(item_id, from_sumo, fromadminmode)
+                    status = import_content(content,
+                                            to_folder_id,
+                                            to_sumo,
+                                            toadminmode,
+                                            include_connections=self.checkBoxIncludeConnects.isChecked())
 
-                    if item_type == 'Folder':
-                        from_content_item = from_sumo.get_folder(item_id, adminmode=fromadminmode)
-                    else:
-                        from_content_item = selecteditem.details
-
-                    fromPaths.append(content_item_to_path(from_sumo, from_content_item, adminmode=fromadminmode))
-                    print(fromPaths)
-
-                    content = from_sumo.export_content_job_sync(item_id, adminmode=fromadminmode)
-                    content = self.update_content_webhookid(from_sumo, to_sumo, content)
-                    status = to_sumo.import_content_job_sync(to_folder_id, content, adminmode=toadminmode)
-
-                toFolder = to_sumo.get_folder(to_folder_id, adminmode=toadminmode)
-                toPaths = content_item_to_path(to_sumo, toFolder, adminmode=toadminmode)
-                print(toPaths)
-                #self.sync_copied_contents_permissions(from_sumo, to_sumo, from_folder_id, to_folder_id, fromPaths, toPaths, fromAdminMode=fromadminmode, toAdminMode=toadminmode)
-                #self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
+                self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
 
             else:
@@ -625,110 +605,6 @@ class content_tab(QtWidgets.QWidget):
             self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
         return
 
-    def get_source_to_dest_meta_ids(self, fromsumo, tosumo):
-        logger.info('[Content] Getting Source To Destination Meta IDs')
-        source_to_dest_ids = {}
-
-        fromUsers = fromsumo.get_users_sync()
-        toUsers = tosumo.get_users_sync()
-        fromRoles = fromsumo.get_roles_sync()
-        toRoles = tosumo.get_roles_sync()
-        source_org_id = fromsumo.get_org_id()
-        dest_org_id = tosumo.get_org_id()
-        source_user_id_to_email = {user['id']: user['email'] for user in fromUsers}
-        des_user_email_to_id = {user['email']: user['id'] for user in toUsers}
-
-        source_user_id_to_dest_user_id = {}
-        for userId, email in source_user_id_to_email.items():
-            if email in des_user_email_to_id.keys():
-                source_user_id_to_dest_user_id[userId] = des_user_email_to_id[email]
-            else:
-                #destUserId = CopyUsersAndAssignedRoles(userId, fromsumo, tosumo)['id']
-                #source_user_id_to_dest_user_id[userId] = destUserId
-                logger.info("Failed to find user with e-mail: {} on the destination and it was copied over along with any assigned roles".format(email))
-
-        source_role_id_to_name = {role['id']:role['name'] for role in fromRoles}
-        des_role_name_to_id = {role['name']:role['id'] for role in toRoles}
-
-        source_role_id_to_dest_role_id = {}
-        for roleId, roleName in source_role_id_to_name.items():
-            if roleName in des_role_name_to_id.keys():
-                source_role_id_to_dest_role_id[roleId] = des_role_name_to_id[roleName]
-            else:
-                missingRole = fromsumo.get_role(roleId)
-                destUsersAssignedTorle = [source_user_id_to_dest_user_id[sourceUserId] for sourceUserId in missingRole['users'] if sourceUserId in source_user_id_to_dest_user_id.keys()]
-                missingRole['users'] = destUsersAssignedTorle
-                tosumo.create_role(missingRole)
-                logger.info("Failed to find role with name: {} on the destination and it was copied over and assigned existing destination users to it".format(roleName))
-        
-        source_to_dest_ids = {'org': {source_org_id:dest_org_id}, 'user': source_user_id_to_dest_user_id, 'role': source_role_id_to_dest_role_id}
-        return source_to_dest_ids
-
-    def sync_copied_contents_permissions(self, fromsumo, tosumo, fromFolderId, toFolderId, fromPaths, toPaths, fromAdminMode=False, toAdminMode=False):
-        logger.info('Syncing Copied Contents Permissions')
-
-        fromBasePath = fromsumo.get_item_path(fromFolderId, adminmode=fromAdminMode)['path']
-        toBasePath = tosumo.get_item_path(toFolderId, adminmode=toAdminMode)['path']
-        source_to_dest_ids = self.get_source_to_dest_meta_ids(fromsumo, tosumo)
-
-        source_ids_to_paths = {}
-        for fromPerm in fromPaths:
-            fromId= fromPerm['id']
-            fromPath = fromPerm['path'] if fromPerm['path'] != '' else fromPerm['name']
-            fromPath = str(fromPath).replace(fromBasePath, '')
-            source_ids_to_paths[fromId] = fromPath
-
-        dest_paths_to_ids = {}
-        for destPerm in toPaths:
-            toPath = destPerm['path'] if destPerm['path'] else destPerm['name']
-            toPath = str(toPath).replace(toBasePath, '')
-            dest_paths_to_ids[toPath] = destPerm['id']
-
-        destPermissions = {}
-        requestResults = {}
-        for sourceContentId, sourceContentPath in source_ids_to_paths.items():
-            if sourceContentPath in dest_paths_to_ids.keys():
-                destContentId = dest_paths_to_ids[sourceContentPath]
-                sourcePermissions = fromsumo.get_permissions(sourceContentId, explicit_only=True,adminmode=fromAdminMode)['explicitPermissions']
-
-                currentDestPermissions = []
-                for permission in sourcePermissions:
-                    currentDestPermission = copy.deepcopy(permission)
-                    currentSourceType = permission['sourceType']
-                    currentSourceId = permission['sourceId']
-                    currentDestPermission['sourceId'] = source_to_dest_ids[currentSourceType][currentSourceId]
-                    currentDestPermission['contentId'] = destContentId
-                    currentDestPermissions.append(currentDestPermission)
-
-                permissionsBody = {'contentPermissionAssignments':[], 'notifyRecipients':False, 'notificationMessage':''}
-                permissionsBody['contentPermissionAssignments'] = currentDestPermissions
-                requestResult = tosumo.add_permissions(destContentId, permissionsBody, adminmode=toAdminMode)
-                requestResults[sourceContentPath] = requestResult
-            else:
-                logger.warn("Failed to import content {} from {} to {}, Source content id:{}".format(sourceContentPath,fromBasePath, toBasePath, sourceContentId))
-        
-        return requestResults
-
-    def update_content_webhookid(self, fromsumo, tosumo, content):
-        source_connections = fromsumo.get_connections_sync()
-        dest_connections = tosumo.get_connections_sync()
-
-        source_connections_dict = {connection['id']: connection['name'] for connection in source_connections}
-        print(source_connections)
-        dest_connections_dict = {connection['name']: connection['id'] for connection in dest_connections}
-        source_to_dest_dict = {id: dest_connections_dict[name] for id, name in source_connections_dict.items() if name in dest_connections_dict}
-
-        for source_connection_id in source_connections_dict.keys():
-            if source_connection_id not in source_to_dest_dict:
-                source_connection = fromsumo.get_connection(source_connection_id, 'WebhookConnection')
-                source_connection['type'] = str(source_connection['type']).replace('Connection', 'Definition')
-                dest_connection = tosumo.create_connection(source_connection)
-                dest_webhookId = dest_connection['id']
-                source_to_dest_dict[source_connection_id] = dest_webhookId
-        
-        for source_connection_id, dest_connection_id in source_to_dest_dict.items():
-            content = find_replace_specific_key_and_value(content,'webhookId',source_connection_id, dest_connection_id)
-        return content        
 
     def create_folder(self, ContentListWidget, url, id, key, radioselected, directorylabel):
         if ContentListWidget.updated == True:
@@ -1003,7 +879,7 @@ If you are absolutely sure, type "DELETE" in the box below.
                 for selecteditem in selecteditems:
                     item_id = selecteditem.details['id']
                     try:
-                        content = sumo.export_content_job_sync(item_id, adminmode=adminmode)
+                        content = export_content(item_id, sumo, adminmode)
                         savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.sumocontent.json')
                         if savefilepath:
                             with savefilepath.open(mode='w') as filepointer:
@@ -1034,8 +910,6 @@ If you are absolutely sure, type "DELETE" in the box below.
                         try:
                             with open(file) as filepointer:
                                 content = json.load(filepointer)
-
-
                         except Exception as e:
                             logger.exception(e)
                             self.mainwindow.errorbox(
@@ -1047,7 +921,11 @@ If you are absolutely sure, type "DELETE" in the box below.
                                 adminmode = True
                             else:
                                 adminmode = False
-                            sumo.import_content_job_sync(folder_id, content, adminmode=adminmode)
+                            status = import_content(content,
+                                                    folder_id,
+                                                    sumo,
+                                                    adminmode,
+                                                    include_connections=self.checkBoxIncludeConnects.isChecked())
                         except Exception as e:
                             logger.exception(e)
                             self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))

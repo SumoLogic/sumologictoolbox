@@ -9,7 +9,7 @@ from qtpy import QtGui, QtWidgets, uic
 
 from modules.shared import ShowTextDialog
 from modules.sumologic import SumoLogic
-from modules.shared import import_monitors_with_connections, export_monitor_and_connections, import_monitors_without_connections
+from modules.shared import import_monitors, export_monitor, import_connection, export_connection
 
 class monitors_and_connections_tab(QtWidgets.QWidget):
 
@@ -508,17 +508,12 @@ class monitors_and_connections_tab(QtWidgets.QWidget):
                     for object in MonitorListWidgetFrom.currentcontent['children']:
                         if object['name'] == str(selecteditem.text()):
                             item_id = object['id']
-                    monitor = export_monitor_and_connections(item_id, fromsumo)
-                    for index, connection in enumerate(monitor['connections']):
-                        monitor['connections'][index]['type'] = str(connection['type']).replace('Connection',
-                                                                                               'Definition')
+                    monitor = export_monitor(item_id, fromsumo)
                     parent_id = MonitorListWidgetTo.currentcontent['id']
-                    if self.checkBoxCopyRestoreConnections.isChecked():
-                        import_monitors_with_connections(parent_id, monitor, tosumo)
-                    else:
-                        import_monitors_without_connections(parent_id, monitor, tosumo)
-
-                            
+                    import_monitors(parent_id,
+                                    monitor,
+                                    tosumo,
+                                    include_connection=self.checkBoxCopyRestoreConnections.isChecked())
                 self.update_monitors_list(MonitorListWidgetTo, tourl, toid, tokey, directory_label)
                 self.update_connection_list(ConnectionListWidgetTo, tourl, toid, tokey)
                 return
@@ -547,10 +542,7 @@ class monitors_and_connections_tab(QtWidgets.QWidget):
                         if object['name'] == str(selecteditem.text()):
                             item_id = object['id']
                             try:
-                                export = export_monitor_and_connections(item_id, sumo)
-                                for index, connection in enumerate(export['connections']):
-                                    export['connections'][index]['type'] = str(connection['type']).replace('Connection', 'Definition')
-
+                                export = export_monitor(item_id, sumo)
                                 savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.monitor.json')
                                 if savefilepath:
                                     with savefilepath.open(mode='w') as filepointer:
@@ -573,12 +565,10 @@ class monitors_and_connections_tab(QtWidgets.QWidget):
     def restore_monitor(self, MonitorListWidget, ConnectionListWidget, url, id, key, directory_label):
         logger.info("[Monitors and Connections]Restoring Monitor(s)")
         if MonitorListWidget.updated == True:
-
             filter = "JSON (*.json)"
             filelist, status = QtWidgets.QFileDialog.getOpenFileNames(self, "Open file(s)...", os.getcwd(),
                                                                       filter)
             if len(filelist) > 0:
-
                 for file in filelist:
                     try:
                         with open(file) as filepointer:
@@ -591,13 +581,10 @@ class monitors_and_connections_tab(QtWidgets.QWidget):
                     try:
                         sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
                         parent_id = MonitorListWidget.currentcontent['id']
-                        if self.checkBoxCopyRestoreConnections.isChecked():
-                            import_monitors_with_connections(parent_id ,monitor, sumo)
-                        else:
-                            import_monitors_without_connections(parent_id, monitor, sumo)
-
-
-
+                        import_monitors(parent_id,
+                                        monitor,
+                                        sumo,
+                                        include_connection=self.checkBoxCopyRestoreConnections.isChecked())
                     except Exception as e:
                         logger.exception(e)
                         self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
@@ -691,16 +678,15 @@ class monitors_and_connections_tab(QtWidgets.QWidget):
         try:
             selecteditems = ConnectionListWidgetFrom.selectedItems()
             if len(selecteditems) > 0:  # make sure something was selected
-                fromsumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
-                tosumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
+                from_sumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
+                to_sumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
                 for selecteditem in selecteditems:
                     for object in ConnectionListWidgetFrom.currentcontent:
                         if object['name'] == str(selecteditem.text()):
                             connection_id = object['id']
                             connection_type = object['type']
-                            connection = fromsumo.get_connection(connection_id, connection_type)
-                            connection['type'] = str(connection['type']).replace('Connection', 'Definition')
-                            status = tosumo.create_connection(connection)
+                            connection = export_connection(connection_id, connection_type, from_sumo)
+                            status = import_connection(connection, to_sumo)
                 self.update_connection_list(ConnectionListWidgetTo, tourl, toid, tokey)
                 return
 
@@ -728,9 +714,7 @@ class monitors_and_connections_tab(QtWidgets.QWidget):
                             item_id = object['id']
                             item_type = object['type']
                             try:
-                                export = sumo.get_connection(item_id, item_type)
-                                export['type'] = str(export['type']).replace('Connection', 'Definition')
-
+                                export = export_connection(item_id, item_type, sumo)
                                 savefilepath = pathlib.Path(savepath + r'/' + str(selecteditem.text()) + r'.connection.json')
                                 if savefilepath:
                                     with savefilepath.open(mode='w') as filepointer:
@@ -774,7 +758,7 @@ class monitors_and_connections_tab(QtWidgets.QWidget):
         return
 
     def restore_connection(self, ConnectionListWidget, url, id, key):
-        logger.info("[Users and Roles]Restoring Role(s)")
+        logger.info("[Monitors and Connections]Restoring Connection(s)")
         if ConnectionListWidget.updated == True:
 
             filter = "JSON (*.json)"
@@ -792,7 +776,7 @@ class monitors_and_connections_tab(QtWidgets.QWidget):
                             "Something went wrong reading the file. Do you have the right file permissions? Does it contain valid JSON?")
                         return
                     try:
-                        status = sumo.create_connection(connection_backup)
+                        status = import_connection(connection_backup, sumo)
 
                     except Exception as e:
                         logger.exception(e)
