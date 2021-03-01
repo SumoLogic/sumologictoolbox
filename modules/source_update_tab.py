@@ -1,14 +1,14 @@
-class_name = 'source_update_tab'
-
 from qtpy import QtCore, QtGui, QtWidgets, uic
 import os
-import sys
 import copy
-import re
+import sys
 import pathlib
 import json
 from logzero import logger
 from modules.sumologic import SumoLogic
+from modules.multithreading import Worker, ProgressDialog
+
+class_name = 'source_update_tab'
 
 
 class AddProcessingRuleDialog(QtWidgets.QDialog):
@@ -159,12 +159,10 @@ class source_update_tab(QtWidgets.QWidget):
         self.reset_stateful_objects()
         self.font = "Waree"
         self.font_size = 12
-
         self.pushButtonRefresh.clicked.connect(lambda: self.update_source_list(
-            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
             str(self.mainwindow.lineEditUserNameLeft.text()),
-            str(self.mainwindow.lineEditPasswordLeft.text())
-        ))
+            str(self.mainwindow.lineEditPasswordLeft.text()),
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())]))
 
         self.pushButtonAddTargets.clicked.connect(self.add_targets)
         self.pushButtonRemoveTargets.clicked.connect(self.remove_targets)
@@ -180,16 +178,14 @@ class source_update_tab(QtWidgets.QWidget):
         self.radioButtonAbsolute.toggled.connect(self.radio_button_toggled)
 
         self.pushButtonApplyChanges.clicked.connect(lambda: self.apply_updates(
-            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
             str(self.mainwindow.lineEditUserNameLeft.text()),
-            str(self.mainwindow.lineEditPasswordLeft.text())
-        ))
+            str(self.mainwindow.lineEditPasswordLeft.text()),
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())]))
 
         self.pushButtonUndoChanges.clicked.connect(lambda: self.undo_updates(
-            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())],
             str(self.mainwindow.lineEditUserNameLeft.text()),
-            str(self.mainwindow.lineEditPasswordLeft.text())
-        ))
+            str(self.mainwindow.lineEditPasswordLeft.text()),
+            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())]))
 
         # Setup the search bars to work and to clear when update button is pushed
         self.lineEditSearchAvailableSources.textChanged.connect(lambda: self.set_listwidget_filter(
@@ -255,85 +251,103 @@ class source_update_tab(QtWidgets.QWidget):
             else:
                 item.setHidden(False)
 
-    def getcollectorid(self, collectorname, url, id, key):
-        logger.info("[Source Update] Getting Collector IDs")
+    def get_sources(self, collector_name, collector_id, id, key, url):
         sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
+        source_dict = {}
         try:
-            sumocollectors = sumo.get_collectors_sync()
-
-            for sumocollector in sumocollectors:
-                if sumocollector['name'] == collectorname:
-                    return sumocollector['id']
+            sources = sumo.get_sources_sync(collector_id)
+            for source in sources:
+                # create a dict to lookup source ID by display name
+                if 'name' in source:
+                    itemname = '[' + collector_name + "]" + " " + source['name']
+                elif 'name' in source['config']:
+                    itemname = '[' + collector_name + "]" + " " + source['config']['name']
+                source_dict[itemname] = [{'collector_id': collector_id, 'source_id': source['id']}]
+                # create a list of sources with the same source category
+                if 'category' in source:
+                    itemname = '[_sourceCategory=' + source['category'] + ']'
+                    if itemname in source_dict:
+                        source_dict[itemname].append({'collector_id': collector_id, 'source_id': source['id']})
+                    else:
+                        source_dict[itemname] = [{'collector_id': collector_id, 'source_id': source['id']}]
+                # Create a list of sources with the same field=value
+                if 'fields' in source and source['fields']:
+                    for key, value in source['fields'].items():
+                        entry = "[" + str(key) + '=' + str(value) + "]"
+                        if entry in source_dict:
+                            source_dict[entry].append({'collector_id': collector_id, 'source_id': source['id']})
+                        else:
+                            source_dict[entry] = [{'collector_id': collector_id, 'source_id': source['id']}]
+                elif 'config' in source and source['config']['fields']:
+                    for key, value in source['config']['fields'].items():
+                        entry = "[" + str(key) + '=' + str(value) + "]"
+                        if entry in source_dict:
+                            source_dict[entry].append({'collector_id': collector_id, 'source_id': source['id']})
+                        else:
+                            source_dict[entry] = [{'collector_id': collector_id, 'source_id': source['id']}]
+                
+            return {'collector': collector_name,
+                    'sources': sources,
+                    'source_dict': source_dict,
+                    'num_messages': None,
+                    'status': 'SUCCESS',
+                    'line_number': None,
+                    'exception': None}
+        
         except Exception as e:
-            logger.exception(e)
-        return
+            _, _, tb = sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'collector': collector_name,
+                    'sources': sources,
+                    'source_dict': source_dict,
+                    'num_messages': None,
+                    'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)}
 
-    def getsourceid(self, collectorid, sourcename, url, id, key):
-        logger.info("[Source Update] Getting Source IDs")
-        sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
-        try:
-            sumosources = sumo.sources(collectorid)
+    def merge_source_results(self, result):
 
-            for sumosource in sumosources:
-                if sumosource['name'] == sourcename:
-                    return sumosource['id']
-            return False
-        except Exception as e:
-            logger.exception(e)
-        return
+        if result['status'] == 'FAIL':
+            self.mainwindow.threadpool.clear()
+            logger.info(result['exception'])
+            self.mainwindow.errorbox('Something went wrong:\n\n' + result['exception'])
+            return None
+        collector = next(c for c in self.collectors if c['name'] == result['collector'])
+        collector['sources'] = result['sources']
+        self.sources = {**self.sources, **result['source_dict']}
+        logger.debug(json.dumps(result))
+        self.update_source_list_widget()
 
-    def update_source_list(self, url, id, key):
+    def update_source_list(self, id, key, url):
         logger.info("[Source Update] Updating Source List (this could take a while.)")
         self.listWidgetSources.clear()
         self.sources = {}
         sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
 
         try:
-            collectors = sumo.get_collectors_sync()
-            for index, collector in enumerate(collectors):
-                sources = sumo.get_sources_sync(collector['id'])
-                for source in sources:
-                    #create a dict to lookup source ID by display name
-                    if 'name' in source:
+            self.collectors = sumo.get_collectors_sync()
+            num_collectors = len(self.collectors)
+            self.progress = ProgressDialog('Getting all sources...', 0, num_collectors, self.mainwindow.threadpool, self.mainwindow)
+            self.workers = []
 
-                        itemname = '[' + collector['name'] + "]" + " " + source['name']
-                    elif 'name' in source['config']:
-                        itemname = '[' + collector['name'] + "]" + " " + source['config']['name']
-                    self.sources[itemname] = [{'collector_id': collector['id'], 'source_id': source['id']}]
-                    #create a list of sources with the same source category
-                    if 'category' in source:
-                        itemname = '[_sourceCategory=' + source['category'] + ']'
-                        if itemname in self.sources:
-                            self.sources[itemname].append({'collector_id': collector['id'], 'source_id': source['id']})
-                        else:
-                            self.sources[itemname] = [{'collector_id': collector['id'], 'source_id': source['id']}]
-                    #Create a list of sources with the same field=value
-                    if 'fields' in source and source['fields']:
-                        for key, value in source['fields'].items():
-                            entry = "[" + str(key) + '=' + str(value) + "]"
-                            if entry in self.sources:
-                                self.sources[entry].append({'collector_id': collector['id'], 'source_id': source['id']})
-                            else:
-                                self.sources[entry] = [{'collector_id': collector['id'], 'source_id': source['id']}]
-                    elif 'config' in source and source['config']['fields']:
-                        for key, value in source['config']['fields'].items():
-                            entry = "[" + str(key) + '=' + str(value) + "]"
-                            if entry in self.sources:
-                                self.sources[entry].append({'collector_id': collector['id'], 'source_id': source['id']})
-                            else:
-                                self.sources[entry] = [{'collector_id': collector['id'], 'source_id': source['id']}]
-
-                collectors[index]['sources'] = sources
-
-            self.collectors = collectors
-            self.update_source_list_widget()
+            for index, collector in enumerate(self.collectors):
+                logger.debug(f'Creating get_sources thread for collector {collector["name"]}')
+                self.workers.append(Worker(self.get_sources,
+                                      collector['name'],
+                                      collector['id'],
+                                      id,
+                                      key,
+                                      url))
+                self.workers[index].signals.finished.connect(self.progress.increment)
+                self.workers[index].signals.result.connect(self.merge_source_results)
+                self.mainwindow.threadpool.start(self.workers[index])
 
         except Exception as e:
             logger.exception(e)
             self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
 
     def update_source_list_widget(self):
-        logger.info("[Source Update] Updating Source List Widget.")
+        logger.debug("[Source Update] Updating Source List Widget.")
         self.listWidgetSources.clear()
         for sourcename in self.sources:
             item = QtWidgets.QListWidgetItem(sourcename)
@@ -444,15 +458,80 @@ class source_update_tab(QtWidgets.QWidget):
                         if self.addrules[i]['name'] == item.text():
                             del self.addrules[i]
 
-
     def clear_all_updates(self):
         logger.info("[Source Update] Clearing all updates from update list.")
         self.listWidgetUpdates.clear()
         self.addrules = []
         self.removerules = []
         self.new_source_category = None
+    
+    def apply_update(self, collector_id, source_id, overwrite_rules, id, key, url):
+        sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
+        try:
+            etag, current_source = sumo.get_source_with_etag(collector_id,
+                                                             source_id)
+            self.undolist.append({'collector_id': collector_id,
+                                  'source_id': source_id,
+                                  'source': copy.deepcopy(current_source)})
+            if overwrite_rules:
+                if 'filters' in current_source['source']:
+                    current_source['source']['filters'] = []
+                elif 'config' in current_source['source']:
+                    current_source['source']['config']['filters'] = []
+                else:
+                    assert 'Source JSON does not match known schema'
+            for removerule in self.removerules:
+                if 'filters' in current_source['source']:
+                    for index, filter in enumerate(current_source['source']['filters']):
+                        if filter['name'] == removerule:
+                            current_source['source']['filters'].pop(index)
+                            break
 
-    def apply_updates(self, url, id, key):
+            for addrule in self.addrules:
+                # C2C sources do not currently support filters as of 1/5/2021
+                # Revisit this when filter support is added for filters in the future
+                if 'filters' in current_source['source']:
+                    current_source['source']['filters'].append(addrule)
+
+            if self.new_source_category:
+                if 'name' in current_source['source']:
+                    current_source['source']['category'] = self.new_source_category
+                elif 'name' in current_source['source']['config']:
+                    current_source['source']['config']['category'] = self.new_source_category
+            sumo.update_source(collector_id, current_source, etag)
+            return {'status': 'SUCCESS',
+                    'line_number': None,
+                    'exception': None,
+                    'id': id,
+                    'key': key,
+                    'url': url
+                    }
+        except Exception as e:
+            _, _, tb = sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e),
+                    'id': id,
+                    'key': key,
+                    'url': url}
+            
+    def merge_updates(self, result):
+        if result['status'] == 'SUCCESS':
+            self.num_successful_updates += 1
+        else:
+            self.mainwindow.threadpool.clear()
+            logger.info(result['exception'])
+            self.mainwindow.errorbox('Something went wrong, rolling back changes:\n\n' + result['exception'])
+            self.undo_updates(result['id'], result['key'], result['url'])
+        if self.num_successful_updates == self.num_source_updates:
+            self.mainwindow.infobox('Your update completed successfully.')
+            self.pushButtonUndoChanges.setEnabled(True)
+            self.listWidgetTargets.clear()
+            self.update_source_list(result['id'], result['key'], result['url'])
+
+
+    def apply_updates(self, id, key, url):
         logger.info("[Source Update] Applying updates from update list.")
         overwrite_rules = False
         if self.radioButtonRelative.isChecked():
@@ -471,49 +550,27 @@ class source_update_tab(QtWidgets.QWidget):
                 if result:
                     self.undolist = []
                     try:
-                        sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
-                        for target_source_id in target_source_ids:
-                            etag, current_source = sumo.get_source_with_etag(target_source_id['collector_id'], target_source_id['source_id'])
-                            self.undolist.append({'collector_id': target_source_id['collector_id'],
-                                                  'source_id': target_source_id['source_id'],
-                                                  'source': copy.deepcopy(current_source)})
-                            if overwrite_rules:
-                                if 'filters' in current_source['source']:
-                                    current_source['source']['filters'] = []
-                                elif 'config' in current_source['source']:
-                                    current_source['source']['config']['filters'] = []
-                                else:
-                                    assert 'Source JSON does not match known schema'
-                            for removerule in self.removerules:
-                                if 'filters' in current_source['source']:
-                                    for index, filter in enumerate(current_source['source']['filters']):
-                                        if filter['name'] == removerule:
-                                            current_source['source']['filters'].pop(index)
-                                            break
+                        self.num_successful_updates = 0
+                        self.num_source_updates = len(target_source_ids)
 
-                            for addrule in self.addrules:
-                                # C2C sources do not currently support filters as of 1/5/2021
-                                # Revisit this when filter support is added for filters in the future
-                                if 'filters' in current_source['source']:
-                                    current_source['source']['filters'].append(addrule)
-
-                            if self.new_source_category:
-                                if 'name' in current_source['source']:
-                                    current_source['source']['category'] = self.new_source_category
-                                elif 'name' in current_source['source']['config']:
-                                    current_source['source']['config']['category'] = self.new_source_category
-                            sumo.update_source(target_source_id['collector_id'], current_source, etag)
-                        self.mainwindow.infobox('Your update completed successfully.')
-                        self.pushButtonUndoChanges.setEnabled(True)
-                        self.listWidgetTargets.clear()
-                        self.update_source_list(url, id, key)
-
+                        self.progress = ProgressDialog('Applying updates...', 0, self.num_source_updates, self.mainwindow.threadpool,
+                                                       self.mainwindow)
+                        self.workers = []
+                        for index, target_source_id in enumerate(target_source_ids):
+                            logger.debug(f'Creating apply_update thread for source {target_source_id}')
+                            self.workers.append(Worker(self.apply_update,
+                                                       target_source_id['collector_id'],
+                                                       target_source_id['source_id'],
+                                                       overwrite_rules,
+                                                       id,
+                                                       key,
+                                                       url))
+                            self.workers[index].signals.finished.connect(self.progress.increment)
+                            self.workers[index].signals.result.connect(self.merge_updates)
+                            self.mainwindow.threadpool.start(self.workers[index])
 
                     except Exception as e:
                         logger.exception(e)
-                        self.mainwindow.errorbox('Something went wrong, rolling back changes:\n\n' + str(e))
-                        self.undo_updates(url, id, key)
-
 
             else:
                 self.mainwindow.errorbox('No updates defined. Please add at least one update to apply.')
@@ -522,24 +579,67 @@ class source_update_tab(QtWidgets.QWidget):
             self.mainwindow.errorbox('Target list is empty. Please select at least one target to update.')
             return
 
-    def undo_updates(self, url, id, key):
-        logger.info("[Source Update] Undoing updates.")
-        try:
-            sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
-            for undo in self.undolist:
+    def undo_update(self, undo, id, key, url):
+            try:
+                sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
                 etag, current_source = sumo.get_source_with_etag(undo['collector_id'],
                                                                  undo['source_id'])
                 current_source = undo['source']
                 # current_source['source']['filters'] = undo['source']['source']['filters']
                 sumo.update_source(undo['collector_id'], current_source, etag)
+                return {'status': 'SUCCESS',
+                        'line_number': None,
+                        'exception': None,
+                        'id': id,
+                        'key': key,
+                        'url': url
+                        }
+            except Exception as e:
+                _, _, tb = sys.exc_info()
+                lineno = tb.tb_lineno
+                return {'status': 'FAIL',
+                        'line_number': lineno,
+                        'exception': str(e),
+                        'id': id,
+                        'key': key,
+                        'url': url}
+
+    def merge_undos(self, result):
+        if result['status'] == 'SUCCESS':
+            self.num_successful_undos += 1
+        else:
+            self.mainwindow.threadpool.clear()
+            logger.info(result['exception'])
+            self.mainwindow.errorbox('Something went wrong:\n\n' + result['exception'])
+        if self.num_successful_undos == self.num_undos:
+            self.mainwindow.infobox('Your undo completed successfully.')
             self.pushButtonUndoChanges.setEnabled(False)
-            self.mainwindow.infobox('Undo was successful.')
-            self.update_source_list(url, id, key)
+            self.listWidgetTargets.clear()
+            self.update_source_list(result['id'], result['key'], result['url'])
+
+    def undo_updates(self, id, key, url):
+        logger.info("[Source Update] Undoing updates.")
+        try:
+            self.num_undos = len(self.undolist)
+            self.num_successful_undos = 0
+            self.progress = ProgressDialog('Undoing updates...', 0, self.num_undos, self.mainwindow.threadpool,
+                                           self.mainwindow)
+            self.workers = []
+            for index, undo in enumerate(self.undolist):
+                logger.debug(f'Creating undo thread for source {undo}')
+                self.workers.append(Worker(self.undo_update,
+                                           undo,
+                                           id,
+                                           key,
+                                           url))
+                self.workers[index].signals.finished.connect(self.progress.increment)
+                self.workers[index].signals.result.connect(self.merge_undos)
+                self.mainwindow.threadpool.start(self.workers[index])
 
         except Exception as e:
             logger.exception(e)
             self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
-            self.update_source_list(url, id, key)
+            self.update_source_list(id, key, url)
 
     def get_item_names_from_listWidget(self, listWidget):
         item_name_list = []

@@ -1,5 +1,3 @@
-class_name = 'content_tab'
-
 from qtpy import QtCore, QtGui, QtWidgets, uic
 import os
 import sys
@@ -10,6 +8,10 @@ import copy
 from logzero import logger
 from modules.sumologic import SumoLogic
 from modules.shared import ShowTextDialog, export_content, import_content
+from modules.multithreading import Worker, ProgressDialog
+
+
+class_name = 'content_tab'
 
 
 class findReplaceCopyDialog(QtWidgets.QDialog):

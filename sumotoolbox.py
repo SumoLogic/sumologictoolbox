@@ -235,6 +235,10 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         # Configure the creddb buttons according to the config file settings
         self.set_creddbbuttons()
 
+        # Setup a threadpool for multithreading
+        self.threadpool = QtCore.QThreadPool()
+        self.threadpool.setMaxThreadCount(10)  # <--- Sumo API concurrency is 10
+
         # load additional Tabs from available modules
         self.tabs = []
         # find all of the tab modules and import them
