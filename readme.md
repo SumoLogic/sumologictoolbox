@@ -15,6 +15,15 @@ section of this page.
 
 https://github.com/SumoLogic/sumologictoolbox/releases
 
+Note: Be aware that these binaries may trigger false positives in your AV tool. This is due to the use of "pyinstaller" 
+to package and "freeze" this python code. Pyinstaller is a legitimate tool however it has been used by bad actors in 
+the past to package malware. As a result the pyinstaller bootloader code has become associated with malware by many AV and
+endpoint protection tools. The end result is that sumotoolbox binaries may trigger false positives for malware. 
+
+For a more comprehensive discussion of this topic the following article may be of interest:
+
+https://stevepython.wordpress.com/2019/01/22/do-avs-treat-python-as-a-virus/
+
 Updating the Binaries
 =====================
 
