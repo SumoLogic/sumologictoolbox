@@ -568,6 +568,61 @@ class content_tab(QtWidgets.QWidget):
             return
         return
 
+    def copy_object(self,
+                    item_id,
+                    to_folder_id,
+                    from_creds,
+                    to_creds,
+                    fromadminmode,
+                    toadminmode,
+                    contentlistwidgetto,
+                    toradioselected,
+                    todirectorylabel):
+        (fromid, fromkey, fromurl) = from_creds
+        (toid, tokey, tourl) = to_creds
+        try:
+            from_sumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
+            to_sumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
+            content = export_content(item_id, from_sumo, fromadminmode)
+            status = import_content(content,
+                                    to_folder_id,
+                                    to_sumo,
+                                    toadminmode,
+                                    include_connections=self.checkBoxIncludeConnects.isChecked())
+            return {'status': 'SUCCESS',
+                    'line_number': None,
+                    'exception': None,
+                    'id': toid,
+                    'key': tokey,
+                    'url': tourl,
+                    'contentlistwidgetto': contentlistwidgetto,
+                    'toradioselected': toradioselected,
+                    'todirectorylabel': todirectorylabel
+                    }
+        except Exception as e:
+            _, _, tb = sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e),
+                    }
+
+    def merge_copy_results(self, result):
+        if result['status'] == 'SUCCESS':
+            self.num_successful_copies += 1
+        else:
+            self.mainwindow.threadpool.clear()
+            logger.info(f"ERROR: {result['exception']} on line: {result['line_number']}")
+            self.mainwindow.errorbox('Something went wrong:\n\n' + result['exception'])
+        if self.num_successful_copies == self.num_selected_items:
+            self.mainwindow.infobox('Your copy completed successfully.')
+            self.updatecontentlist(result['contentlistwidgetto'],
+                                   result['url'],
+                                   result['id'],
+                                   result['key'],
+                                   result['toradioselected'],
+                                   result['todirectorylabel'])
+
     def copycontent(self, ContentListWidgetFrom, ContentListWidgetTo, fromurl, fromid, fromkey, tourl, toid, tokey,
                     fromradioselected, toradioselected, todirectorylabel):
         logger.info("[Content] Copying Content")
@@ -580,22 +635,34 @@ class content_tab(QtWidgets.QWidget):
         else:
             fromadminmode = False
 
+        from_creds = (fromid, fromkey, fromurl)
+        to_creds = (toid, tokey, tourl)
         try:
             selecteditems = ContentListWidgetFrom.selectedItems()
-            if len(selecteditems) > 0:  # make sure something was selected
-                from_sumo = SumoLogic(fromid, fromkey, endpoint=fromurl, log_level=self.mainwindow.log_level)
-                to_sumo = SumoLogic(toid, tokey, endpoint=tourl, log_level=self.mainwindow.log_level)
+            self.num_selected_items = len(selecteditems)
+            self.num_successful_copies = 0
+            if self.num_selected_items > 0:  # make sure something was selected
+                self.progress = ProgressDialog('Copying objects...', 0, self.num_selected_items, self.mainwindow.threadpool,
+                                               self.mainwindow)
+                self.workers = []
                 to_folder_id = ContentListWidgetTo.currentcontent['id']
-                for selecteditem in selecteditems:
+                for index, selecteditem in enumerate(selecteditems):
                     item_id = selecteditem.details['id']
-                    content = export_content(item_id, from_sumo, fromadminmode)
-                    status = import_content(content,
-                                            to_folder_id,
-                                            to_sumo,
-                                            toadminmode,
-                                            include_connections=self.checkBoxIncludeConnects.isChecked())
+                    logger.debug(f"Creating copy thread for item {selecteditem.details['name']}")
+                    self.workers.append(Worker(self.copy_object,
+                                               item_id,
+                                               to_folder_id,
+                                               from_creds,
+                                               to_creds,
+                                               fromadminmode,
+                                               toadminmode,
+                                               ContentListWidgetTo,
+                                               toradioselected,
+                                               todirectorylabel))
+                    self.workers[index].signals.finished.connect(self.progress.increment)
+                    self.workers[index].signals.result.connect(self.merge_copy_results)
+                    self.mainwindow.threadpool.start(self.workers[index])
 
-                self.updatecontentlist(ContentListWidgetTo, tourl, toid, tokey, toradioselected, todirectorylabel)
                 return
 
             else:

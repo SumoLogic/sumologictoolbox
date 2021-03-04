@@ -5,7 +5,8 @@ Sumotoolbox
  it easier to perform common API tasks such as copying sources and generating CSV files from
  searches.
 
-This version contains critical updates to the 'collectors' and 'source updates' tab. It is highly recommended that you upgrade to this version or later (0.9.1)
+This version contains critical updates to the 'collectors' and 'source updates' tab. It is highly recommended that you
+upgrade to this version or later (0.9.1)
 
 Recommended Method of Getting and Running Sumotoolbox, download the binaries
 ============================================================================
@@ -14,6 +15,13 @@ The easiest way to download and use this tool is to download the latest binary r
 section of this page. 
 
 https://github.com/SumoLogic/sumologictoolbox/releases
+
+Be aware that you these binaries may trigger false positives in your AV tool. This is due to the use of "pyinstaller" 
+to package and "freeze" this python code. Pyinstaller is a legitimate tool however it has been used by bad actors in 
+the past to package malware.As a result the pyinstaller bootloader code has become associated with malware by many AV and
+endpoint protection tools. For a more comprehensive discussion of this topic the following article may be of interest:
+
+https://stevepython.wordpress.com/2019/01/22/do-avs-treat-python-as-a-virus/
 
 Updating the Binaries
 =====================

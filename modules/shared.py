@@ -123,6 +123,7 @@ def find_replace_keys(obj, key, new_value):
     return obj
 
 def find_delete_keys(obj, key):
+    print(type(obj))
     obj_copy = obj.copy()
     if isinstance(obj, dict):
         for k, v in obj_copy.items():
@@ -326,7 +327,7 @@ def import_content(content, folder_id, sumo, adminmode, include_connections=Fals
         result = sumo.import_content_job_sync(folder_id, content, adminmode=adminmode)
 
     else:
-        find_delete_keys(content, 'searchSchedule')
+        find_replace_keys(content, 'searchSchedule', None)
         result = sumo.import_content_job_sync(folder_id, content, adminmode=adminmode)
     return result
 

@@ -511,10 +511,8 @@ class source_update_tab(QtWidgets.QWidget):
             lineno = tb.tb_lineno
             return {'status': 'FAIL',
                     'line_number': lineno,
-                    'exception': str(e),
-                    'id': id,
-                    'key': key,
-                    'url': url}
+                    'exception': str(e)
+                    }
             
     def merge_updates(self, result):
         if result['status'] == 'SUCCESS':
@@ -599,10 +597,8 @@ class source_update_tab(QtWidgets.QWidget):
                 lineno = tb.tb_lineno
                 return {'status': 'FAIL',
                         'line_number': lineno,
-                        'exception': str(e),
-                        'id': id,
-                        'key': key,
-                        'url': url}
+                        'exception': str(e)
+                        }
 
     def merge_undos(self, result):
         if result['status'] == 'SUCCESS':
