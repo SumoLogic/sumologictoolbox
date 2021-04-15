@@ -2,8 +2,6 @@ from qtpy import QtWidgets, QtGui, QtCore, uic
 import traceback
 import sys
 import os
-import pathlib
-
 
 class ProgressDialog(QtWidgets.QDialog):
 
@@ -65,8 +63,8 @@ class Worker(QtCore.QRunnable):
         self.kwargs = kwargs
         self.signals = WorkerSignals()
 
-        # Add the callback to our kwargs
-        if 'progress_callback' in self.kwargs:
+        # Add the progress callback to our kwargs IF the func has a "progress_callback" parameter
+        if 'progress_callback' in self.fn.__code__.co_varnames:
             self.kwargs['progress_callback'] = self.signals.progress
 
     @QtCore.Slot()

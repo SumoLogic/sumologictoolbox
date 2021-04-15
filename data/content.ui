@@ -255,50 +255,6 @@ Folders</string>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonContentBackupLeft">
-         <property name="maximumSize">
-          <size>
-           <width>85</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Backup the currently selected content to JSON file(s). Each item will be written to a seperate file. </string>
-         </property>
-         <property name="text">
-          <string>Backup</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonContentRestoreLeft">
-         <property name="maximumSize">
-          <size>
-           <width>85</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Restore content from previously backed up/exported JSON file(s). You can use this to import content that was exported from the Sumo Logic UI as well. </string>
-         </property>
-         <property name="text">
-          <string>Restore</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="pushButtonContentViewJSONLeft">
          <property name="font">
           <font>
@@ -708,50 +664,6 @@ Folders</string>
          </property>
          <property name="text">
           <string>Delete</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonContentBackupRight">
-         <property name="maximumSize">
-          <size>
-           <width>85</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Backup the currently selected content to JSON file(s). Each item will be written to a seperate file. </string>
-         </property>
-         <property name="text">
-          <string>Backup</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonContentRestoreRight">
-         <property name="maximumSize">
-          <size>
-           <width>85</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Restore content from previously backed up/exported JSON file(s). You can use this to import content that was exported from the Sumo Logic UI as well. </string>
-         </property>
-         <property name="text">
-          <string>Restore</string>
          </property>
         </widget>
        </item>

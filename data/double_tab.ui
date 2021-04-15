@@ -19,7 +19,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QPushButton" name="pushButtonUpdateMonitorsLeft">
+        <widget class="QPushButton" name="pushButtonUpdateLeft">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -35,7 +35,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonParentDirMonitorsLeft">
+        <widget class="QPushButton" name="pushButtonParentDirLeft">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -47,6 +47,19 @@
          </property>
          <property name="text">
           <string>Parent Dir</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonNewFolderLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>New Folder</string>
          </property>
         </widget>
        </item>
@@ -68,7 +81,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_7">
        <item>
-        <widget class="QLabel" name="labelMonitorsLeft">
+        <widget class="QLabel" name="labelTopLeft">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -76,7 +89,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Monitors:</string>
+          <string>Top:</string>
          </property>
         </widget>
        </item>
@@ -94,7 +107,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEditSearchMonitorsLeft">
+        <widget class="QLineEdit" name="lineEditSearchTopLeft">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -112,7 +125,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QLabel" name="labelMonitorPathLeft">
+      <widget class="QLabel" name="labelTopPathLeft">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -125,7 +138,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidgetMonitorsLeft">
+      <widget class="QListWidget" name="listWidgetTopLeft">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -143,52 +156,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
-        <widget class="QPushButton" name="pushButtonMonitorNewFolderLeft">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>New Folder</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonBackupMonitorLeft">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Backup the selected monitor(s) and associated webhook connections to a file. </string>
-         </property>
-         <property name="text">
-          <string>Backup</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonRestoreMonitorLeft">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Restore monitor from a file and optionally also restore any connections that were associated with that monitor (if &quot;include connections&quot; is checked.)</string>
-         </property>
-         <property name="text">
-          <string>Restore</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonDeleteMonitorLeft">
+        <widget class="QPushButton" name="pushButtonDeleteTopLeft">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -204,7 +172,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonMonitorJSONLeft">
+        <widget class="QPushButton" name="pushButtonJSONTopLeft">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -242,42 +210,9 @@
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_12">
-       <item>
-        <widget class="QPushButton" name="pushButtonUpdateConnectionsLeft">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Update the list of connections.</string>
-         </property>
-         <property name="text">
-          <string>Update</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_11">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_8">
        <item>
-        <widget class="QLabel" name="labelConnectionsLeft">
+        <widget class="QLabel" name="labelBottomLeft">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -285,7 +220,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Connections:</string>
+          <string>Bottom:</string>
          </property>
         </widget>
        </item>
@@ -303,7 +238,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEditSearchConnectionsLeft">
+        <widget class="QLineEdit" name="lineEditSearchBottomLeft">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -318,7 +253,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidgetConnectionsLeft">
+      <widget class="QListWidget" name="listWidgetBottomLeft">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -336,39 +271,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
-        <widget class="QPushButton" name="pushButtonBackupConnectionLeft">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Backup the selected connection(s).</string>
-         </property>
-         <property name="text">
-          <string>Backup</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonRestoreConnectionLeft">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Restore connection(s) from file. </string>
-         </property>
-         <property name="text">
-          <string>Restore</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonDeleteConnectionLeft">
+        <widget class="QPushButton" name="pushButtonDeleteBottomLeft">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -384,7 +287,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonConnectionJSONLeft">
+        <widget class="QPushButton" name="pushButtonJSONBottomLeft">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -417,7 +320,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="verticalLayoutCenterButton">
      <item>
       <spacer name="verticalSpacer_2">
        <property name="orientation">
@@ -432,7 +335,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonCopyMonitorLeftToRight">
+      <widget class="QPushButton" name="pushButtonCopyTopLeftToRight">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -448,7 +351,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonCopyMonitorRightToLeft">
+      <widget class="QPushButton" name="pushButtonCopyTopRightToLeft">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -460,26 +363,6 @@
        </property>
        <property name="text">
         <string>&lt;- Copy</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="checkBoxCopyRestoreConnections">
-       <property name="font">
-        <font>
-         <family>Waree</family>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check this if you want to copy/restore any webhook &lt;/p&gt;&lt;p&gt;connections used by the selected monitor(s). &lt;br/&gt;&lt;br/&gt;This will look for monitors of the same name in the&lt;/p&gt;&lt;p&gt;target org and attach them to the monitor if they exist.&lt;/p&gt;&lt;p&gt;If they don't exist then they will be created from the&lt;/p&gt;&lt;p&gt;connections exported from the source org.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Include
-Connections</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -500,7 +383,7 @@ Connections</string>
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonCopyConnectionLeftToRight">
+      <widget class="QPushButton" name="pushButtonCopyBottomLeftToRight">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -516,7 +399,7 @@ Connections</string>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonCopyConnectionRightToLeft">
+      <widget class="QPushButton" name="pushButtonCopyBottomRightToLeft">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -551,7 +434,7 @@ Connections</string>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QPushButton" name="pushButtonUpdateMonitorsRight">
+        <widget class="QPushButton" name="pushButtonUpdateRight">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -567,7 +450,7 @@ Connections</string>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonParentDirMonitorsRight">
+        <widget class="QPushButton" name="pushButtonParentDirRight">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -579,6 +462,19 @@ Connections</string>
          </property>
          <property name="text">
           <string>Parent Dir</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonNewFolderRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>New Folder</string>
          </property>
         </widget>
        </item>
@@ -600,7 +496,7 @@ Connections</string>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_9">
        <item>
-        <widget class="QLabel" name="labelMonitorsRight">
+        <widget class="QLabel" name="labelTopRight">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -608,7 +504,7 @@ Connections</string>
           </font>
          </property>
          <property name="text">
-          <string>Monitors:</string>
+          <string>Top:</string>
          </property>
         </widget>
        </item>
@@ -626,7 +522,7 @@ Connections</string>
         </spacer>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEditSearchMonitorsRight">
+        <widget class="QLineEdit" name="lineEditSearchTopRight">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -644,7 +540,7 @@ Connections</string>
       </layout>
      </item>
      <item>
-      <widget class="QLabel" name="labelMonitorPathRight">
+      <widget class="QLabel" name="labelTopPathRight">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -657,7 +553,7 @@ Connections</string>
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidgetMonitorsRight">
+      <widget class="QListWidget" name="listWidgetTopRight">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -675,52 +571,7 @@ Connections</string>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
-        <widget class="QPushButton" name="pushButtonMonitorNewFolderRight">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>New Folder</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonBackupMonitorRight">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Backup the selected monitor(s) and associated webhook connections to a file. </string>
-         </property>
-         <property name="text">
-          <string>Backup</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonRestoreMonitorRight">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Restore monitor from a file and optionally also restore any connections that were associated with that monitor (if &quot;include connections&quot; is checked.)</string>
-         </property>
-         <property name="text">
-          <string>Restore</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonDeleteMonitorRight">
+        <widget class="QPushButton" name="pushButtonDeleteTopRight">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -736,7 +587,7 @@ Connections</string>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonMonitorJSONRight">
+        <widget class="QPushButton" name="pushButtonJSONTopRight">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -774,42 +625,9 @@ Connections</string>
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_13">
-       <item>
-        <widget class="QPushButton" name="pushButtonUpdateConnectionsRight">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Update the list of connections.</string>
-         </property>
-         <property name="text">
-          <string>Update</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_12">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_10">
        <item>
-        <widget class="QLabel" name="labelConnectionsRight">
+        <widget class="QLabel" name="labelBottomRight">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -817,7 +635,7 @@ Connections</string>
           </font>
          </property>
          <property name="text">
-          <string>Connections:</string>
+          <string>Bottom:</string>
          </property>
         </widget>
        </item>
@@ -835,7 +653,7 @@ Connections</string>
         </spacer>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEditSearchConnectionsRight">
+        <widget class="QLineEdit" name="lineEditSearchBottomRight">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -850,7 +668,7 @@ Connections</string>
       </layout>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidgetConnectionsRight">
+      <widget class="QListWidget" name="listWidgetBottomRight">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -868,39 +686,7 @@ Connections</string>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
-        <widget class="QPushButton" name="pushButtonBackupConnectionRight">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Backup the selected connection(s).</string>
-         </property>
-         <property name="text">
-          <string>Backup</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonRestoreConnectionRight">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Restore connection(s) from file. </string>
-         </property>
-         <property name="text">
-          <string>Restore</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonDeleteConnectionRight">
+        <widget class="QPushButton" name="pushButtonDeleteBottomRight">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -916,7 +702,7 @@ Connections</string>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonConnectionJSONRight">
+        <widget class="QPushButton" name="pushButtonJSONBottomRight">
          <property name="font">
           <font>
            <family>Waree</family>

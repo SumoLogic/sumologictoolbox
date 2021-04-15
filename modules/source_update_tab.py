@@ -5,7 +5,6 @@ import sys
 import pathlib
 import json
 from logzero import logger
-from modules.sumologic import SumoLogic
 from modules.multithreading import Worker, ProgressDialog
 
 class_name = 'source_update_tab'
@@ -160,9 +159,7 @@ class source_update_tab(QtWidgets.QWidget):
         self.font = "Waree"
         self.font_size = 12
         self.pushButtonRefresh.clicked.connect(lambda: self.update_source_list(
-            str(self.mainwindow.lineEditUserNameLeft.text()),
-            str(self.mainwindow.lineEditPasswordLeft.text()),
-            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())]))
+            self.mainwindow.get_current_creds('left')))
 
         self.pushButtonAddTargets.clicked.connect(self.add_targets)
         self.pushButtonRemoveTargets.clicked.connect(self.remove_targets)
@@ -178,14 +175,10 @@ class source_update_tab(QtWidgets.QWidget):
         self.radioButtonAbsolute.toggled.connect(self.radio_button_toggled)
 
         self.pushButtonApplyChanges.clicked.connect(lambda: self.apply_updates(
-            str(self.mainwindow.lineEditUserNameLeft.text()),
-            str(self.mainwindow.lineEditPasswordLeft.text()),
-            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())]))
+            self.mainwindow.get_current_creds('left')))
 
         self.pushButtonUndoChanges.clicked.connect(lambda: self.undo_updates(
-            str(self.mainwindow.lineEditUserNameLeft.text()),
-            str(self.mainwindow.lineEditPasswordLeft.text()),
-            self.mainwindow.loadedapiurls[str(self.mainwindow.comboBoxRegionLeft.currentText())]))
+            self.mainwindow.get_current_creds('left')))
 
         # Setup the search bars to work and to clear when update button is pushed
         self.lineEditSearchAvailableSources.textChanged.connect(lambda: self.set_listwidget_filter(
@@ -251,8 +244,8 @@ class source_update_tab(QtWidgets.QWidget):
             else:
                 item.setHidden(False)
 
-    def get_sources(self, collector_name, collector_id, id, key, url):
-        sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
+    def get_sources(self, collector_name, collector_id, creds):
+        sumo = self.mainwindow.sumo_from_creds(creds)
         source_dict = {}
         try:
             sources = sumo.get_sources_sync(collector_id)
@@ -318,11 +311,11 @@ class source_update_tab(QtWidgets.QWidget):
         logger.debug(json.dumps(result))
         self.update_source_list_widget()
 
-    def update_source_list(self, id, key, url):
+    def update_source_list(self, creds):
         logger.info("[Source Update] Updating Source List (this could take a while.)")
         self.listWidgetSources.clear()
         self.sources = {}
-        sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
+        sumo = self.mainwindow.sumo_from_creds(creds)
 
         try:
             self.collectors = sumo.get_collectors_sync()
@@ -335,9 +328,7 @@ class source_update_tab(QtWidgets.QWidget):
                 self.workers.append(Worker(self.get_sources,
                                       collector['name'],
                                       collector['id'],
-                                      id,
-                                      key,
-                                      url))
+                                      creds))
                 self.workers[index].signals.finished.connect(self.progress.increment)
                 self.workers[index].signals.result.connect(self.merge_source_results)
                 self.mainwindow.threadpool.start(self.workers[index])
@@ -465,8 +456,8 @@ class source_update_tab(QtWidgets.QWidget):
         self.removerules = []
         self.new_source_category = None
     
-    def apply_update(self, collector_id, source_id, overwrite_rules, id, key, url):
-        sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
+    def apply_update(self, collector_id, source_id, overwrite_rules, creds):
+        sumo = self.mainwindow.sumo_from_creds(creds)
         try:
             etag, current_source = sumo.get_source_with_etag(collector_id,
                                                              source_id)
@@ -502,9 +493,7 @@ class source_update_tab(QtWidgets.QWidget):
             return {'status': 'SUCCESS',
                     'line_number': None,
                     'exception': None,
-                    'id': id,
-                    'key': key,
-                    'url': url
+                    'creds': creds
                     }
         except Exception as e:
             _, _, tb = sys.exc_info()
@@ -526,10 +515,10 @@ class source_update_tab(QtWidgets.QWidget):
             self.mainwindow.infobox('Your update completed successfully.')
             self.pushButtonUndoChanges.setEnabled(True)
             self.listWidgetTargets.clear()
-            self.update_source_list(result['id'], result['key'], result['url'])
+            self.update_source_list(result['creds'])
 
 
-    def apply_updates(self, id, key, url):
+    def apply_updates(self, creds):
         logger.info("[Source Update] Applying updates from update list.")
         overwrite_rules = False
         if self.radioButtonRelative.isChecked():
@@ -560,9 +549,7 @@ class source_update_tab(QtWidgets.QWidget):
                                                        target_source_id['collector_id'],
                                                        target_source_id['source_id'],
                                                        overwrite_rules,
-                                                       id,
-                                                       key,
-                                                       url))
+                                                       creds))
                             self.workers[index].signals.finished.connect(self.progress.increment)
                             self.workers[index].signals.result.connect(self.merge_updates)
                             self.mainwindow.threadpool.start(self.workers[index])
@@ -577,20 +564,17 @@ class source_update_tab(QtWidgets.QWidget):
             self.mainwindow.errorbox('Target list is empty. Please select at least one target to update.')
             return
 
-    def undo_update(self, undo, id, key, url):
+    def undo_update(self, undo, creds):
             try:
-                sumo = SumoLogic(id, key, endpoint=url, log_level=self.mainwindow.log_level)
+                sumo = self.mainwindow.sumo_from_creds(creds)
                 etag, current_source = sumo.get_source_with_etag(undo['collector_id'],
                                                                  undo['source_id'])
                 current_source = undo['source']
-                # current_source['source']['filters'] = undo['source']['source']['filters']
                 sumo.update_source(undo['collector_id'], current_source, etag)
                 return {'status': 'SUCCESS',
                         'line_number': None,
                         'exception': None,
-                        'id': id,
-                        'key': key,
-                        'url': url
+                        'creds': creds
                         }
             except Exception as e:
                 _, _, tb = sys.exc_info()
@@ -611,9 +595,9 @@ class source_update_tab(QtWidgets.QWidget):
             self.mainwindow.infobox('Your undo completed successfully.')
             self.pushButtonUndoChanges.setEnabled(False)
             self.listWidgetTargets.clear()
-            self.update_source_list(result['id'], result['key'], result['url'])
+            self.update_source_list(result['creds'])
 
-    def undo_updates(self, id, key, url):
+    def undo_updates(self, creds):
         logger.info("[Source Update] Undoing updates.")
         try:
             self.num_undos = len(self.undolist)
@@ -625,9 +609,7 @@ class source_update_tab(QtWidgets.QWidget):
                 logger.debug(f'Creating undo thread for source {undo}')
                 self.workers.append(Worker(self.undo_update,
                                            undo,
-                                           id,
-                                           key,
-                                           url))
+                                           creds))
                 self.workers[index].signals.finished.connect(self.progress.increment)
                 self.workers[index].signals.result.connect(self.merge_undos)
                 self.mainwindow.threadpool.start(self.workers[index])
@@ -635,7 +617,7 @@ class source_update_tab(QtWidgets.QWidget):
         except Exception as e:
             logger.exception(e)
             self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
-            self.update_source_list(id, key, url)
+            self.update_source_list(creds)
 
     def get_item_names_from_listWidget(self, listWidget):
         item_name_list = []

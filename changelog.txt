@@ -1,6 +1,6 @@
 Changelog for SumoToolBox
 
-2-?-2021 0.9.2
+3-?-2021 0.10.0
 *   [Source Update] This tab is now multithreaded! This should mean a 10x speed up in most operations.
 *   [Orgs SDK] Added the correct GA endpoint to the SDK. It was previously the alpha endpoint.
 *   [Organizations] Removed CSE credits and storage from the view as they don't exist in the API at the moment.

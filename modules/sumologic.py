@@ -225,6 +225,7 @@ class SumoLogic(object):
         status = self.search_job_status(searchjob)
         numrecords = status['recordCount']
         while status['state'] != 'DONE GATHERING RESULTS':
+            time.sleep(PERIOD / NUMBER_OF_CALLS)
             if status['state'] == 'CANCELLED':
                 break
             status = self.search_job_status(searchjob)
@@ -247,6 +248,7 @@ class SumoLogic(object):
         status = self.search_job_status(searchjob)
         nummessages = status['messageCount']
         while status['state'] != 'DONE GATHERING RESULTS':
+            time.sleep(PERIOD / NUMBER_OF_CALLS)
             if status['state'] == 'CANCELLED':
                 break
             status = self.search_job_status(searchjob)
@@ -298,6 +300,7 @@ class SumoLogic(object):
         offset = offset + limit
         results = results + r
         while not (len(r) < limit):
+            time.sleep(PERIOD / NUMBER_OF_CALLS)
             r = self.get_collectors(limit=limit, offset=offset, filter_type=filter_type)
             offset = offset + limit
             results = results + r
@@ -351,6 +354,7 @@ class SumoLogic(object):
         offset = offset + limit
         results = results + r
         while not (len(r) < limit):
+            time.sleep(PERIOD / NUMBER_OF_CALLS)
             r = self.get_sources(collector_id, limit=limit, offset=offset)
             offset = offset + limit
             results = results + r
@@ -495,6 +499,7 @@ class SumoLogic(object):
         job_id = str(r['id'])
         status = self.get_global_folder_job_status(job_id)
         while status['status'] == 'InProgress':
+            time.sleep(PERIOD / NUMBER_OF_CALLS)
             status = self.get_global_folder_job_status(job_id)
         if status['status'] == 'Success':
             r = self.get_global_folder_job_result(job_id)
@@ -521,6 +526,7 @@ class SumoLogic(object):
         job_id = str(r['id'])
         status = self.get_admin_folder_job_status(job_id)
         while status['status'] == 'InProgress':
+            time.sleep(PERIOD / NUMBER_OF_CALLS)
             status = self.get_admin_folder_job_status(job_id)
         if status['status'] == 'Success':
             r = self.get_admin_folder_job_result(job_id)
@@ -543,14 +549,15 @@ class SumoLogic(object):
     def get_content(self, path):
         return self.get_content_by_path(path)
 
-    def get_content_by_path(self, item_path):
+    def get_content_by_path(self, item_path, adminmode=False):
         # item_path should start with /Library and use the user's email address if referencing a user home dir
         # firstname + :space: + lastname will not work here, even though that's how it's displayed in the UI
         # YES: "/Library/Users/user@demo.com/someItemOrFolder" could be a valid path
         # NO: "/Library/Users/Demo User/someItemOrFolder" is not a valid path because user first/last names are not
         # unique identifiers
+        headers = {'isAdminMode': str(adminmode).lower()}
         params = {'path': str(item_path)}
-        r = self.get('/v2/content/path', params=params)
+        r = self.get('/v2/content/path', params=params, headers=headers)
         return r.json()
 
     def get_item_path(self, item_id):
@@ -577,6 +584,7 @@ class SumoLogic(object):
         job_id = str(r['id'])
         status = self.get_delete_content_job_status(str(item_id), str(job_id), adminmode=adminmode)
         while status['status'] == 'InProgress':
+            time.sleep(PERIOD / NUMBER_OF_CALLS)
             status = self.get_delete_content_job_status(str(item_id), str(job_id), adminmode=adminmode)
         return status
 
@@ -616,6 +624,7 @@ class SumoLogic(object):
         job_id = str(r['id'])
         status = self.get_export_content_job_status(item_id, job_id, adminmode=adminmode)
         while status['status'] == 'InProgress':
+            time.sleep(PERIOD / NUMBER_OF_CALLS)
             status = self.get_export_content_job_status(item_id, job_id, adminmode=adminmode)
         if status['status'] == 'Success':
             r = self.get_export_content_job_result(item_id, job_id, adminmode=adminmode)
@@ -639,7 +648,7 @@ class SumoLogic(object):
         job_id = str(r['id'])
         status = self.get_import_content_job_status(str(folder_id), str(job_id), adminmode=adminmode)
         while status['status'] == 'InProgress':
-            time.sleep(1)
+            time.sleep(PERIOD / NUMBER_OF_CALLS)
             status = self.get_import_content_job_status(str(folder_id), str(job_id), adminmode=adminmode)
         return status
 
@@ -662,6 +671,8 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
+            else:
+                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
     def create_role(self, body):
@@ -707,6 +718,8 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
+            else:
+                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
     def get_user(self, user_id):
@@ -775,6 +788,8 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
+            else:
+                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
     def create_connection(self, connection):
@@ -815,12 +830,17 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
+            else:
+                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
-    def create_fer(self, name, scope, parse_expression, enabled=False):
-        data = {'name': name, 'scope': scope, 'parseExpression': parse_expression, 'enabled': str(enabled).lower()}
+    def create_fer(self, data):
         r = self.post('/v1/extractionRules', data)
         return r.json()
+
+    def create_fer_alternate(self, name, scope, parse_expression, enabled=False):
+        data = {'name': name, 'scope': scope, 'parseExpression': parse_expression, 'enabled': str(enabled).lower()}
+        return self.create_fer(data)
 
     def get_fer(self, item_id):
         r = self.get('/v1/extractionRules/' + str(item_id))
@@ -852,13 +872,24 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
+            else:
+                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
     #start time must be in RFC3339 format
     # https://tools.ietf.org/html/rfc3339
     # https://medium.com/easyread/understanding-about-rfc-3339-for-datetime-formatting-in-software-engineering-940aa5d5f68a
-    def create_scheduled_view(self, index_name, query, start_time, retention_period=-1, data_forwarding_id=None):
-        data = {'indexName': str(index_name), 'query': str(query), 'startTime': str(start_time), 'retentionPeriod': int(retention_period), "dataForwardingId": str(data_forwarding_id) }
+    def create_scheduled_view(self, payload):
+        r = self.post('/v1/scheduledViews', payload)
+        return r.json()
+
+    def create_scheduled_view_alternate(self, index_name, query, start_time, retention_period=-1, data_forwarding_id=None, parsingMode='Manual'):
+        data = {'indexName': str(index_name),
+                'query': str(query),
+                'startTime': str(start_time),
+                'retentionPeriod': int(retention_period),
+                'dataForwardingId': str(data_forwarding_id),
+                'parsingMode': str(parsingMode)}
         r = self.post('/v1/scheduledViews', data)
         return r.json()
 
@@ -892,9 +923,15 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
+            else:
+                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
-    def create_partition(self, name, routing_expression, analytics_tier="enhanced", retention_period=-1, data_forwarding_id=None, is_compliant=False):
+    def create_partition(self, data):
+        r = self.post('/v1/partitions', data)
+        return r.json()
+
+    def create_partition_alternate(self, name, routing_expression, analytics_tier="enhanced", retention_period=-1, data_forwarding_id=None, is_compliant=False):
         data = {'name': str(name),
                 'routingExpression': str(routing_expression),
                 'analyticsTier': str(analytics_tier),
@@ -902,8 +939,7 @@ class SumoLogic(object):
                 'dataForwardingId': str(data_forwarding_id),
                 'isCompliant': str(is_compliant).lower()}
 
-        r = self.post('/v1/partitions', data)
-        return r.json()
+        return self.create_partition(data)
 
     def get_partition(self, item_id):
         r = self.get('/v1/partitions/' + str(item_id))
@@ -981,6 +1017,7 @@ class SumoLogic(object):
         offset = offset + limit
         results = results + r
         while not (len(r) < limit):
+            time.sleep(PERIOD / NUMBER_OF_CALLS)
             r = self.search_monitors(query, limit=limit, offset=offset)
             offset = offset + limit
             results = results + r
@@ -1082,29 +1119,70 @@ class SumoLogic(object):
 
     # Lookup table API
     def create_lookup_table(self, content):
-        return self.post('/v1/lookupTables', params=content)
-    
-    def get_lookup_table(self, id):
-        return self.get('/v1/lookupTables/%s' % id)
-    
-    def edit_lookup_table(self, id, content):
-        return self.put('/v1/lookupTables/%s' % id, params=content)
+        r = self.post('/v1/lookupTables', params=content)
+        return r.json()
 
-    def delete_lookup_table(self, id):
-        return self.delete('/v1/lookupTables/%s' % id)
+    def get_lookup_table(self, table_id):
+        r = self.get('/v1/lookupTables/%s' % table_id)
+        return r.json()
+    
+    def edit_lookup_table(self, table_id, content):
+        r = self.put('/v1/lookupTables/%s' % table_id, params=content)
+        return r.json()
 
-    def upload_csv_lookup_table(self, id, file_path, file_name, merge='false'):
+    def delete_lookup_table(self, table_id):
+        r = self.delete('/v1/lookupTables/%s' % table_id)
+        return r.json()
+
+    def upload_csv_lookup_table(self, table_id, file_path, file_name, merge='false'):
         params={'file_name': file_name,
                 'full_file_path': os.path.join(file_path, file_name),
                 'merge': merge
                 }
-        return self.post_file('/v1/lookupTables/%s/upload' % id, params)
-    
-    def check_lookup_status(self, id):
-        return self.get('/v1/lookupTables/jobs/%s/status' % id)
+        r = self.post_file('/v1/lookupTables/%s/upload' % table_id, params)
+        return r.json()
 
-    def empty_lookup_table(self, id):
-        return self.post('/v1/lookupTables/%s/truncate'% id, params=None)
+    def check_lookup_status(self, table_id):
+        r = self.get('/v1/lookupTables/jobs/%s/status' % table_id)
+        return r.json()
+
+    def empty_lookup_table(self, table_id):
+        r = self.post('/v1/lookupTables/%s/truncate'% table_id, params=None)
+        return r.json()
     
-    def update_lookup_table(self, id, content):
-        return self.put('/v1/lookupTables/%s/row' % id, params=content)
+    def update_lookup_table(self, table_id, content):
+        r = self.put('/v1/lookupTables/%s/row' % table_id, params=content)
+        return r.json()
+
+    # Account API
+
+    def get_account_owner(self):
+        r = self.get('/v1/account/accountOwner')
+        return r.text
+
+    def get_account_subdomain(self):
+        r = self.get('/v1/account/subdomain')
+        return r.text
+
+    def update_account_subdomain(self, subdomain):
+        data = {'subdomain': str(subdomain)}
+        r = self.put('/v1/account/subdomain', data)
+        return r.json()
+
+    def create_account_subdomain(self, subdomain):
+        data = {'subdomain': str(subdomain)}
+        r = self.post('/v1/account/subdomain', data)
+        return r.json()
+
+    def delete_account_subdomain(self):
+        r = self.delete('/v1/account/subdomain')
+        return r.text
+
+    def recover_account_subdomain(self, email_address):
+        data = {'email': str(email_address)}
+        r = self.post('/v1/account/subdomain', data)
+        return r.json()
+
+    def get_account_contract(self):
+        r = self.get('/v1/account/contract')
+        return r.json()

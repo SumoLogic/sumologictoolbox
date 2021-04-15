@@ -1,5 +1,5 @@
 __author__ = 'Tim MacDonald'
-__version__ = '0.9.2'
+__version__ = '0.10.0'
 # Copyright 2015 Timothy MacDonald
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -204,11 +204,7 @@ class NewPasswordDialog(QtWidgets.QDialog):
         self.labelMatch.setText(_translate("Dialog", "-Both entries must match"))
 
 
-
-
 class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
-
-
 
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
@@ -235,12 +231,20 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         # Configure the creddb buttons according to the config file settings
         self.set_creddbbuttons()
 
+        # Check to see if the keystore password exists in the environmental variable "STB_PASS" and if so,
+        # automatically unlock the keystore. Set this up mostly for testing. DO NOT keep your keystore password
+        # in .bashrc or .profile or whatever file in plaintext. That is bad times.
+        self.tabs = []  # This has to come before the credstore loads
+        env_password = os.environ.get('STB_PASS')
+        if env_password:
+            logger.info('Found Password in $STB_PASS. Trying it...')
+            self.loadcreddb(env_password=env_password)
+
         # Setup a threadpool for multithreading
         self.threadpool = QtCore.QThreadPool()
         self.threadpool.setMaxThreadCount(10)  # <--- Sumo API concurrency is 10
 
         # load additional Tabs from available modules
-        self.tabs = []
         # find all of the tab modules and import them
         modules_dir = pathlib.Path(self.basedir + '/modules')
         modules_dir_contents = modules_dir.glob('*tab.py')
@@ -268,13 +272,7 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         # which only uses the left credentials
         self.tabchange(0)
 
-        # Check to see if the keystore password exists in the environmental variable "STB_PASS" and if so,
-        # automatically unlock the keystore. Set this up mostly for testing. DO NOT keep your keystore password
-        # in .bashrc or .profile or whatever file in plaintext. That is bad times.
-        env_password = os.environ.get('STB_PASS')
-        if env_password:
-            logger.info('Found Password in $STB_PASS. Trying it...')
-            self.loadcreddb(env_password=env_password)
+
 
         # initial clear of all stateful objects (This makes sure all of the tabs are cleared and initialized)
         self.reset_stateful_objects()
@@ -384,6 +382,33 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             str(self.lineEditPasswordRight.text())
         ))
 
+        # cred change stuff
+        self.comboBoxRegionLeft.currentIndexChanged.connect(lambda: self.region_change(
+            str(self.comboBoxRegionLeft.currentText()),
+            self.comboBoxPresetLeft,
+            side='left'
+        ))
+
+        self.comboBoxRegionRight.currentIndexChanged.connect(lambda: self.region_change(
+            str(self.comboBoxRegionRight.currentText()),
+            self.comboBoxPresetRight,
+            side='right'
+        ))
+
+        self.lineEditUserNameLeft.editingFinished.connect(lambda: self.cred_change(
+            side='left'
+        ))
+        self.lineEditPasswordLeft.editingFinished.connect(lambda: self.cred_change(
+            side='left'
+        ))
+
+        self.lineEditUserNameRight.editingFinished.connect(lambda: self.cred_change(
+            side='right'
+        ))
+        self.lineEditPasswordRight.editingFinished.connect(lambda: self.cred_change(
+            side='right'
+        ))
+
         # UI Buttons for Search API Tab
         self.pushButtonStartSearch.clicked.connect(lambda: self.runsearch(
             self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())],
@@ -391,19 +416,104 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             str(self.lineEditPasswordLeft.text())
         ))
 
+
     # method to reset all objects that are dependent on creds (such as collectors and content lists)
     def reset_stateful_objects(self, side='both'):
         for tab in self.tabs:
             tab.reset_stateful_objects(side)
-
         return
 
+    def cred_change(self, side='both'):
+        left = False
+        right = False
+        if side == 'left':
+            left = True
+        if side == 'right':
+            right = True
+        if side == 'both':
+            left = True
+            right = True
+        if left:
+            pass
+        if right:
+            pass
+        self.reset_stateful_objects(side=side)
+
+    def region_change(self, region_text, preset_combo_box, side='both'):
+        left = False
+        right = False
+        if side == 'left':
+            left = True
+        if side == 'right':
+            right = True
+        if side == 'both':
+            left = True
+            right = True
+
+        if left:
+            if region_text == "FILESYSTEM:":
+                self.lineEditUserNameLeft.setEnabled(False)
+                self.lineEditPasswordLeft.setEnabled(False)
+                self.pushButtonCreatePresetLeft.setEnabled(False)
+                self.pushButtonUpdatePresetLeft.setEnabled(False)
+                self.pushButtonDeletePresetLeft.setEnabled(False)
+                self.comboBoxPresetLeft.setCurrentText(' ')
+            else:
+                self.lineEditUserNameLeft.setEnabled(True)
+                self.lineEditPasswordLeft.setEnabled(True)
+                self.pushButtonCreatePresetLeft.setEnabled(True)
+                self.pushButtonUpdatePresetLeft.setEnabled(True)
+                self.pushButtonDeletePresetLeft.setEnabled(True)
+
+        if right:
+            if region_text == "FILESYSTEM:":
+                self.lineEditUserNameRight.setEnabled(False)
+                self.lineEditPasswordRight.setEnabled(False)
+                self.pushButtonCreatePresetRight.setEnabled(False)
+                self.pushButtonUpdatePresetRight.setEnabled(False)
+                self.pushButtonDeletePresetRight.setEnabled(False)
+                self.comboBoxPresetRight.setCurrentText(' ')
+            else:
+                self.lineEditUserNameRight.setEnabled(True)
+                self.lineEditPasswordRight.setEnabled(True)
+                self.pushButtonCreatePresetRight.setEnabled(True)
+                self.pushButtonUpdatePresetRight.setEnabled(True)
+                self.pushButtonDeletePresetRight.setEnabled(True)
+
+        self.reset_stateful_objects(side=side)
+
+
+    def get_current_creds(self, side):
+        if side == 'left':
+            service = self.comboBoxRegionLeft.currentText()
+            url = self.loadedapiurls[str(self.comboBoxRegionLeft.currentText())]
+            cred_id = str(self.lineEditUserNameLeft.text())
+            cred_key = str(self.lineEditPasswordLeft.text())
+        elif side == 'right':
+            service = self.comboBoxRegionRight.currentText()
+            url = self.loadedapiurls[str(self.comboBoxRegionRight.currentText())]
+            cred_id = str(self.lineEditUserNameRight.text())
+            cred_key = str(self.lineEditPasswordRight.text())
+        else:
+            raise Exception (f"Can't get creds for side: {side}")
+        return {'service': service,
+                'url': url,
+                'id': cred_id,
+                'key': cred_key}
+
+    def sumo_from_creds(self, creds):
+        return SumoLogic(creds['id'],
+                         creds['key'],
+                         endpoint=creds['url'],
+                         log_level=self.log_level)
+
     def clear_creds(self):
+
         self.lineEditUserNameLeft.clear()
-        self.lineEditUserNameRight.clear()
         self.lineEditPasswordLeft.clear()
-        self.lineEditPasswordRight.clear()
         self.comboBoxPresetLeft.clear()
+        self.lineEditUserNameRight.clear()
+        self.lineEditPasswordRight.clear()
         self.comboBoxPresetRight.clear()
 
 
@@ -526,6 +636,8 @@ If so type 'DELETE' in the box below:"
         logger.info('Populating presets')
         self.comboBoxPresetLeft.clear()
         self.comboBoxPresetRight.clear()
+        self.comboBoxPresetLeft.addItem(' ')
+        self.comboBoxPresetRight.addItem(' ')
         try:
             names = self.credentialstore.list_names()
             names = sorted(names,  key=str.lower)
@@ -710,6 +822,15 @@ If so type 'DELETE' in the box below:"
         # that the last preset was deleted and we've got nothing to load
         lineEditUserName.clear()
         lineEditPassword.clear()
+        if preset == ' ':
+            if side == 'left':
+                self.lineEditUserNameLeft.clear()
+                self.lineEditPasswordLeft.clear()
+            if side == 'right':
+                self.lineEditUserNameRight.clear()
+                self.lineEditPasswordRight.clear()
+            return
+
         if comboBoxPreset.count() > 0:
             try:
                 if self.credentialstore.name_exists(preset):

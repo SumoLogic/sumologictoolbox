@@ -15,13 +15,13 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayoutPartitionAllLeft">
+    <layout class="QVBoxLayout" name="verticalLayoutAllLeft">
      <item>
-      <layout class="QHBoxLayout" name="horizontalPartitionTopButtonsLeft">
+      <layout class="QHBoxLayout" name="horizontalTopButtonsLeft">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayoutPartitionTopPushButtonsLeft">
+        <layout class="QHBoxLayout" name="horizontalLayoutTopPushButtonsLeft">
          <item>
-          <widget class="QPushButton" name="pushButtonUpdatePartitionLeft">
+          <widget class="QPushButton" name="pushButtonUpdateLeft">
            <property name="maximumSize">
             <size>
              <width>85</width>
@@ -38,10 +38,26 @@
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="toolTip">
-            <string>Update the list of Partitions based on your curently entered credentials. </string>
+            <string>Update the list of Field Extraction Rules based on the org/credentials entered above. </string>
            </property>
            <property name="text">
             <string>Update</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonParentDirLeft">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="font">
+            <font>
+             <family>Waree</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Parent Dir</string>
            </property>
           </widget>
          </item>
@@ -63,7 +79,20 @@
       </layout>
      </item>
      <item>
-      <widget class="QListWidget" name="PartitionListWidgetLeft">
+      <widget class="QLabel" name="labelPathLeft">
+       <property name="font">
+        <font>
+         <family>Waree</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="ListWidgetLeft">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -79,21 +108,9 @@
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayoutPartitionBottomButtonsLeft">
+      <layout class="QHBoxLayout" name="horizontalLayoutBottomButtonsLeft">
        <item>
-        <widget class="QPushButton" name="pushButtonPartitionDecommissionLeft">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>0</height>
-          </size>
-         </property>
+        <widget class="QPushButton" name="pushButtonDeleteLeft">
          <property name="maximumSize">
           <size>
            <width>85</width>
@@ -107,21 +124,15 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Disable/Delete the currently selected partition(s).</string>
+          <string>Delete the selected Field Extraction Rules. Be careful!</string>
          </property>
          <property name="text">
-          <string>Decommission</string>
+          <string>Delete</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonPartitionBackupLeft">
-         <property name="maximumSize">
-          <size>
-           <width>85</width>
-           <height>16777215</height>
-          </size>
-         </property>
+        <widget class="QPushButton" name="pushButtonJSONLeft">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -129,48 +140,26 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Backup the selected partition definitions to file. Each partition definition will be written to it's own JSON file. </string>
-         </property>
-         <property name="text">
-          <string>Backup</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonPartitionRestoreLeft">
-         <property name="maximumSize">
-          <size>
-           <width>85</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Restore one or more partition definitions from file. These must be properly formatted JSON, either from a previous backup or created in accordance with the Sumo Logic API documentation. </string>
-         </property>
-         <property name="text">
-          <string>Restore</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonPartitionJSONLeft">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>View Partition(s) as JSON</string>
+          <string>View FER(s) JSON</string>
          </property>
          <property name="text">
           <string>JSON</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonNewFolderLeft">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>New Folder</string>
          </property>
         </widget>
        </item>
@@ -192,7 +181,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayoutPartitionCenterButton">
+    <layout class="QVBoxLayout" name="verticalLayoutCenterButton">
      <item>
       <spacer name="verticalSpacer_19">
        <property name="orientation">
@@ -207,7 +196,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonPartitionCopyLeftToRight">
+      <widget class="QPushButton" name="pushButtonCopyLeftToRight">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -218,7 +207,7 @@
         <enum>Qt::NoContextMenu</enum>
        </property>
        <property name="toolTip">
-        <string>Copy the selected partition definition from the left org to the right org.</string>
+        <string>Copy the the select Field Extraction Rule(s) from the left org to the right org. </string>
        </property>
        <property name="text">
         <string>Copy -&gt;</string>
@@ -226,7 +215,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonPartitionCopyRightToLeft">
+      <widget class="QPushButton" name="pushButtonCopyRightToLeft">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -237,7 +226,7 @@
         <enum>Qt::NoContextMenu</enum>
        </property>
        <property name="toolTip">
-        <string>Copy the selected partition definition  from the right org to the left org.</string>
+        <string>Copy the the select Field Extraction Rule(s) from the right org to the left org. </string>
        </property>
        <property name="text">
         <string>&lt;- Copy</string>
@@ -258,7 +247,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonPartitionFindReplaceCopyLeftToRight">
+      <widget class="QPushButton" name="pushButtonFindReplaceCopyLeftToRight">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -282,7 +271,7 @@ Copy</string>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonPartitionFindReplaceCopyRightToLeft">
+      <widget class="QPushButton" name="pushButtonFindReplaceCopyRightToLeft">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -321,13 +310,13 @@ Copy</string>
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayoutPartitionAllRight">
+    <layout class="QVBoxLayout" name="verticalLayoutAllRight">
      <item>
-      <layout class="QHBoxLayout" name="horizontalPartitionTopButtonsRight">
+      <layout class="QHBoxLayout" name="horizontalTopButtonsRight">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayoutPartitionTopPushButtonsRight">
+        <layout class="QHBoxLayout" name="horizontalLayoutTopPushButtonsRight">
          <item>
-          <widget class="QPushButton" name="pushButtonUpdatePartitionRight">
+          <widget class="QPushButton" name="pushButtonUpdateRight">
            <property name="maximumSize">
             <size>
              <width>85</width>
@@ -344,10 +333,26 @@ Copy</string>
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="toolTip">
-            <string>Update the list of Partitions based on your curently entered credentials. </string>
+            <string>Update the list of Field Extraction Rules based on the org/credentials entered above. </string>
            </property>
            <property name="text">
             <string>Update</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonParentDirRight">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="font">
+            <font>
+             <family>Waree</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Parent Dir</string>
            </property>
           </widget>
          </item>
@@ -369,7 +374,20 @@ Copy</string>
       </layout>
      </item>
      <item>
-      <widget class="QListWidget" name="PartitionListWidgetRight">
+      <widget class="QLabel" name="labelPathRight">
+       <property name="font">
+        <font>
+         <family>Waree</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="ListWidgetRight">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -385,15 +403,9 @@ Copy</string>
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayoutPartitionBottomButtonsRight">
+      <layout class="QHBoxLayout" name="horizontalLayoutBottomButtonsRight">
        <item>
-        <widget class="QPushButton" name="pushButtonPartitionDecommissionRight">
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>0</height>
-          </size>
-         </property>
+        <widget class="QPushButton" name="pushButtonDeleteRight">
          <property name="maximumSize">
           <size>
            <width>85</width>
@@ -407,21 +419,15 @@ Copy</string>
           </font>
          </property>
          <property name="toolTip">
-          <string>Disable/Delete the currently selected partition(s).</string>
+          <string>Delete the selected Field Extraction Rules. Be careful!</string>
          </property>
          <property name="text">
-          <string>Decommission</string>
+          <string>Delete</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonPartitionBackupRight">
-         <property name="maximumSize">
-          <size>
-           <width>85</width>
-           <height>16777215</height>
-          </size>
-         </property>
+        <widget class="QPushButton" name="pushButtonJSONRight">
          <property name="font">
           <font>
            <family>Waree</family>
@@ -429,48 +435,26 @@ Copy</string>
           </font>
          </property>
          <property name="toolTip">
-          <string>Backup the selected partition(s) to file. Each Partition will be written to it's own JSON file. </string>
-         </property>
-         <property name="text">
-          <string>Backup</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonPartitionRestoreRight">
-         <property name="maximumSize">
-          <size>
-           <width>85</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Restore one or more partition definitions from file. These must be properly formatted JSON, either from a previous backup or created in accordance with the Sumo Logic API documentation. </string>
-         </property>
-         <property name="text">
-          <string>Restore</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonPartitionJSONRight">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>View Partition(s) as JSON</string>
+          <string>View FER(s) JSON</string>
          </property>
          <property name="text">
           <string>JSON</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonNewFolderRight">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>New Folder</string>
          </property>
         </widget>
        </item>

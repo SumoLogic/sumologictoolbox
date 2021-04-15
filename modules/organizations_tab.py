@@ -308,29 +308,21 @@ class organizations_tab(QtWidgets.QWidget):
         # UI Buttons for Organizations API tab
 
         self.pushButtonGetOrgs.clicked.connect(lambda: self.update_org_list(
-            str(self.mainwindow.comboBoxRegionLeft.currentText().lower()),
-            str(self.mainwindow.lineEditUserNameLeft.text()),
-            str(self.mainwindow.lineEditPasswordLeft.text()),
+            self.mainwindow.get_current_creds('left')
         ))
 
         self.pushButtonCreateOrg.clicked.connect(lambda: self.create_org(
-            str(self.mainwindow.comboBoxRegionLeft.currentText().lower()),
-            str(self.mainwindow.lineEditUserNameLeft.text()),
-            str(self.mainwindow.lineEditPasswordLeft.text()),
+            self.mainwindow.get_current_creds('left')
         ))
 
         self.pushButtonCancelSubscription.clicked.connect(lambda: self.cancel_subscription(
             self.tableWidgetOrgs.selectedItems(),
-            str(self.mainwindow.comboBoxRegionLeft.currentText().lower()),
-            str(self.mainwindow.lineEditUserNameLeft.text()),
-            str(self.mainwindow.lineEditPasswordLeft.text())
+            self.mainwindow.get_current_creds('left')
         ))
 
         self.pushButtonUpdateSubscription.clicked.connect(lambda: self.update_subscription(
             self.tableWidgetOrgs.selectedItems(),
-            str(self.mainwindow.comboBoxRegionLeft.currentText().lower()),
-            str(self.mainwindow.lineEditUserNameLeft.text()),
-            str(self.mainwindow.lineEditPasswordLeft.text())
+            self.mainwindow.get_current_creds('left')
         ))
 
 
@@ -362,22 +354,23 @@ class organizations_tab(QtWidgets.QWidget):
         self.pushButtonCreateOrg.setEnabled(True)
         self.pushButtonUpdateSubscription.setEnabled(True)
         self.pushButtonCancelSubscription.setEnabled(True)
-        try:
-            sumo_mam = SumoLogic_Orgs(id, key, parent_deployment, log_level=self.mainwindow.log_level)
-            test = sumo_mam.get_deployments()
-            logger.info('Current org has Multi Org Management enabled.')
-        except Exception as e:
-            logger.info('Current org does not have Multi Org Management enabled.')
-            logger.debug('Exception calling Orgs API: {}'.format(str(e)))
-            self.pushButtonGetOrgs.setEnabled(False)
-            self.checkBoxShowActive.setEnabled(False)
-            self.pushButtonCreateOrg.setEnabled(False)
-            self.pushButtonUpdateSubscription.setEnabled(False)
-            self.pushButtonCancelSubscription.setEnabled(False)
+
+        # try:
+        #     sumo_mam = SumoLogic_Orgs(id, key, parent_deployment, log_level=self.mainwindow.log_level)
+        #     test = sumo_mam.get_deployments()
+        #     logger.info('Current org has Multi Org Management enabled.')
+        # except Exception as e:
+        #     logger.info('Current org does not have Multi Org Management enabled.')
+        #     logger.debug('Exception calling Orgs API: {}'.format(str(e)))
+        #     self.pushButtonGetOrgs.setEnabled(False)
+        #     self.checkBoxShowActive.setEnabled(False)
+        #     self.pushButtonCreateOrg.setEnabled(False)
+        #     self.pushButtonUpdateSubscription.setEnabled(False)
+        #     self.pushButtonCancelSubscription.setEnabled(False)
 
 
 
-    def update_org_list(self, parent_deployment, id, key):
+    def update_org_list(self, creds):
         logger.info("[Organizations] Getting Updated Org List")
         if self.checkBoxShowActive.isChecked():
             status_filter= "Active"
@@ -385,7 +378,10 @@ class organizations_tab(QtWidgets.QWidget):
             status_filter= "All"
         try:
 
-            sumo_mam = SumoLogic_Orgs(id, key, parent_deployment, log_level=self.mainwindow.log_level)
+            sumo_mam = SumoLogic_Orgs(creds['id'],
+                                      creds['key'],
+                                      str(creds['service']).lower(),
+                                      log_level=self.mainwindow.log_level)
             self.tableWidgetOrgs.raw_orgs = sumo_mam.get_orgs_sync(status_filter=status_filter)
             self.update_org_table_widget()
 
@@ -437,14 +433,17 @@ class organizations_tab(QtWidgets.QWidget):
         else:
             self.mainwindow.errorbox('No orgs to display.')
 
-    def create_org(self, parent_deployment, id, key):
+    def create_org(self, creds):
         logger.info("[Organizations]Creating Org")
 
 
         try:
-            sumo_orgs = SumoLogic_Orgs(id, key, parent_deployment, log_level=self.mainwindow.log_level)
-            deployments = sumo_orgs.get_deployments()
-            org_info = sumo_orgs.get_parent_org_info()
+            sumo_mam = SumoLogic_Orgs(creds['id'],
+                                      creds['key'],
+                                      str(creds['service']).lower(),
+                                      log_level=self.mainwindow.log_level)
+            deployments = sumo_mam.get_deployments()
+            org_info = sumo_mam.get_parent_org_info()
             trials_enabled = org_info['isEligibleForTrialOrgs']
 
 
@@ -463,7 +462,7 @@ class organizations_tab(QtWidgets.QWidget):
 
             try:
 
-                response = sumo_orgs.create_org(org_details)
+                response = sumo_mam.create_org(org_details)
                 dialog.close()
 
             except Exception as e:
@@ -490,38 +489,44 @@ class organizations_tab(QtWidgets.QWidget):
             #         logger.exception(e)
             #     #  secure the credentials file
             #     os.chmod(file, 600)
-            self.update_org_list(parent_deployment, id, key)
+            self.update_org_list(creds)
 
         else:
             return
 
-    def cancel_subscription(self, selected_row, parent_deployment, id, key):
+    def cancel_subscription(self, selected_row, creds):
         if len(selected_row) > 0:
             logger.info("[Organizations] Canceling Subscription")
             row_dict = self.create_dict_from_qtable_row(selected_row)
             try:
-                sumo_orgs = SumoLogic_Orgs(id, key, parent_deployment=parent_deployment)
-                sumo_orgs.deactivate_org(row_dict['Org ID'])
+                sumo_mam = SumoLogic_Orgs(creds['id'],
+                                          creds['key'],
+                                          str(creds['service']).lower(),
+                                          log_level=self.mainwindow.log_level)
+                sumo_mam.deactivate_org(row_dict['Org ID'])
 
             except Exception as e:
                 self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
                 logger.exception(e)
                 return
 
-            self.update_org_list(parent_deployment, id, key)
+            self.update_org_list(creds)
             return
         else:
             self.mainwindow.errorbox('Nothing Selected')
 
-    def update_subscription(self, selected_row, parent_deployment, id, key):
+    def update_subscription(self, selected_row, creds):
         if len(selected_row) > 0:
             logger.info("[Organizations] Updating Subscription")
             row_dict = self.create_dict_from_qtable_row(selected_row)
             try:
-                sumo_orgs = SumoLogic_Orgs(id, key, parent_deployment)
-                org_details = sumo_orgs.get_org_details(row_dict['Org ID'])
-                deployments = sumo_orgs.get_deployments()
-                org_info = sumo_orgs.get_parent_org_info()
+                sumo_mam = SumoLogic_Orgs(creds['id'],
+                                          creds['key'],
+                                          str(creds['service']).lower(),
+                                          log_level=self.mainwindow.log_level)
+                org_details = sumo_mam.get_org_details(row_dict['Org ID'])
+                deployments = sumo_mam.get_deployments()
+                org_info = sumo_mam.get_parent_org_info()
                 trials_enabled = org_info['isEligibleForTrialOrgs']
 
             except Exception as e:
@@ -537,12 +542,12 @@ class organizations_tab(QtWidgets.QWidget):
                 org_update_details = dialog.getresults()
                 try:
 
-                    response = sumo_orgs.update_org(org_details['orgId'], org_update_details['baselines'])
+                    response = sumo_mam.update_org(org_details['orgId'], org_update_details['baselines'])
                 except Exception as e:
                     self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
                     logger.exception(e)
                     dialog.close()
 
                 dialog.close()
-                self.update_org_list(parent_deployment, id, key)
+                self.update_org_list(creds)
 
