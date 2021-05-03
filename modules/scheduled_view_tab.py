@@ -17,6 +17,8 @@ class ScheduledViewTab(StandardTab):
         self.useCurrentDate.setText("Use Current\nDate")
         self.verticalLayoutCenterButton.insertWidget(3, self.useCurrentDate)
         self.useCurrentDate.show()
+        self.listWidgetLeft.params = {'extension': '.sumoscheduledview.json'}
+        self.listWidgetRight.params = {'extension': '.sumoscheduledview.json'}
 
         self.pushButtonCopyLeftToRight.clicked.connect(lambda: self.begin_copy_content(
             self.ListWidgetLeft,

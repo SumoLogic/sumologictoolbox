@@ -2,6 +2,7 @@ from qtpy import QtCore, QtGui, QtWidgets, uic
 from modules.multithreading import Worker, ProgressDialog
 from modules.shared import ShowTextDialog, exception_and_error_handling
 from modules.filesystem_adapter import FilesystemAdapter
+import pathlib
 import json
 import re
 import os
@@ -108,6 +109,9 @@ class BaseTab(QtWidgets.QWidget):
         self.workers = []
         self.num_successful_threads = 0
 
+        self.load_icons()
+
+
     def reset_stateful_objects(self, side='both'):
         self.left = None
         self.right = None
@@ -121,27 +125,13 @@ class BaseTab(QtWidgets.QWidget):
             self.left = False
             self.right = True
 
-
-        left_creds = self.mainwindow.get_current_creds('left')
-        if left_creds['service'] == "FILESYSTEM:":
-            self.pushButtonParentDirLeft.setEnabled(True)
-            self.pushButtonNewFolderLeft.setEnabled(True)
-            self.left_adapter = FilesystemAdapter(left_creds, 'left', log_level=self.mainwindow.log_level)
-        elif ':' not in left_creds['service']:
-            self.pushButtonParentDirLeft.setEnabled(False)
-            self.pushButtonNewFolderLeft.setEnabled(False)
-            
-        right_creds = self.mainwindow.get_current_creds('right')
-        if right_creds['service'] == "FILESYSTEM:":
-            self.pushButtonParentDirRight.setEnabled(True)
-            self.pushButtonNewFolderRight.setEnabled(True)
-            self.right_adapter = FilesystemAdapter(right_creds, 'right', log_level=self.mainwindow.log_level)
-        if ':' not in right_creds['service']:
-            self.pushButtonParentDirRight.setEnabled(False)
-            self.pushButtonNewFolderRight.setEnabled(False)
+        self.left_creds = self.mainwindow.get_current_creds('left')
+        self.right_creds = self.mainwindow.get_current_creds('right')
 
     def load_icons(self):
-        pass
+        self.icons = {}
+        icon_path = str(pathlib.Path(self.mainwindow.basedir + '/data/folder.svg'))
+        self.icons['Folder'] = QtGui.QIcon(icon_path)
 
     def set_listwidget_filter(self, list_widget, filter_text):
         for row in range(list_widget.count()):
@@ -242,13 +232,18 @@ class BaseTab(QtWidgets.QWidget):
 
     @exception_and_error_handling
     def update_item_list(self, list_widget, adapter, path_label=None):
-        contents = adapter.list(list_widget.mode)
+        contents = adapter.list(list_widget.mode, params=list_widget.params)
         self.update_list_widget(list_widget, adapter, contents, path_label=path_label)
         self.clear_filters(list_widget)
 
     def create_list_widget_item(self, item):
         item_name = str(item['name'])
-        list_item = QtWidgets.QListWidgetItem(item_name)
+        if ('contentType' in item) and (item['contentType'] == 'Folder'):
+            list_item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
+        elif ('itemType' in item) and (item['itemType'] == 'Folder'):
+            list_item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
+        else:
+            list_item = QtWidgets.QListWidgetItem(item_name)
         return list_item
 
     def update_list_widget(self, list_widget, adapter, payload, path_label=None):
@@ -338,8 +333,12 @@ class BaseTab(QtWidgets.QWidget):
         base_params = {'destination_list_widget': destination_list_widget,
                        'destination_adapter': destination_adapter}
         merged_params = {**base_params, **params}
+        merged_params = {**merged_params, **source_list_widget.params}
         for index, selected_item in enumerate(selected_items):
-            item_id = selected_item.details['id']
+            if 'id' in selected_item.details:
+                item_id = selected_item.details['id']
+            else:
+                item_id = None
             logger.debug(f"Creating copy thread for item {selected_item.details['name']}")
             self.workers.append(Worker(source_adapter.export_item,
                                        source_list_widget.mode,
@@ -424,7 +423,10 @@ If you are absolutely sure, type "DELETE" in the box below.
                       'destination_adapter': adapter}
             for index, selected_item in enumerate(selected_items):
                 item_name = selected_item.details['name']
-                item_id = selected_item.details['id']
+                if 'id' in selected_item.details:
+                    item_id = selected_item.details['id']
+                else:
+                    item_id = None
                 logger.debug(f"Creating delete thread for item {item_name}")
                 self.workers.append(Worker(adapter.delete,
                                            list_widget.mode,
@@ -448,7 +450,10 @@ If you are absolutely sure, type "DELETE" in the box below.
         self.workers = []
         for index, selected_item in enumerate(selected_items):
             item_name = selected_item.details['name']
-            item_id = selected_item.details['id']
+            if 'id' in selected_item.details:
+                item_id = selected_item.details['id']
+            else:
+                item_id = None
             logger.debug(f"Creating view thread for item {item_name}")
             self.workers.append(Worker(adapter.get,
                                        list_widget.mode,
@@ -494,7 +499,6 @@ If you are absolutely sure, type "DELETE" in the box below.
 
     @exception_and_error_handling
     def double_clicked_item(self, list_widget, adapter, item, path_label=None):
-
         logger.info(f"[{self.tab_name}] Going Down One Folder")
         result = adapter.down(list_widget.mode, item.details['name'])
         if result:
@@ -517,13 +521,13 @@ class StandardTab(BaseTab):
         uic.loadUi(standard_tab_ui, self)
 
         self.pushButtonUpdateLeft.clicked.connect(lambda: self.update_item_list(
-            self.ListWidgetLeft,
+            self.listWidgetLeft,
             self.left_adapter,
             path_label=self.labelPathLeft
         ))
 
         self.pushButtonUpdateRight.clicked.connect(lambda: self.update_item_list(
-            self.ListWidgetRight,
+            self.listWidgetRight,
             self.right_adapter,
             path_label=self.labelPathRight
         ))
@@ -540,14 +544,14 @@ class StandardTab(BaseTab):
             path_label=self.labelPathRight
         ))
 
-        self.ListWidgetLeft.itemDoubleClicked.connect(lambda item: self.double_clicked_item(
+        self.listWidgetLeft.itemDoubleClicked.connect(lambda item: self.double_clicked_item(
             self.listWidgetLeft,
             self.left_adapter,
             item,
             path_label=self.labelPathLeft
         ))
 
-        self.ListWidgetRight.itemDoubleClicked.connect(lambda item: self.double_clicked_item(
+        self.listWidgetRight.itemDoubleClicked.connect(lambda item: self.double_clicked_item(
             self.listWidgetRight,
             self.right_adapter,
             item,
@@ -565,56 +569,72 @@ class StandardTab(BaseTab):
         ))
 
         self.pushButtonDeleteLeft.clicked.connect(lambda: self.delete_item(
-            self.ListWidgetLeft,
+            self.listWidgetLeft,
             self.left_adapter
         ))
 
         self.pushButtonDeleteRight.clicked.connect(lambda: self.delete_item(
-            self.ListWidgetRight,
+            self.listWidgetRight,
             self.right_adapter
         ))
 
         if not copy_override:
             self.pushButtonCopyLeftToRight.clicked.connect(lambda: self.begin_copy_content(
-                self.ListWidgetLeft,
-                self.ListWidgetRight,
+                self.listWidgetLeft,
+                self.listWidgetRight,
                 self.left_adapter,
                 self.right_adapter,
                 {'replace_source_categories': False}
             ))
 
             self.pushButtonCopyRightToLeft.clicked.connect(lambda: self.begin_copy_content(
-                self.ListWidgetRight,
-                self.ListWidgetLeft,
+                self.listWidgetRight,
+                self.listWidgetLeft,
                 self.right_adapter,
                 self.left_adapter,
                 {'replace_source_categories': False}
             ))
 
         self.pushButtonJSONLeft.clicked.connect(lambda: self.view_json(
-            self.ListWidgetLeft,
+            self.listWidgetLeft,
             self.left_adapter
         ))
 
         self.pushButtonJSONRight.clicked.connect(lambda: self.view_json(
-            self.ListWidgetRight,
+            self.listWidgetRight,
             self.right_adapter
         ))
 
     def reset_stateful_objects(self, side='both'):
         super(StandardTab, self).reset_stateful_objects(side=side)
         if self.left:
-            self.ListWidgetLeft.clear()
-            self.ListWidgetLeft.currentcontent = {}
-            self.ListWidgetLeft.updated = False
-            self.ListWidgetLeft.mode = None
+            self.listWidgetLeft.clear()
+            self.listWidgetLeft.currentcontent = {}
+            self.listWidgetLeft.updated = False
+            self.listWidgetLeft.mode = None
+            if self.left_creds['service'] == "FILESYSTEM:":
+                self.pushButtonParentDirLeft.setEnabled(True)
+                self.pushButtonNewFolderLeft.setEnabled(True)
+                self.left_adapter = FilesystemAdapter(self.left_creds, 'left', log_level=self.mainwindow.log_level)
+            elif ':' not in self.left_creds['service']:
+                self.pushButtonParentDirLeft.setEnabled(False)
+                self.pushButtonNewFolderLeft.setEnabled(False)
 
         if self.right:
-            self.ListWidgetRight.clear()
-            self.ListWidgetRight.currentcontent = {}
-            self.ListWidgetRight.updated = False
-            self.ListWidgetRight.mode = None
+            self.listWidgetRight.clear()
+            self.listWidgetRight.currentcontent = {}
+            self.listWidgetRight.updated = False
+            self.listWidgetRight.mode = None
+            if self.right_creds['service'] == "FILESYSTEM:":
+                self.pushButtonParentDirRight.setEnabled(True)
+                self.pushButtonNewFolderRight.setEnabled(True)
+                self.right_adapter = FilesystemAdapter(self.right_creds, 'right', log_level=self.mainwindow.log_level)
+            if ':' not in self.right_creds['service']:
+                self.pushButtonParentDirRight.setEnabled(False)
+                self.pushButtonNewFolderRight.setEnabled(False)
 
+
+# This DoubleTab was a failed experiment and isn't used. I'll delete it later when I'm sure I don't need it.
 class DoubleTab(BaseTab):
 
     def __init__(self, mainwindow, top_copy_override=False, bottom_copy_override=False):
@@ -778,6 +798,14 @@ class DoubleTab(BaseTab):
             self.listWidgetBottomLeft.side = 'left'
             self.labelTopPathLeft.clear()
             self.clear_listwidget_filters(self.listWidgetTopLeft)
+            if self.left_creds['service'] == "FILESYSTEM:":
+                self.pushButtonParentDirLeft.setEnabled(True)
+                self.pushButtonNewFolderLeft.setEnabled(True)
+                self.left_top_adapter = FilesystemAdapter(self.left_creds, 'left', log_level=self.mainwindow.log_level)
+                self.left_bottom_adapter = FilesystemAdapter(self.left_creds, 'left', log_level=self.mainwindow.log_level)
+            elif ':' not in self.left_creds['service']:
+                self.pushButtonParentDirLeft.setEnabled(False)
+                self.pushButtonNewFolderLeft.setEnabled(False)
 
         if self.right:
             self.listWidgetTopRight.clear()
@@ -790,6 +818,14 @@ class DoubleTab(BaseTab):
             self.listWidgetBottomRight.side = 'right'
             self.labelTopPathRight.clear()
             self.clear_listwidget_filters(self.listWidgetTopRight)
+            if self.right_creds['service'] == "FILESYSTEM:":
+                self.pushButtonParentDirRight.setEnabled(True)
+                self.pushButtonNewFolderRight.setEnabled(True)
+                self.right_top_adapter = FilesystemAdapter(self.right_creds, 'right', log_level=self.mainwindow.log_level)
+                self.right_bottom_adapter = FilesystemAdapter(self.right_creds, 'right', log_level=self.mainwindow.log_level)
+            elif ':' not in self.right_creds['service']:
+                self.pushButtonParentDirRight.setEnabled(False)
+                self.pushButtonNewFolderRight.setEnabled(False)
 
     def clear_listwidget_filters(self, list_widget):
         if list_widget.side == 'left':
@@ -804,9 +840,11 @@ class DoubleTab(BaseTab):
         contents = adapter.list(list_widget.mode)
         self.update_list_widget(list_widget, adapter, contents, path_label=path_label)
         if list_widget.side == 'left':
-            contents = self.left_bottom_adapter.list(self.listWidgetBottomLeft.mode)
+            contents = self.left_bottom_adapter.list(self.listWidgetBottomLeft.mode,
+                                                     params=self.listWidgetBottomLeft.params)
             self.update_list_widget(self.listWidgetBottomLeft, self.left_bottom_adapter, contents, path_label=None)
         if list_widget.side == 'right':
-            contents = self.right_bottom_adapter.list(self.listWidgetBottomRight.mode)
+            contents = self.right_bottom_adapter.list(self.listWidgetBottomRight.mode,
+                                                      params=self.listWidgetBottomRight.params)
             self.update_list_widget(self.listWidgetBottomRight, self.right_bottom_adapter, contents, path_label=None)
         self.clear_listwidget_filters(list_widget)

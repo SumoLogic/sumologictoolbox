@@ -92,7 +92,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="ListWidgetLeft">
+      <widget class="QListWidget" name="listWidgetLeft">
        <property name="font">
         <font>
          <family>Waree</family>
@@ -387,7 +387,7 @@ Copy</string>
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="ListWidgetRight">
+      <widget class="QListWidget" name="listWidgetRight">
        <property name="font">
         <font>
          <family>Waree</family>

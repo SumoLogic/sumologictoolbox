@@ -225,7 +225,6 @@ class SumoLogic(object):
         status = self.search_job_status(searchjob)
         numrecords = status['recordCount']
         while status['state'] != 'DONE GATHERING RESULTS':
-            time.sleep(PERIOD / NUMBER_OF_CALLS)
             if status['state'] == 'CANCELLED':
                 break
             status = self.search_job_status(searchjob)
@@ -248,7 +247,6 @@ class SumoLogic(object):
         status = self.search_job_status(searchjob)
         nummessages = status['messageCount']
         while status['state'] != 'DONE GATHERING RESULTS':
-            time.sleep(PERIOD / NUMBER_OF_CALLS)
             if status['state'] == 'CANCELLED':
                 break
             status = self.search_job_status(searchjob)
@@ -300,7 +298,6 @@ class SumoLogic(object):
         offset = offset + limit
         results = results + r
         while not (len(r) < limit):
-            time.sleep(PERIOD / NUMBER_OF_CALLS)
             r = self.get_collectors(limit=limit, offset=offset, filter_type=filter_type)
             offset = offset + limit
             results = results + r
@@ -340,7 +337,7 @@ class SumoLogic(object):
 
     def delete_collector(self, collector_id):
         r = self.delete('/v1/collectors/' + str(collector_id))
-        return r.json()
+        return r
 
     def get_sources(self, collector_id, limit=None, offset=None):
         params = {'limit': limit, 'offset': offset}
@@ -354,7 +351,6 @@ class SumoLogic(object):
         offset = offset + limit
         results = results + r
         while not (len(r) < limit):
-            time.sleep(PERIOD / NUMBER_OF_CALLS)
             r = self.get_sources(collector_id, limit=limit, offset=offset)
             offset = offset + limit
             results = results + r
@@ -499,7 +495,6 @@ class SumoLogic(object):
         job_id = str(r['id'])
         status = self.get_global_folder_job_status(job_id)
         while status['status'] == 'InProgress':
-            time.sleep(PERIOD / NUMBER_OF_CALLS)
             status = self.get_global_folder_job_status(job_id)
         if status['status'] == 'Success':
             r = self.get_global_folder_job_result(job_id)
@@ -526,7 +521,6 @@ class SumoLogic(object):
         job_id = str(r['id'])
         status = self.get_admin_folder_job_status(job_id)
         while status['status'] == 'InProgress':
-            time.sleep(PERIOD / NUMBER_OF_CALLS)
             status = self.get_admin_folder_job_status(job_id)
         if status['status'] == 'Success':
             r = self.get_admin_folder_job_result(job_id)
@@ -584,7 +578,6 @@ class SumoLogic(object):
         job_id = str(r['id'])
         status = self.get_delete_content_job_status(str(item_id), str(job_id), adminmode=adminmode)
         while status['status'] == 'InProgress':
-            time.sleep(PERIOD / NUMBER_OF_CALLS)
             status = self.get_delete_content_job_status(str(item_id), str(job_id), adminmode=adminmode)
         return status
 
@@ -624,7 +617,6 @@ class SumoLogic(object):
         job_id = str(r['id'])
         status = self.get_export_content_job_status(item_id, job_id, adminmode=adminmode)
         while status['status'] == 'InProgress':
-            time.sleep(PERIOD / NUMBER_OF_CALLS)
             status = self.get_export_content_job_status(item_id, job_id, adminmode=adminmode)
         if status['status'] == 'Success':
             r = self.get_export_content_job_result(item_id, job_id, adminmode=adminmode)
@@ -648,7 +640,7 @@ class SumoLogic(object):
         job_id = str(r['id'])
         status = self.get_import_content_job_status(str(folder_id), str(job_id), adminmode=adminmode)
         while status['status'] == 'InProgress':
-            time.sleep(PERIOD / NUMBER_OF_CALLS)
+            time.sleep(1)
             status = self.get_import_content_job_status(str(folder_id), str(job_id), adminmode=adminmode)
         return status
 
@@ -671,8 +663,6 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
-            else:
-                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
     def create_role(self, body):
@@ -718,8 +708,6 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
-            else:
-                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
     def get_user(self, user_id):
@@ -788,8 +776,6 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
-            else:
-                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
     def create_connection(self, connection):
@@ -830,17 +816,12 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
-            else:
-                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
-    def create_fer(self, data):
+    def create_fer(self, name, scope, parse_expression, enabled=False):
+        data = {'name': name, 'scope': scope, 'parseExpression': parse_expression, 'enabled': str(enabled).lower()}
         r = self.post('/v1/extractionRules', data)
         return r.json()
-
-    def create_fer_alternate(self, name, scope, parse_expression, enabled=False):
-        data = {'name': name, 'scope': scope, 'parseExpression': parse_expression, 'enabled': str(enabled).lower()}
-        return self.create_fer(data)
 
     def get_fer(self, item_id):
         r = self.get('/v1/extractionRules/' + str(item_id))
@@ -872,24 +853,13 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
-            else:
-                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
     #start time must be in RFC3339 format
     # https://tools.ietf.org/html/rfc3339
     # https://medium.com/easyread/understanding-about-rfc-3339-for-datetime-formatting-in-software-engineering-940aa5d5f68a
-    def create_scheduled_view(self, payload):
-        r = self.post('/v1/scheduledViews', payload)
-        return r.json()
-
-    def create_scheduled_view_alternate(self, index_name, query, start_time, retention_period=-1, data_forwarding_id=None, parsingMode='Manual'):
-        data = {'indexName': str(index_name),
-                'query': str(query),
-                'startTime': str(start_time),
-                'retentionPeriod': int(retention_period),
-                'dataForwardingId': str(data_forwarding_id),
-                'parsingMode': str(parsingMode)}
+    def create_scheduled_view(self, index_name, query, start_time, retention_period=-1, data_forwarding_id=None):
+        data = {'indexName': str(index_name), 'query': str(query), 'startTime': str(start_time), 'retentionPeriod': int(retention_period), "dataForwardingId": str(data_forwarding_id) }
         r = self.post('/v1/scheduledViews', data)
         return r.json()
 
@@ -923,15 +893,9 @@ class SumoLogic(object):
             results = results + r['data']
             if token is None:
                 break
-            else:
-                time.sleep(PERIOD / NUMBER_OF_CALLS)
         return results
 
-    def create_partition(self, data):
-        r = self.post('/v1/partitions', data)
-        return r.json()
-
-    def create_partition_alternate(self, name, routing_expression, analytics_tier="enhanced", retention_period=-1, data_forwarding_id=None, is_compliant=False):
+    def create_partition(self, name, routing_expression, analytics_tier="enhanced", retention_period=-1, data_forwarding_id=None, is_compliant=False):
         data = {'name': str(name),
                 'routingExpression': str(routing_expression),
                 'analyticsTier': str(analytics_tier),
@@ -939,7 +903,8 @@ class SumoLogic(object):
                 'dataForwardingId': str(data_forwarding_id),
                 'isCompliant': str(is_compliant).lower()}
 
-        return self.create_partition(data)
+        r = self.post('/v1/partitions', data)
+        return r.json()
 
     def get_partition(self, item_id):
         r = self.get('/v1/partitions/' + str(item_id))
@@ -1017,7 +982,6 @@ class SumoLogic(object):
         offset = offset + limit
         results = results + r
         while not (len(r) < limit):
-            time.sleep(PERIOD / NUMBER_OF_CALLS)
             r = self.search_monitors(query, limit=limit, offset=offset)
             offset = offset + limit
             results = results + r
@@ -1027,12 +991,8 @@ class SumoLogic(object):
         r = self.get('/v1/monitors/' + str(item_id))
         return r.json()
 
-    def update_monitor(self, item_id, name, version, type, description=''):
-        data = {'name': str(name),
-                'description': str(description),
-                'version': int(version),
-                'type': str(type)}
-        r = self.put('/v1/monitors/' + str(item_id), data)
+    def update_monitor(self, item_id, monitor):
+        r = self.put('/v1/monitors/' + str(item_id), monitor)
         return r.json()
 
     def delete_monitor(self, item_id):
@@ -1152,37 +1112,4 @@ class SumoLogic(object):
     
     def update_lookup_table(self, table_id, content):
         r = self.put('/v1/lookupTables/%s/row' % table_id, params=content)
-        return r.json()
-
-    # Account API
-
-    def get_account_owner(self):
-        r = self.get('/v1/account/accountOwner')
-        return r.text
-
-    def get_account_subdomain(self):
-        r = self.get('/v1/account/subdomain')
-        return r.text
-
-    def update_account_subdomain(self, subdomain):
-        data = {'subdomain': str(subdomain)}
-        r = self.put('/v1/account/subdomain', data)
-        return r.json()
-
-    def create_account_subdomain(self, subdomain):
-        data = {'subdomain': str(subdomain)}
-        r = self.post('/v1/account/subdomain', data)
-        return r.json()
-
-    def delete_account_subdomain(self):
-        r = self.delete('/v1/account/subdomain')
-        return r.text
-
-    def recover_account_subdomain(self, email_address):
-        data = {'email': str(email_address)}
-        r = self.post('/v1/account/subdomain', data)
-        return r.json()
-
-    def get_account_contract(self):
-        r = self.get('/v1/account/contract')
         return r.json()

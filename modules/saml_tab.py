@@ -10,6 +10,8 @@ class SAMLTab(StandardTab):
         super(SAMLTab, self).__init__(mainwindow)
         self.tab_name = 'SAML'
         self.cred_usage = 'both'
+        self.listWidgetLeft.params = {'extension': '.sumosamlconfig.json'}
+        self.listWidgetRight.params = {'extension': '.sumosamlconfig.json'}
 
     def reset_stateful_objects(self, side='both'):
         super(SAMLTab, self).reset_stateful_objects(side=side)

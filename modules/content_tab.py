@@ -4,6 +4,7 @@ import pathlib
 from logzero import logger
 from modules.adapter import SumoContentAdapter
 from modules.tab_base_class import BaseTab
+from modules.filesystem_adapter import FilesystemAdapter
 
 class_name = 'ContentTab'
 
@@ -16,12 +17,12 @@ class ContentTab(BaseTab):
         self.cred_usage = 'both'
         content_widget_ui = os.path.join(self.mainwindow.basedir, 'data/content.ui')
         uic.loadUi(content_widget_ui, self)
-        # Load icons used in the listviews
-        self.load_icons()
         # set up some variables to identify the content list widgets. This is read by some of the content methods
         # to determine proper course of action
         self.contentListWidgetLeft.side = 'left'
         self.contentListWidgetRight.side = 'right'
+        self.contentListWidgetLeft.params = {'extension': '.sumocontent.json'}
+        self.contentListWidgetRight.params = {'extension': '.sumocontent.json'}
         self.reset_stateful_objects()
 
         # Content Pane Signals
@@ -157,8 +158,16 @@ class ContentTab(BaseTab):
         if left:
             self.contentListWidgetLeft.clear()
             self.contentListWidgetLeft.updated = False
+            self.radioButtonPersonalLeft.setEnabled(False)
+            self.radioButtonGlobalLeft.setEnabled(False)
+            self.radioButtonAdminLeft.setEnabled(False)
             left_creds = self.mainwindow.get_current_creds('left')
-            if ':' not in left_creds['service']:
+            if left_creds['service'] == "FILESYSTEM:":
+                self.left_adapter = FilesystemAdapter(left_creds, 'left', log_level=self.mainwindow.log_level)
+            elif ':' not in left_creds['service']:
+                self.radioButtonPersonalLeft.setEnabled(True)
+                self.radioButtonGlobalLeft.setEnabled(True)
+                self.radioButtonAdminLeft.setEnabled(True)
                 self.left_adapter = SumoContentAdapter(left_creds, 'left', log_level=self.mainwindow.log_level)
             self.radioButtonPersonalLeft.setChecked(True)
             self.contentListWidgetLeft.mode = "personal"
@@ -168,8 +177,16 @@ class ContentTab(BaseTab):
         if right:
             self.contentListWidgetRight.clear()
             self.contentListWidgetRight.updated = False
+            self.radioButtonPersonalRight.setEnabled(False)
+            self.radioButtonGlobalRight.setEnabled(False)
+            self.radioButtonAdminRight.setEnabled(False)
             right_creds = self.mainwindow.get_current_creds('right')
-            if ':' not in right_creds['service']:
+            if right_creds['service'] == "FILESYSTEM:":
+                self.right_adapter = FilesystemAdapter(right_creds, 'right', log_level=self.mainwindow.log_level)
+            elif ':' not in right_creds['service']:
+                self.radioButtonPersonalRight.setEnabled(True)
+                self.radioButtonGlobalRight.setEnabled(True)
+                self.radioButtonAdminRight.setEnabled(True)
                 self.right_adapter = SumoContentAdapter(right_creds, 'right', log_level=self.mainwindow.log_level)
             self.radioButtonPersonalRight.setChecked(True)
             self.contentListWidgetRight.mode = "personal"

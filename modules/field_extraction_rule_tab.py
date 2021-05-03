@@ -11,6 +11,8 @@ class FieldExtractionRuleTab(StandardTab):
         super(FieldExtractionRuleTab, self).__init__(mainwindow)
         self.tab_name = 'Field Extraction Rules'
         self.cred_usage = 'both'
+        self.listWidgetLeft.params = {'extension': '.sumofer.json'}
+        self.listWidgetRight.params = {'extension': '.sumofer.json'}
 
     def reset_stateful_objects(self, side='both'):
         super(FieldExtractionRuleTab, self).reset_stateful_objects(side=side)

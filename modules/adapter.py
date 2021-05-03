@@ -53,16 +53,18 @@ class Adapter:
         self.path_string = self._generate_path_string(prefix=prefix)
 
     def _generate_path_string(self, prefix=""):
-        path_string = str(prefix) + "/"
+        path_string = str(prefix)
         for directory in self.current_path_list:
             path_string = path_string + f"{directory}/"
         return path_string
 
     def _add_dir_to_path(self, directory):
         self.current_path_list.append(str(directory))
+        self._update_path_string()
 
     def _remove_dir_from_path(self):
         self.current_path_list.pop()
+        self._update_path_string()
 
     def at_top_of_hierarchy(self):
         #  we must be at root if the id list is empty
@@ -250,11 +252,11 @@ class SumoContentAdapter(SumoHierarchyAdapter):
 
     def _self_update_path_string_from_mode(self, mode):
         if mode == "personal":
-            self._update_path_string(prefix='/Personal')
+            self._update_path_string(prefix='/Personal/')
         elif mode == "global":
-            self._update_path_string(prefix='/Global')
+            self._update_path_string(prefix='/Global/')
         elif mode == "admin":
-            self._update_path_string(prefix='/Admin')
+            self._update_path_string(prefix='/Admin Recommended/')
 
     def _determine_admin_mode(self, mode):
         if mode == "personal":

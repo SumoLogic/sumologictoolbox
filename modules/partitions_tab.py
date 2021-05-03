@@ -11,6 +11,8 @@ class PartitionsTab(StandardTab):
         super(PartitionsTab, self).__init__(mainwindow)
         self.tab_name = 'Partitions'
         self.cred_usage = 'both'
+        self.listWidgetLeft.params = {'extension': '.sumopartition.json'}
+        self.listWidgetRight.params = {'extension': '.sumopartition.json'}
 
     def reset_stateful_objects(self, side='both'):
         super(PartitionsTab, self).reset_stateful_objects(side=side)
