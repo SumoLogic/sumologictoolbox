@@ -69,7 +69,21 @@ class FilesystemAdapter(Adapter):
             return False
 
     def create_folder(self, mode, folder_name, list_widget, params=None):
-        return False
+        try:
+            path = pathlib.Path(self.get_current_path(), folder_name)
+            path.mkdir()
+            return {'status': 'SUCCESS',
+                    'result': True,
+                    'adapter': self,
+                    'params': params,
+                    'list_widget': list_widget}
+        except Exception as e:
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }
 
     def put(self, mode, item_name, payload, list_widget, params=None):
         try:
@@ -117,6 +131,18 @@ class FilesystemAdapter(Adapter):
         return self.put(mode, item_name, payload, list_widget, params=params)
 
     def delete(self, mode, item_name, item_id, list_widget, params=None):
-        return False
-
-
+        try:
+            path = pathlib.Path(self.get_current_path(), item_name)
+            path.unlink()
+            return {'status': 'SUCCESS',
+                    'result': None,
+                    'adapter': self,
+                    'params': params,
+                    'list_widget': list_widget}
+        except Exception as e:
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }

@@ -712,6 +712,22 @@ class SumoFERAdapter(SumoAdapter):
     def import_item(self, mode, item_name, payload, list_widget, params=None):
         return self.put(mode, item_name, payload, list_widget, params=params)
 
+    def delete(self, mode, item_name, item_id, list_widget, params=None):
+        try:
+            result = self.sumo.delete_fer(item_id)
+            return {'status': 'SUCCESS',
+                    'result': result,
+                    'adapter': self,
+                    'params': params,
+                    'list_widget': list_widget}
+        except Exception as e:
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }
+
 
 class SumoScheduledViewAdapter(SumoAdapter):
 

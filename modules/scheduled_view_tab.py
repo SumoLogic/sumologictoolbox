@@ -21,16 +21,16 @@ class ScheduledViewTab(StandardTab):
         self.listWidgetRight.params = {'extension': '.sumoscheduledview.json'}
 
         self.pushButtonCopyLeftToRight.clicked.connect(lambda: self.begin_copy_content(
-            self.ListWidgetLeft,
-            self.ListWidgetRight,
+            self.listWidgetLeft,
+            self.listWidgetRight,
             self.left_adapter,
             self.right_adapter,
             {'replace_source_categories': False, 'use_current_date': self.useCurrentDate.isChecked()}
         ))
 
         self.pushButtonCopyRightToLeft.clicked.connect(lambda: self.begin_copy_content(
-            self.ListWidgetRight,
-            self.ListWidgetLeft,
+            self.listWidgetRight,
+            self.listWidgetLeft,
             self.right_adapter,
             self.left_adapter,
             {'replace_source_categories': False, 'use_current_date': self.useCurrentDate.isChecked()}

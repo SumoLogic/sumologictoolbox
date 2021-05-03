@@ -1,5 +1,6 @@
 from qtpy import QtWidgets, QtGui, QtCore, uic
 import traceback
+from logzero import logger
 import sys
 import os
 
@@ -20,11 +21,14 @@ class ProgressDialog(QtWidgets.QDialog):
         self.progressBar.setMaximum(self.max)
         self.progressBar.setValue(self.count)
         self.pushButtonCancel.clicked.connect(self.cancel)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.show()
 
+    @QtCore.Slot()
     def increment(self):
         self.count += 1
         self.progressBar.setValue(self.count)
+        logger.debug(f'Progress is {self.count}/{self.max}')
         if self.count >= self.max:
             self.close()
 

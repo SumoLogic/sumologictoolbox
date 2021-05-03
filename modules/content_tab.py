@@ -161,6 +161,10 @@ class ContentTab(BaseTab):
             self.radioButtonPersonalLeft.setEnabled(False)
             self.radioButtonGlobalLeft.setEnabled(False)
             self.radioButtonAdminLeft.setEnabled(False)
+            # FindReplaceCopy Requires a Sumo Org as the Destination so it can query source categories
+            # turn it off by default
+            self.left_find_replace_copy_on = False
+            self.pushButtonContentFindReplaceCopyRightToLeft.setEnabled(False)
             left_creds = self.mainwindow.get_current_creds('left')
             if left_creds['service'] == "FILESYSTEM:":
                 self.left_adapter = FilesystemAdapter(left_creds, 'left', log_level=self.mainwindow.log_level)
@@ -168,6 +172,10 @@ class ContentTab(BaseTab):
                 self.radioButtonPersonalLeft.setEnabled(True)
                 self.radioButtonGlobalLeft.setEnabled(True)
                 self.radioButtonAdminLeft.setEnabled(True)
+                # FindReplaceCopy Requires a Sumo Org as the Destination so it can query source categories
+                # turn it on since that's true
+                self.left_find_replace_copy_on = True
+                self.pushButtonContentFindReplaceCopyRightToLeft.setEnabled(True)
                 self.left_adapter = SumoContentAdapter(left_creds, 'left', log_level=self.mainwindow.log_level)
             self.radioButtonPersonalLeft.setChecked(True)
             self.contentListWidgetLeft.mode = "personal"
@@ -180,6 +188,10 @@ class ContentTab(BaseTab):
             self.radioButtonPersonalRight.setEnabled(False)
             self.radioButtonGlobalRight.setEnabled(False)
             self.radioButtonAdminRight.setEnabled(False)
+            # FindReplaceCopy Requires a Sumo Org as the Destination so it can query source categories
+            # turn it off by default
+            self.right_find_replace_copy_on = False
+            self.pushButtonContentFindReplaceCopyLeftToRight.setEnabled(False)
             right_creds = self.mainwindow.get_current_creds('right')
             if right_creds['service'] == "FILESYSTEM:":
                 self.right_adapter = FilesystemAdapter(right_creds, 'right', log_level=self.mainwindow.log_level)
@@ -187,6 +199,10 @@ class ContentTab(BaseTab):
                 self.radioButtonPersonalRight.setEnabled(True)
                 self.radioButtonGlobalRight.setEnabled(True)
                 self.radioButtonAdminRight.setEnabled(True)
+                # FindReplaceCopy Requires a Sumo Org as the Destination so it can query source categories
+                # turn it on since that's true
+                self.right_find_replace_copy_on = True
+                self.pushButtonContentFindReplaceCopyLeftToRight.setEnabled(True)
                 self.right_adapter = SumoContentAdapter(right_creds, 'right', log_level=self.mainwindow.log_level)
             self.radioButtonPersonalRight.setChecked(True)
             self.contentListWidgetRight.mode = "personal"
@@ -226,14 +242,16 @@ class ContentTab(BaseTab):
     def toggle_content_buttons(self, side, state):
         if side == 'left':
             self.pushButtonContentCopyRightToLeft.setEnabled(state)
-            self.pushButtonContentFindReplaceCopyRightToLeft.setEnabled(state)
             self.pushButtonContentNewFolderLeft.setEnabled(state)
             self.pushButtonContentDeleteLeft.setEnabled(state)
+            if self.left_find_replace_copy_on:
+                self.pushButtonContentFindReplaceCopyRightToLeft.setEnabled(state)
         elif side == 'right':
             self.pushButtonContentCopyLeftToRight.setEnabled(state)
-            self.pushButtonContentFindReplaceCopyLeftToRight.setEnabled(state)
             self.pushButtonContentNewFolderRight.setEnabled(state)
             self.pushButtonContentDeleteRight.setEnabled(state)
+            if self.right_find_replace_copy_on:
+                self.pushButtonContentFindReplaceCopyLeftToRight.setEnabled(state)
 
 
     def create_list_widget_item(self, item):

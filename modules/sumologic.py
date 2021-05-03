@@ -818,10 +818,14 @@ class SumoLogic(object):
                 break
         return results
 
-    def create_fer(self, name, scope, parse_expression, enabled=False):
-        data = {'name': name, 'scope': scope, 'parseExpression': parse_expression, 'enabled': str(enabled).lower()}
-        r = self.post('/v1/extractionRules', data)
+    def create_fer(self, fer):
+        r = self.post('/v1/extractionRules', fer)
         return r.json()
+
+    def create_fer_by_fields(self, name, scope, parse_expression, enabled=False):
+        data = {'name': name, 'scope': scope, 'parseExpression': parse_expression, 'enabled': str(enabled).lower()}
+        r = self.create_fer(data)
+        return r
 
     def get_fer(self, item_id):
         r = self.get('/v1/extractionRules/' + str(item_id))

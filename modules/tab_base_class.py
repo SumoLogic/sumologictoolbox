@@ -328,7 +328,7 @@ class BaseTab(QtWidgets.QWidget):
         self.num_threads = num_selected_items
         self.num_successful_threads = 0
         self.copy_export_results = []
-        self.progress = ProgressDialog('Exporting items...', 0, self.num_threads, self.mainwindow.threadpool, self.mainwindow)
+        self.export_progress = ProgressDialog('Exporting items...', 0, self.num_threads, self.mainwindow.threadpool, self.mainwindow)
         self.workers = []
         base_params = {'destination_list_widget': destination_list_widget,
                        'destination_adapter': destination_adapter}
@@ -346,7 +346,7 @@ class BaseTab(QtWidgets.QWidget):
                                        item_id,
                                        params=merged_params
                                        ))
-            self.workers[index].signals.finished.connect(self.progress.increment)
+            self.workers[index].signals.finished.connect(self.export_progress.increment)
             self.workers[index].signals.result.connect(self.merge_begin_copy_results)
             self.mainwindow.threadpool.start(self.workers[index])
         return
@@ -369,7 +369,7 @@ class BaseTab(QtWidgets.QWidget):
                 self.num_threads = len(item_list)
                 self.num_successful_threads = 0
                 self.copy_export_results = []
-                self.progress = ProgressDialog('Importing items...', 0, self.num_threads, self.mainwindow.threadpool,
+                self.import_progress = ProgressDialog('Importing items...', 0, self.num_threads, self.mainwindow.threadpool,
                                                self.mainwindow)
                 self.workers = []
                 for index, item in enumerate(item_list):
@@ -382,9 +382,10 @@ class BaseTab(QtWidgets.QWidget):
                                                result['params']['destination_list_widget'],
                                                params=result['params']
                                                ))
-                    self.workers[index].signals.finished.connect(self.progress.increment)
+                    self.workers[index].signals.finished.connect(self.import_progress.increment)
                     self.workers[index].signals.result.connect(self.merge_results_update_target)
                     self.mainwindow.threadpool.start(self.workers[index])
+
 
     def merge_results_update_target(self, result):
         if result['status'] == 'SUCCESS':
