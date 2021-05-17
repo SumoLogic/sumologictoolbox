@@ -70,8 +70,9 @@ class Adapter:
         self._update_path_string()
 
     def _remove_dir_from_path(self):
-        self.current_path_list.pop()
-        self._update_path_string()
+        if len(self.current_path_list) > 0:
+            self.current_path_list.pop()
+            self._update_path_string()
 
     def at_top_of_hierarchy(self):
         #  we must be at root if the id list is empty

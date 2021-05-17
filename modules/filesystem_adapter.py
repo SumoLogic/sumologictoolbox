@@ -1,8 +1,13 @@
 from modules.adapter import Adapter
 import pathlib
 import ntpath
+import os
 import json
+import platform
 from logzero import logger
+import string
+if platform.system() == 'Windows':
+    from ctypes import windll
 
 
 class FilesystemAdapter(Adapter):
@@ -11,6 +16,33 @@ class FilesystemAdapter(Adapter):
         super(FilesystemAdapter, self).__init__(None, side, log_level=log_level)
         self.configured = True
         self._go_to_default_dir()
+        self.list_windows_drives = False
+
+    def get_windows_drives(self):
+        drives = []
+        bitmask = windll.kernel32.GetLogicalDrives()
+        for letter in string.ascii_lowercase:
+            if bitmask & 1:
+                drive_dict = {'name': str(letter),
+                             'itemType': 'Drive'}
+                drives.append(drive_dict)
+            bitmask >>= 1
+        return drives
+
+    def at_top_of_hierarchy(self):
+        #  we must be at root if the id list is empty
+        #return not self.current_path_list
+        return len(self.current_path_list) <= 1
+
+    def _generate_path_string(self, prefix=""):
+        path_string = str(prefix)
+        if platform.system() == "Windows":
+            for directory in self.current_path_list:
+                path_string = path_string + f"{directory}\\"
+        else:
+            for directory in self.current_path_list:
+                path_string = path_string + f"{directory}/"
+        return path_string
 
     def _go_to_default_dir(self):
         home_dir = pathlib.Path.home()
@@ -22,7 +54,9 @@ class FilesystemAdapter(Adapter):
     def list(self, params=None):
         item_list = []
         item_list.extend(self._get_folders())
-        if params is not None and 'extension' in params:
+        if self.list_windows_drives and platform.system() == "Windows":
+            return self.get_windows_drives()
+        elif params is not None and 'extension' in params:
             filter = '*' + str(params['extension'])
             item_list.extend(self._get_files(filter))
         else:
@@ -46,27 +80,40 @@ class FilesystemAdapter(Adapter):
         folder_list = []
         for path in pathlib.Path(self.get_current_path()).iterdir():
             if path.is_dir():
-                _, folder_name = ntpath.split(path)
+                folder_name = os.path.basename(path)
+                logger.debug(f"[Filesystem Adapter] Found folder {folder_name} in {os.path.dirname(path)}")
                 folder_dict = {'name': folder_name,
                                'itemType': 'Folder'}
                 folder_list.append(folder_dict)
         return folder_list
 
     def up(self, params=None):
-        if self.at_top_of_hierarchy():
+        if self.at_top_of_hierarchy() and platform.system() == "Windows":
+            logger.debug(f"[Filesystem Adapter] Detected Windows top of hierarchy. Setting flag to list drive letters. ")
+            self.list_windows_drives = True
+            self._remove_dir_from_path()
+            return True
+        elif self.at_top_of_hierarchy():
             return False
         else:
             self._remove_dir_from_path()
             return True
 
     def down(self, folder_name, params=None):
-        path = pathlib.Path(self.get_current_path(), folder_name)
-        if path.is_dir():
+        if self.list_windows_drives and platform.system() == "Windows":
+            folder_name = folder_name + ":"
             self._add_dir_to_path(folder_name)
-            logger.debug(f'New path: {self.get_current_path()}')
+            logger.debug(f"[Filesystem Adapter] Detected Windows top of hierarchy. Selecting drive. New path is {self.get_current_path()} ")
+            self.list_windows_drives = False
             return True
         else:
-            return False
+            path = pathlib.Path(self.get_current_path(), folder_name)
+            if path.is_dir():
+                self._add_dir_to_path(folder_name)
+                logger.debug(f'New path: {self.get_current_path()}')
+                return True
+            else:
+                return False
 
     def create_folder(self, folder_name, list_widget, params=None):
         try:

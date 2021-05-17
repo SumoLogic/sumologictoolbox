@@ -74,6 +74,19 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QLineEdit" name="lineEditSearchLeft">
+           <property name="font">
+            <font>
+             <family>Waree</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="placeholderText">
+            <string>search</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>
@@ -368,6 +381,19 @@ Copy</string>
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEditSearchRight">
+           <property name="font">
+            <font>
+             <family>Waree</family>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="placeholderText">
+            <string>search</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

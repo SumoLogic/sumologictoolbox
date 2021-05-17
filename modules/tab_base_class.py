@@ -235,6 +235,7 @@ class BaseTab(QtWidgets.QWidget):
         mode_param = {'mode': list_widget.mode}
         merged_params = {**list_widget.params, **mode_param}
         contents = adapter.list(params=merged_params)
+        logger.debug(f'[Tab Base Class] Updating item list, got: {contents}')
         self.update_list_widget(list_widget, adapter, contents, path_label=path_label)
         self.clear_filters(list_widget)
 
@@ -502,23 +503,23 @@ If you are absolutely sure, type "DELETE" in the box below.
                     return False
 
     @exception_and_error_handling
-    def double_clicked_item(self, list_widget, adapter, item, path_label=None):
+    def double_clicked_item(self, list_widget, adapter, item,  path_label=None):
         logger.debug(f"[{self.tab_name}] Going Down One Folder {str(item.details['name'])}")
         mode_param = {'mode': list_widget.mode}
         merged_params = {**list_widget.params, **mode_param}
         result = adapter.down(item.details['name'], params=merged_params)
         if result:
-            self.update_item_list(list_widget, adapter, path_label=path_label)
+            self.update_item_list(list_widget, adapter,  path_label=path_label)
 
     @exception_and_error_handling
-    def go_to_parent_dir(self, list_widget, adapter, path_label=None):
+    def go_to_parent_dir(self, list_widget, adapter,  path_label=None):
         if list_widget.updated:
             mode_param = {'mode': list_widget.mode}
             merged_params = {**list_widget.params, **mode_param}
             result = adapter.up(params=merged_params)
             if result:
                 logger.debug(f"[{self.tab_name}] Going Up One folder")
-                self.update_item_list(list_widget, adapter, path_label=path_label)
+                self.update_item_list(list_widget, adapter,  path_label=path_label)
 
 
 class StandardTab(BaseTab):
@@ -527,6 +528,8 @@ class StandardTab(BaseTab):
         super(StandardTab, self).__init__(mainwindow)
         standard_tab_ui = os.path.join(self.mainwindow.basedir, 'data/standard_tab.ui')
         uic.loadUi(standard_tab_ui, self)
+        self.listWidgetLeft.filter = self.lineEditSearchLeft
+        self.listWidgetRight.filter = self.lineEditSearchRight
 
         self.pushButtonUpdateLeft.clicked.connect(lambda: self.update_item_list(
             self.listWidgetLeft,
@@ -552,6 +555,16 @@ class StandardTab(BaseTab):
             path_label=self.labelPathRight
         ))
 
+        self.lineEditSearchLeft.textChanged.connect(lambda: self.set_listwidget_filter(
+            self.listWidgetLeft,
+            self.lineEditSearchLeft.text()
+        ))
+
+        self.lineEditSearchRight.textChanged.connect(lambda: self.set_listwidget_filter(
+            self.listWidgetRight,
+            self.lineEditSearchRight.text()
+        ))
+        
         self.listWidgetLeft.itemDoubleClicked.connect(lambda item: self.double_clicked_item(
             self.listWidgetLeft,
             self.left_adapter,
@@ -613,6 +626,9 @@ class StandardTab(BaseTab):
             self.right_adapter
         ))
 
+    def clear_filters(self, list_widget):
+        list_widget.filter.clear()
+        
     def reset_stateful_objects(self, side='both'):
         super(StandardTab, self).reset_stateful_objects(side=side)
         if self.left:
@@ -620,6 +636,8 @@ class StandardTab(BaseTab):
             self.listWidgetLeft.currentcontent = {}
             self.listWidgetLeft.updated = False
             self.listWidgetLeft.mode = None
+            self.labelPathLeft.clear()
+            self.lineEditSearchLeft.clear()
             if self.left_creds['service'] == "FILESYSTEM:":
                 self.pushButtonParentDirLeft.setEnabled(True)
                 self.pushButtonNewFolderLeft.setEnabled(True)
@@ -633,6 +651,8 @@ class StandardTab(BaseTab):
             self.listWidgetRight.currentcontent = {}
             self.listWidgetRight.updated = False
             self.listWidgetRight.mode = None
+            self.labelPathRight.clear()
+            self.lineEditSearchRight.clear()
             if self.right_creds['service'] == "FILESYSTEM:":
                 self.pushButtonParentDirRight.setEnabled(True)
                 self.pushButtonNewFolderRight.setEnabled(True)
