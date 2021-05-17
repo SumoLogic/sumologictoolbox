@@ -628,7 +628,7 @@ class StandardTab(BaseTab):
 
     def clear_filters(self, list_widget):
         list_widget.filter.clear()
-        
+
     def reset_stateful_objects(self, side='both'):
         super(StandardTab, self).reset_stateful_objects(side=side)
         if self.left:
