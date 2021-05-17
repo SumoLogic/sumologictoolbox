@@ -18,14 +18,14 @@ import os.path
 import re
 from datetime import datetime
 from tzlocal import get_localzone
-from qtpy import QtCore, QtGui, QtWidgets, uic
+from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import pathlib
 import os
 import logzero
 from logzero import logger
 from configupdater import ConfigUpdater
 import configparser
-import shutil
+import faulthandler
 import qtmodern.styles
 import qtmodern.windows
 import time
@@ -35,6 +35,7 @@ from modules.sumologic import SumoLogic
 from modules.credentials import CredentialsDB
 
 
+faulthandler.enable(all_threads=True)
 # detect if in Pyinstaller package and build appropriate base directory path
 if getattr(sys, 'frozen', False):
     basedir = sys._MEIPASS
@@ -1248,7 +1249,7 @@ if __name__ == "__main__":
     start = time.time()
     splash_pix = QtGui.QPixmap(os.path.join(basedir, 'data/sumotoolbox_logo_small.png'))
     splash = QtWidgets.QSplashScreen(splash_pix)
-    splash.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
+    #splash.setWindowFlags(QtCore.Qt.QWindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
     splash.show()
     # Wait a little bit to keep the splash screen up before closing it
     while time.time() - start < 1:

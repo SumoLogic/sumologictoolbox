@@ -16,31 +16,31 @@ class Adapter:
     def is_sumo_adapter(self):
         return self.sumo_adapter
 
-    def list(self, mode, params=None):
+    def list(self, params=None):
         return False
 
-    def up(self, mode, params=None):
+    def up(self, params=None):
         return False
 
-    def down(self, mode, folder_name, params=None):
+    def down(self, folder_name, params=None):
         return False
 
-    def create_folder(self, mode, folder_name, list_widget, params=None):
+    def create_folder(self, folder_name, list_widget, params=None):
         return False
 
-    def put(self, mode, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, list_widget, params=None):
         return False
 
-    def get(self, mode, item_name, item_id, params=None):
+    def get(self, item_name, item_id, params=None):
         return False
 
-    def export_item(self, mode, item_name, item_id, params=None):
+    def export_item(self, item_name, item_id, params=None):
         return False
 
-    def import_item(self, mode, item_name, payload, list_widget,  params=None):
+    def import_item(self, item_name, payload, list_widget,  params=None):
         return False
 
-    def delete(self, mode, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, list_widget, params=None):
         return False
 
     def get_current_path(self):
@@ -48,6 +48,13 @@ class Adapter:
 
     def _reset_path(self):
         self.current_path_list = []
+
+    def get_current_path_list(self):
+        return self.current_path_list
+
+    def set_current_path_list(self, path_list):
+        self.current_path_list = path_list
+        self._update_path_string()
 
     def _update_path_string(self, prefix=""):
         self.path_string = self._generate_path_string(prefix=prefix)
@@ -114,6 +121,7 @@ class Adapter:
             for index, item in enumerate(obj):
                 obj[index] = self._find_replace_specific_key_and_value(item, key, old_value, new_value)
         return obj
+
 
 class SumoAdapter(Adapter):
 
@@ -201,27 +209,26 @@ class SumoHierarchyAdapter(SumoAdapter):
         else:
             return False
 
-    def _get_current_path_contents(self, mode):
+    def _get_current_path_contents(self, params=None):
         return []
 
-    def list(self, mode, params=None):
-        self.current_path_contents = self._get_current_path_contents(mode)
+    def list(self, params=None):
+        self.current_path_contents = self._get_current_path_contents(params=params)
         return self.current_path_contents
 
-    def up(self, mode, params=None):
+    def up(self, params=None):
         if self.at_top_of_hierarchy():
             return False
         else:
             self._remove_dir_id_from_path()
             self._remove_dir_from_path()
-            self.current_path_contents = self._get_current_path_contents(mode)
+            self.current_path_contents = self._get_current_path_contents(params=params)
             return True
 
-    def down(self, mode, item_name, params=None):
+    def down(self, item_name, params=None):
         item = None
-        self.logger.debug(f'[down] mode: {mode}')
         self.logger.debug(f'[down] item_name: {item_name}')
-        for content in self._get_current_path_contents(mode):
+        for content in self._get_current_path_contents(params=params):
             if content['name'] == str(item_name):
                 item = content
                 break
@@ -235,7 +242,7 @@ class SumoHierarchyAdapter(SumoAdapter):
         if item is not None and 'folder' in str(type_field).lower():
             self._add_dir_to_path(str(item_name))
             self._add_dir_id_to_path(item['id'])
-            self.current_path_contents = self._get_current_path_contents(mode)
+            self.current_path_contents = self._get_current_path_contents(params=params)
             return True
         else:
             return False
@@ -264,7 +271,11 @@ class SumoContentAdapter(SumoHierarchyAdapter):
         if mode == "global" or mode == "admin":
             return True
 
-    def _get_current_path_contents(self, mode):
+    def _get_current_path_contents(self, params=None):
+        if params:
+            mode = params['mode']
+        else:
+            raise Exception('No mode parameter passed to adapter')
         contents = {}
         if self.last_mode is not mode:
             mode_switch = True
@@ -307,11 +318,11 @@ class SumoContentAdapter(SumoHierarchyAdapter):
         else:
             return False
 
-    def create_folder(self, mode, folder_name, list_widget, params=None):
-        adminmode = self._determine_admin_mode(mode)
+    def create_folder(self, folder_name, list_widget, params=None):
+        adminmode = self._determine_admin_mode(params['mode'])
         try:
             result = self.sumo.create_folder(folder_name, self._get_current_directory_id(), adminmode=adminmode)
-            self.current_path_contents = self._get_current_path_contents(mode)
+            self.current_path_contents = self._get_current_path_contents(params['mode'])
             return {'status': 'SUCCESS',
                     'adapter': self,
                     'result': result,
@@ -324,10 +335,10 @@ class SumoContentAdapter(SumoHierarchyAdapter):
                     'exception': str(e)
                 }
 
-    def get(self, mode, item_name, item_id, params=None):
+    def get(self, item_name, item_id, params=None):
         try:
             content = {}
-            adminmode = self._determine_admin_mode(mode)
+            adminmode = self._determine_admin_mode(params['mode'])
             for item in self.current_path_contents:
                 if item['name'] == item_name:
                     if item['itemType'] == 'Folder':
@@ -346,8 +357,8 @@ class SumoContentAdapter(SumoHierarchyAdapter):
                     'exception': str(e)
                     }
 
-    def export_item(self, mode, item_name, item_id, params=None):
-        adminmode = self._determine_admin_mode(mode)
+    def export_item(self, item_name, item_id, params=None):
+        adminmode = self._determine_admin_mode(params['mode'])
         try:
             content = self.export_content(item_id, self.sumo, adminmode=adminmode)
             return {'status': 'SUCCESS',
@@ -362,8 +373,8 @@ class SumoContentAdapter(SumoHierarchyAdapter):
                     'exception': str(e)
                     }
 
-    def import_item(self, mode, item_name, payload, list_widget, params=None):
-        adminmode = self._determine_admin_mode(mode)
+    def import_item(self, item_name, payload, list_widget, params=None):
+        adminmode = self._determine_admin_mode(params['mode'])
         try:
             current_dir_id = self._get_current_directory_id()
             if 'include_connections' not in params:
@@ -388,11 +399,11 @@ class SumoContentAdapter(SumoHierarchyAdapter):
                     'exception': str(e)
                     }
 
-    def put(self, mode, item_name, payload, list_widget, params=None):
-        return self.import_item(mode, item_name, payload, list_widget, params)
+    def put(self, item_name, payload, list_widget, params=None):
+        return self.import_item(item_name, payload, list_widget, params)
 
-    def delete(self, mode, item_name, item_id, list_widget, params=None):
-        adminmode = self._determine_admin_mode(mode)
+    def delete(self, item_name, item_id, list_widget, params=None):
+        adminmode = self._determine_admin_mode(params['mode'])
         try:
             result = self.sumo.delete_content_job_sync(item_id, adminmode=adminmode)
             return {'status': 'SUCCESS',
@@ -416,11 +427,11 @@ class SumoConnectionAdapter(SumoAdapter):
     def __init__(self, creds, side, log_level='info'):
         super(SumoConnectionAdapter, self).__init__(creds, side, log_level=log_level)
 
-    def list(self, mode, params=None):
+    def list(self, params=None):
         self.current_path_contents = self.sumo.get_connections_sync()
         return self.current_path_contents
 
-    def get(self, mode, item_name, item_id, params=None):
+    def get(self, item_name, item_id, params=None):
         try:
             payload = None
             for connection in self.current_path_contents:
@@ -439,7 +450,7 @@ class SumoConnectionAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def export_item(self, mode, item_name, item_id, params=None):
+    def export_item(self, item_name, item_id, params=None):
         try:
             connection = self.export_connection(item_id, self.sumo)
             return {'status': 'SUCCESS',
@@ -454,7 +465,7 @@ class SumoConnectionAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def put(self, mode, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, list_widget, params=None):
         try:
             result = self.import_connection(payload, self.sumo)
             return {'status': 'SUCCESS',
@@ -470,10 +481,10 @@ class SumoConnectionAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def import_item(self, mode, item_name, payload, list_widget, params=None):
-        return self.put(mode, item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, list_widget, params=None):
+        return self.put( item_name, payload, list_widget, params=params)
 
-    def delete(self, mode, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, list_widget, params=None):
         try:
             connection_type = None
             connections = self.sumo.get_connections_sync()
@@ -502,13 +513,13 @@ class SumoUserAdapter(SumoAdapter):
     def __init__(self, creds, side, log_level='info'):
         super(SumoUserAdapter, self).__init__(creds, side, log_level=log_level)
 
-    def list(self, mode, params=None):
+    def list(self, params=None):
         users = self.sumo.get_users_sync()
         for index, user in enumerate(users):
             users[index]['name'] = f"{user['firstName']} {user['lastName']}"
         return users
 
-    def get(self, mode, item_name, item_id, params=None):
+    def get(self, item_name, item_id, params=None):
         try:
             user = self.sumo.get_user(item_id)
             return {'status': 'SUCCESS',
@@ -523,7 +534,7 @@ class SumoUserAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def export_item(self, mode, item_name, item_id, params=None):
+    def export_item(self, item_name, item_id, params=None):
         try:
             user = self.export_user(item_id, self.sumo)
             user['name'] = f"{user['firstName']} {user['lastName']}"
@@ -539,7 +550,7 @@ class SumoUserAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def put(self, mode, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, list_widget, params=None):
         try:
             result = self.import_user(payload, self.sumo, include_roles=params['include_roles'])
             return {'status': 'SUCCESS',
@@ -555,10 +566,10 @@ class SumoUserAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def import_item(self, mode, item_name, payload, list_widget, params=None):
-        return self.put(mode, item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, list_widget, params=None):
+        return self.put(item_name, payload, list_widget, params=params)
 
-    def delete(self, mode, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, list_widget, params=None):
         try:
             result = self.sumo.delete_user(item_id)
             return {'status': 'SUCCESS',
@@ -582,11 +593,11 @@ class SumoRoleAdapter(SumoAdapter):
     def __init__(self, creds, side, log_level='info'):
         super(SumoRoleAdapter, self).__init__(creds, side, log_level=log_level)
 
-    def list(self, mode, params=None):
+    def list(self, params=None):
         roles = self.sumo.get_roles_sync()
         return roles
 
-    def get(self, mode, item_name, item_id, params=None):
+    def get(self, item_name, item_id, params=None):
         try:
             role = self.sumo.get_role(item_id)
             return {'status': 'SUCCESS',
@@ -601,7 +612,7 @@ class SumoRoleAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def export_item(self, mode, item_name, item_id, params=None):
+    def export_item(self, item_name, item_id, params=None):
         try:
             role = self.export_role(item_id, self.sumo)
             return {'status': 'SUCCESS',
@@ -616,7 +627,7 @@ class SumoRoleAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def put(self, mode, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, list_widget, params=None):
         try:
             result = self.import_role(payload, self.sumo)
             return {'status': 'SUCCESS',
@@ -632,10 +643,10 @@ class SumoRoleAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def import_item(self, mode, item_name, payload, list_widget, params=None):
-        return self.put(mode, item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, list_widget, params=None):
+        return self.put(item_name, payload, list_widget, params=params)
 
-    def delete(self, mode, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, list_widget, params=None):
         try:
             result = self.sumo.delete_role(item_id)
             return {'status': 'SUCCESS',
@@ -659,11 +670,11 @@ class SumoFERAdapter(SumoAdapter):
     def __init__(self, creds, side, log_level='info'):
         super(SumoFERAdapter, self).__init__(creds, side, log_level=log_level)
 
-    def list(self, mode, params=None):
+    def list(self, params=None):
         fers = self.sumo.get_fers_sync()
         return fers
 
-    def get(self, mode, item_name, item_id, params=None):
+    def get(self, item_name, item_id, params=None):
         try:
             fer = self.sumo.get_fer(item_id)
             return {'status': 'SUCCESS',
@@ -678,7 +689,7 @@ class SumoFERAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def export_item(self, mode, item_name, item_id, params=None):
+    def export_item(self, item_name, item_id, params=None):
         try:
             fer = self.export_fer(item_id, self.sumo)
             return {'status': 'SUCCESS',
@@ -693,7 +704,7 @@ class SumoFERAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def put(self, mode, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, list_widget, params=None):
         try:
             result = self.import_fer(payload, self.sumo)
             return {'status': 'SUCCESS',
@@ -709,10 +720,10 @@ class SumoFERAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def import_item(self, mode, item_name, payload, list_widget, params=None):
-        return self.put(mode, item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, list_widget, params=None):
+        return self.put(item_name, payload, list_widget, params=params)
 
-    def delete(self, mode, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, list_widget, params=None):
         try:
             result = self.sumo.delete_fer(item_id)
             return {'status': 'SUCCESS',
@@ -736,14 +747,14 @@ class SumoScheduledViewAdapter(SumoAdapter):
     def __init__(self, creds, side, log_level='info'):
         super(SumoScheduledViewAdapter, self).__init__(creds, side, log_level=log_level)
 
-    def list(self, mode, params=None):
+    def list(self, params=None):
         scheduled_views = self.sumo.get_scheduled_views_sync()
         for index, scheduled_view in enumerate(scheduled_views):
             scheduled_views[index]['name'] = scheduled_view['indexName']
 
         return scheduled_views
 
-    def get(self, mode, item_name, item_id, params=None):
+    def get(self, item_name, item_id, params=None):
         try:
             scheduled_view = self.sumo.get_scheduled_view(item_id)
             return {'status': 'SUCCESS',
@@ -758,7 +769,7 @@ class SumoScheduledViewAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def export_item(self, mode, item_name, item_id, params=None):
+    def export_item(self, item_name, item_id, params=None):
         try:
             scheduled_view = self.export_scheduled_view(item_id, self.sumo)
             scheduled_view['name'] = scheduled_view['indexName']
@@ -774,7 +785,7 @@ class SumoScheduledViewAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def put(self, mode, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, list_widget, params=None):
         try:
             result = self.import_scheduled_view(payload, self.sumo, use_current_date=params['use_current_date'])
             return {'status': 'SUCCESS',
@@ -790,10 +801,10 @@ class SumoScheduledViewAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def import_item(self, mode, item_name, payload, list_widget, params=None):
-        return self.put(mode, item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, list_widget, params=None):
+        return self.put(item_name, payload, list_widget, params=params)
 
-    def delete(self, mode, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, list_widget, params=None):
         try:
             result = self.sumo.disable_scheduled_view(item_id)
             return {'status': 'SUCCESS',
@@ -819,8 +830,8 @@ class SumoMonitorAdapter(SumoHierarchyAdapter):
         self.last_mode = ''
         self.current_path_contents = {}
 
-    def _get_current_path_contents(self, mode):
-        self.logger.debug(f'[_get_current_path_contents] mode: {mode}')
+    def _get_current_path_contents(self, params=None):
+
         self.logger.debug(f'[_get_current_path_contents] current path: {self.get_current_path()}')
         self.logger.debug(f'[_get_current_path_contents] current path: {self._get_current_directory_id()}')
         if self.at_top_of_hierarchy():
@@ -836,10 +847,10 @@ class SumoMonitorAdapter(SumoHierarchyAdapter):
         else:
             return False
 
-    def create_folder(self, mode, folder_name, list_widget, params=None):
+    def create_folder(self, folder_name, list_widget, params=None):
         try:
             result = self.sumo.create_monitor_folder(self._get_current_directory_id(), folder_name)
-            self.current_path_contents = self._get_current_path_contents(mode)
+            self.current_path_contents = self._get_current_path_contents(params=params)
             return {'status': 'SUCCESS',
                     'adapter': self,
                     'result': result,
@@ -852,7 +863,7 @@ class SumoMonitorAdapter(SumoHierarchyAdapter):
                     'exception': str(e)
                 }
 
-    def get(self, mode, item_name, item_id, params=None):
+    def get(self, item_name, item_id, params=None):
         try:
             content = self.sumo.get_monitor(item_id)
             return {'status': 'SUCCESS',
@@ -867,7 +878,7 @@ class SumoMonitorAdapter(SumoHierarchyAdapter):
                     'exception': str(e)
                     }
 
-    def export_item(self, mode, item_name, item_id, params=None):
+    def export_item(self, item_name, item_id, params=None):
         try:
             monitor = self.export_monitor(item_id, self.sumo)
             return {'status': 'SUCCESS',
@@ -882,7 +893,7 @@ class SumoMonitorAdapter(SumoHierarchyAdapter):
                     'exception': str(e)
                     }
 
-    def import_item(self, mode, item_name, payload, list_widget, params=None):
+    def import_item(self, item_name, payload, list_widget, params=None):
 
         try:
             current_dir_id = self._get_current_directory_id()
@@ -900,10 +911,10 @@ class SumoMonitorAdapter(SumoHierarchyAdapter):
                     'exception': str(e)
                     }
 
-    def put(self, mode, item_name, payload, list_widget, params=None):
-        return self.import_item(mode, item_name, payload, list_widget, params)
+    def put(self, item_name, payload, list_widget, params=None):
+        return self.import_item(item_name, payload, list_widget, params)
 
-    def delete(self, mode, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, list_widget, params=None):
         try:
             result = self.sumo.delete_monitor(item_id)
             return {'status': 'SUCCESS',
@@ -927,7 +938,7 @@ class SumoPartitionAdapter(SumoAdapter):
     def __init__(self, creds, side, log_level='info'):
         super(SumoPartitionAdapter, self).__init__(creds, side, log_level=log_level)
 
-    def list(self, mode, params=None):
+    def list(self, params=None):
         active_partitions = []
         partitions = self.sumo.get_partitions_sync()
         for partition in partitions:
@@ -935,7 +946,7 @@ class SumoPartitionAdapter(SumoAdapter):
                 active_partitions.append(partition)
         return active_partitions
 
-    def get(self, mode, item_name, item_id, params=None):
+    def get(self, item_name, item_id, params=None):
         try:
             partition = self.sumo.get_partition(item_id)
             return {'status': 'SUCCESS',
@@ -950,7 +961,7 @@ class SumoPartitionAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def export_item(self, mode, item_name, item_id, params=None):
+    def export_item(self, item_name, item_id, params=None):
         try:
             partition = self.export_partition(item_id, self.sumo)
             return {'status': 'SUCCESS',
@@ -965,7 +976,7 @@ class SumoPartitionAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def put(self, mode, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, list_widget, params=None):
         try:
             result = self.import_partition(payload, self.sumo)
             return {'status': 'SUCCESS',
@@ -981,10 +992,10 @@ class SumoPartitionAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def import_item(self, mode, item_name, payload, list_widget, params=None):
-        return self.put(mode, item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, list_widget, params=None):
+        return self.put(item_name, payload, list_widget, params=params)
 
-    def delete(self, mode, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, list_widget, params=None):
         try:
             result = self.sumo.decommission_partition(item_id)
             return {'status': 'SUCCESS',
@@ -1000,6 +1011,7 @@ class SumoPartitionAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
+
 class SumoSAMLAdapter(SumoAdapter):
 
     from modules.shared import import_saml_config, export_saml_config
@@ -1007,13 +1019,13 @@ class SumoSAMLAdapter(SumoAdapter):
     def __init__(self, creds, side, log_level='info'):
         super(SumoSAMLAdapter, self).__init__(creds, side, log_level=log_level)
 
-    def list(self, mode, params=None):
+    def list(self, params=None):
         saml_configs = self.sumo.get_saml_configs()
         for index, saml_config in enumerate(saml_configs):
             saml_configs[index]['name'] = saml_config['configurationName']
         return saml_configs
 
-    def get(self, mode, item_name, item_id, params=None):
+    def get(self, item_name, item_id, params=None):
         try:
             saml_config = self.sumo.get_saml_config_by_id(item_id)
             return {'status': 'SUCCESS',
@@ -1028,7 +1040,7 @@ class SumoSAMLAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def export_item(self, mode, item_name, item_id, params=None):
+    def export_item(self, item_name, item_id, params=None):
         try:
             saml_config = self.export_saml_config(item_id, self.sumo)
             saml_config['name'] = saml_config['configurationName']
@@ -1044,7 +1056,7 @@ class SumoSAMLAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def put(self, mode, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, list_widget, params=None):
         try:
             result = self.import_saml_config(payload, self.sumo)
             return {'status': 'SUCCESS',
@@ -1060,10 +1072,10 @@ class SumoSAMLAdapter(SumoAdapter):
                     'exception': str(e)
                     }
 
-    def import_item(self, mode, item_name, payload, list_widget, params=None):
-        return self.put(mode, item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, list_widget, params=None):
+        return self.put(item_name, payload, list_widget, params=params)
 
-    def delete(self, mode, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, list_widget, params=None):
         try:
             result = self.sumo.delete_saml_config(item_id)
             return {'status': 'SUCCESS',
@@ -1080,6 +1092,121 @@ class SumoSAMLAdapter(SumoAdapter):
                     }
 
 
+class SumoCollectorAdapter(SumoAdapter):
 
+    def __init__(self, creds, side, log_level='info'):
+        super(SumoCollectorAdapter, self).__init__(creds, side, log_level=log_level)
+
+    def list(self, params=None):
+        return self.sumo.get_collectors_sync()
+
+    def get(self, item_name, item_id, params=None):
+        try:
+            collector = self.sumo.get_collector_by_id(item_id)
+            return {'status': 'SUCCESS',
+                    'adapter': self,
+                    'payload': collector,
+                    'params': params}
+        except Exception as e:
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }
+
+    def export_item(self, item_name, item_id, params=None):
+        return False
+
+    def put(self, item_name, payload, list_widget, params=None):
+        return False
+
+    def import_item(self, item_name, payload, list_widget, params=None):
+        return False
+
+    def delete(self, item_name, item_id, list_widget, params=None):
+        try:
+            result = self.sumo.delete_collector(item_id)
+            return {'status': 'SUCCESS',
+                    'result': result,
+                    'adapter': self,
+                    'params': params,
+                    'list_widget': list_widget}
+        except Exception as e:
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }
+
+
+class SumoSourceAdapter(SumoAdapter):
+    def __init__(self, creds, side, log_level='info'):
+        super(SumoSourceAdapter, self).__init__(creds, side, log_level=log_level)
+
+    def list(self, params=None):
+        collector_id = params['collector_id']
+        return self.sumo.get_sources_sync(collector_id)
+
+    def get(self, item_name, item_id, params=None):
+        try:
+            collector_id = params['source_collector_id']
+            source = self.sumo.get_source(collector_id, item_id)
+            return {'status': 'SUCCESS',
+                    'adapter': self,
+                    'payload': source,
+                    'params': params}
+        except Exception as e:
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }
+
+    def export_item(self, item_name, item_id, params=None):
+        return self.get(item_name, item_id, params=params)
+
+    def put(self, item_name, payload, list_widget, params=None):
+        try:
+            collector_id = params['dest_collector_id']
+            if 'alive' in payload['source']:
+                del payload['source']['alive']
+            if 'id' in payload['source']:
+                del payload['source']['id']
+            result = self.sumo.create_source(collector_id, payload)
+            return {'status': 'SUCCESS',
+                    'result': result,
+                    'adapter': self,
+                    'params': params,
+                    'list_widget': list_widget}
+        except Exception as e:
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }
+
+    def import_item(self, item_name, payload, list_widget, params=None):
+        return self.put(item_name, payload, list_widget, params=params)
+
+    def delete(self, item_name, item_id, list_widget, params=None):
+        try:
+            collector_id = params['collector_id']
+            result = self.sumo.delete_source(collector_id, item_id)
+            return {'status': 'SUCCESS',
+                    'result': result,
+                    'adapter': self,
+                    'params': params,
+                    'list_widget': list_widget}
+        except Exception as e:
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }
 
 

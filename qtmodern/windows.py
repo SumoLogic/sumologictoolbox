@@ -1,7 +1,7 @@
 from os.path import join, dirname, abspath
 
-from qtpy.QtCore import Qt, QMetaObject, Signal, Slot, QEvent
-from qtpy.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QToolButton,
+from PyQt5.QtCore import Qt, QMetaObject, pyqtSignal, pyqtSlot, QEvent
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QToolButton,
                             QLabel, QSizePolicy)
 from ._utils import QT_VERSION, PLATFORM
 
@@ -19,7 +19,7 @@ class WindowDragger(QWidget):
             parent (QWidget, optional): Parent widget.
     """
 
-    doubleClicked = Signal()
+    doubleClicked = pyqtSignal()
 
     def __init__(self, window, parent=None):
         QWidget.__init__(self, parent)
@@ -169,29 +169,29 @@ class ModernWindow(QWidget):
         super(ModernWindow, self).setWindowTitle(title)
         self.lblTitle.setText(title)
 
-    @Slot()
+    @pyqtSlot()
     def on_btnMinimize_clicked(self):
         self.setWindowState(Qt.WindowMinimized)
 
-    @Slot()
+    @pyqtSlot()
     def on_btnRestore_clicked(self):
         self.btnRestore.setVisible(False)
         self.btnMaximize.setVisible(True)
 
         self.setWindowState(Qt.WindowNoState)
 
-    @Slot()
+    @pyqtSlot()
     def on_btnMaximize_clicked(self):
         self.btnRestore.setVisible(True)
         self.btnMaximize.setVisible(False)
 
         self.setWindowState(Qt.WindowMaximized)
 
-    @Slot()
+    @pyqtSlot()
     def on_btnClose_clicked(self):
         self.close()
 
-    @Slot()
+    @pyqtSlot()
     def on_titleBar_doubleClicked(self):
         if self.btnMaximize.isVisible():
             self.on_btnMaximize_clicked()

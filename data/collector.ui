@@ -48,6 +48,19 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pushButtonParentDirLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Parent Dir</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QRadioButton" name="radioButtonFilterAllLeft">
          <property name="font">
           <font>
@@ -126,6 +139,13 @@
       </layout>
      </item>
      <item>
+      <widget class="QLabel" name="labelPathLeft">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayoutCollectorLabelLeft">
        <item>
         <widget class="QLabel" name="labelCollectorsLeft">
@@ -202,22 +222,6 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayoutCollectorButtonsLeft">
        <item>
-        <widget class="QPushButton" name="pushButtonBackupCollectorLeft">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Backup the selected collector(s) to JSON file. There is currently no collector restore, but you can restore source(s) to an existing collector based on this backup. </string>
-         </property>
-         <property name="text">
-          <string>Backup Collector(s)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="pushButtonDeleteCollectorLeft">
          <property name="font">
           <font>
@@ -246,6 +250,19 @@
          </property>
          <property name="text">
           <string>JSON</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonNewFolderLeft">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>New Folder</string>
          </property>
         </widget>
        </item>
@@ -331,22 +348,6 @@
          </property>
          <property name="text">
           <string>Delete Source(s)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonRestoreSourcesLeft">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Restore source(s) from JSON file, such as a collector backup. Does not create the collector itself though.  </string>
-         </property>
-         <property name="text">
-          <string>Restore Source(s)</string>
          </property>
         </widget>
        </item>
@@ -488,6 +489,19 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pushButtonParentDirRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Parent Dir</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QRadioButton" name="radioButtonFilterAllRight">
          <property name="font">
           <font>
@@ -566,6 +580,13 @@
       </layout>
      </item>
      <item>
+      <widget class="QLabel" name="labelPathRight">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayoutCollectorLabelRIght">
        <item>
         <widget class="QLabel" name="labelCollectorsRight">
@@ -639,22 +660,6 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayoutCollectorButtonsRight">
        <item>
-        <widget class="QPushButton" name="pushButtonBackupCollectorRight">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Backup the selected collector(s) to JSON file. There is currently no collector restore, but you can restore source(s) to an existing collector based on this backup. </string>
-         </property>
-         <property name="text">
-          <string>Backup Collector(s)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="pushButtonDeleteCollectorRight">
          <property name="font">
           <font>
@@ -683,6 +688,19 @@
          </property>
          <property name="text">
           <string>JSON</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonNewFolderRight">
+         <property name="font">
+          <font>
+           <family>Waree</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>New Folder</string>
          </property>
         </widget>
        </item>
@@ -775,22 +793,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonRestoreSourcesRight">
-         <property name="font">
-          <font>
-           <family>Waree</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Restore source(s) from JSON file, such as a collector backup. Does not create the collector itself though.  </string>
-         </property>
-         <property name="text">
-          <string>Restore Source(s)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="pushButtonSourceJSONRight">
          <property name="font">
           <font>
@@ -828,7 +830,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroupFilterLeft"/>
   <buttongroup name="buttonGroupFilterRight"/>
+  <buttongroup name="buttonGroupFilterLeft"/>
  </buttongroups>
 </ui>

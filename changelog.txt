@@ -1,7 +1,19 @@
 Changelog for SumoToolBox
 
-3-?-2021 0.10.0
-*   [Source Update] This tab is now multithreaded! This should mean a 10x speed up in most operations.
+5-?-2021 0.10.0
+*   [General] Major Code Refactor! Most tabs now inherit code/UI from a base class.
+*   [General] An adapter model is now in place that should allow reading and writing to/from other services. The
+    first 2 adapters are the Sumo Logic (duh) and filesystem adapters. The filesystem adapter replaces the
+    "backup" and "restore" buttons on each tab. Look for more adapters soon (Git? Multi org deploy?)
+*   [General] Most operations are now multithreaded. You should see up to a 10x speedup when manipulating multiple
+    objects. The "source update" tab greatly benefits from multithreading.
+*   [General] With multi threading comes STATUS BARS! HUZZAH! Note that in most tabs status bars update in
+    "per object" increments. This means that if you are copying only 1 thing you go from 0 to 100 percent completion
+    without any intermediate steps.
+*   [General] Split "Users and Roles" into 2 tabs, "Users" and "Roles". This was done to simplify implementation of the
+    adapter system.
+*   [General] Split "Monitors and Connections" into 2 tabs, "Monitors" and "Connections". This was done to simplify
+    implementation of the adapter system.
 *   [Orgs SDK] Added the correct GA endpoint to the SDK. It was previously the alpha endpoint.
 *   [Organizations] Removed CSE credits and storage from the view as they don't exist in the API at the moment.
 *   [Content] Add an "Include Connections" checkbox. If checked this will make sure that any connections used by

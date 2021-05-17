@@ -1,6 +1,6 @@
 from os.path import join, dirname, abspath
 
-from qtpy.QtGui import QPalette, QColor
+from PyQt5.QtGui import QPalette, QColor
 
 from ._utils import QT_VERSION
 

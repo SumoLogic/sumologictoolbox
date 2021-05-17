@@ -1,4 +1,4 @@
-from qtpy import QtCore, QtGui, QtWidgets, uic
+from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from modules.multithreading import Worker, ProgressDialog
 from modules.shared import ShowTextDialog, exception_and_error_handling
 from modules.filesystem_adapter import FilesystemAdapter
@@ -232,7 +232,9 @@ class BaseTab(QtWidgets.QWidget):
 
     @exception_and_error_handling
     def update_item_list(self, list_widget, adapter, path_label=None):
-        contents = adapter.list(list_widget.mode, params=list_widget.params)
+        mode_param = {'mode': list_widget.mode}
+        merged_params = {**list_widget.params, **mode_param}
+        contents = adapter.list(params=merged_params)
         self.update_list_widget(list_widget, adapter, contents, path_label=path_label)
         self.clear_filters(list_widget)
 
@@ -267,7 +269,7 @@ class BaseTab(QtWidgets.QWidget):
 
     @exception_and_error_handling
     def find_replace_metadata(self, adapter, payload):
-        logger.info(f"[{self.tab_name}] Replacing Metadata")
+        logger.debug(f"[{self.tab_name}] Replacing Metadata")
         source_metadata = []
         for item in payload:
             # find all the keys in our item that contain queries
@@ -302,7 +304,7 @@ class BaseTab(QtWidgets.QWidget):
             dialog.show()
             if str(dialog.result()) == '1':
                 replacelist = dialog.getresults()
-                logger.debug(replacelist)
+                logger.debug(f'Metadata replacement list: {replacelist}')
                 dialog.close()
                 if len(replacelist) > 0:
                     new_payload = []
@@ -324,14 +326,15 @@ class BaseTab(QtWidgets.QWidget):
         selected_items = source_list_widget.selectedItems()
         num_selected_items = len(selected_items)
         if num_selected_items < 1: return # make sure something was selected
-        logger.info(f"[{self.tab_name}] Exporting Item(s)")
+        logger.debug(f"[{self.tab_name}] Exporting Item(s) {selected_items}")
         self.num_threads = num_selected_items
         self.num_successful_threads = 0
         self.copy_export_results = []
         self.export_progress = ProgressDialog('Exporting items...', 0, self.num_threads, self.mainwindow.threadpool, self.mainwindow)
         self.workers = []
         base_params = {'destination_list_widget': destination_list_widget,
-                       'destination_adapter': destination_adapter}
+                       'destination_adapter': destination_adapter,
+                       'mode': destination_list_widget.mode}
         merged_params = {**base_params, **params}
         merged_params = {**merged_params, **source_list_widget.params}
         for index, selected_item in enumerate(selected_items):
@@ -341,7 +344,6 @@ class BaseTab(QtWidgets.QWidget):
                 item_id = None
             logger.debug(f"Creating copy thread for item {selected_item.details['name']}")
             self.workers.append(Worker(source_adapter.export_item,
-                                       source_list_widget.mode,
                                        selected_item.details['name'],
                                        item_id,
                                        params=merged_params
@@ -365,7 +367,7 @@ class BaseTab(QtWidgets.QWidget):
                 else:
                     item_list = self.copy_export_results
                 if len(item_list) == 0: return
-                logger.info(f"[{self.tab_name}] Importing Item(s)")
+                logger.debug(f"[{self.tab_name}] Importing Item(s)")
                 self.num_threads = len(item_list)
                 self.num_successful_threads = 0
                 self.copy_export_results = []
@@ -376,7 +378,6 @@ class BaseTab(QtWidgets.QWidget):
                     if 'name' in item:
                         logger.debug(f"Creating copy thread for item {item['name']}")
                     self.workers.append(Worker(result['params']['destination_adapter'].import_item,
-                                               result['params']['destination_list_widget'].mode,
                                                item['name'],
                                                item,
                                                result['params']['destination_list_widget'],
@@ -399,9 +400,10 @@ class BaseTab(QtWidgets.QWidget):
 
     @exception_and_error_handling
     def delete_item(self, list_widget, adapter):
-        logger.info(f"[{self.tab_name}] Deleting Item")
+
         selected_items = list_widget.selectedItems()
         if len(selected_items) < 1: return  # make sure something was selected
+        logger.debug(f"[{self.tab_name}] Deleting Item(s) {selected_items}")
         message = "You are about to delete the following item(s):\n\n"
         for selected_item in selected_items:
             message = message + str(selected_item.text()) + "\n"
@@ -421,7 +423,8 @@ If you are absolutely sure, type "DELETE" in the box below.
                                            self.mainwindow)
             self.workers = []
             params = {'destination_list_widget': list_widget,
-                      'destination_adapter': adapter}
+                      'destination_adapter': adapter,
+                      'mode': list_widget.mode}
             for index, selected_item in enumerate(selected_items):
                 item_name = selected_item.details['name']
                 if 'id' in selected_item.details:
@@ -430,7 +433,6 @@ If you are absolutely sure, type "DELETE" in the box below.
                     item_id = None
                 logger.debug(f"Creating delete thread for item {item_name}")
                 self.workers.append(Worker(adapter.delete,
-                                           list_widget.mode,
                                            item_name,
                                            item_id,
                                            list_widget,
@@ -443,12 +445,13 @@ If you are absolutely sure, type "DELETE" in the box below.
     def view_json(self, list_widget, adapter):
         selected_items = list_widget.selectedItems()
         if len(selected_items) < 1: return  # make sure something was selected
-        logger.info("[Content] Viewing JSON")
+        logger.debug(f"[Content] Viewing JSON {selected_items}")
         self.num_threads = len(selected_items)
         self.num_successful_threads = 0
         self.progress = ProgressDialog('Viewing items...', 0, self.num_threads, self.mainwindow.threadpool, self.mainwindow)
         self.json_text = ''
         self.workers = []
+        params = {'mode': list_widget.mode}
         for index, selected_item in enumerate(selected_items):
             item_name = selected_item.details['name']
             if 'id' in selected_item.details:
@@ -457,9 +460,9 @@ If you are absolutely sure, type "DELETE" in the box below.
                 item_id = None
             logger.debug(f"Creating view thread for item {item_name}")
             self.workers.append(Worker(adapter.get,
-                                       list_widget.mode,
                                        item_name,
-                                       item_id))
+                                       item_id,
+                                       params=params))
             self.workers[index].signals.finished.connect(self.progress.increment)
             self.workers[index].signals.result.connect(self.merge_view_json_results)
             self.mainwindow.threadpool.start(self.workers[index])
@@ -489,9 +492,9 @@ If you are absolutely sure, type "DELETE" in the box below.
                     if item.details['name'] == str(text):
                         self.mainwindow.errorbox('That Directory Name Already Exists!')
                         return False
-                logger.info(f"[{self.tab_name}] Creating New Folder {str(text)}")
+                logger.debug(f"[{self.tab_name}] Creating New Folder {str(text)}")
 
-                result = adapter.create_folder(list_widget.mode, str(text), list_widget)
+                result = adapter.create_folder(str(text), list_widget)
                 if result:
                     self.update_item_list(list_widget, adapter)
                     return True
@@ -500,17 +503,21 @@ If you are absolutely sure, type "DELETE" in the box below.
 
     @exception_and_error_handling
     def double_clicked_item(self, list_widget, adapter, item, path_label=None):
-        logger.info(f"[{self.tab_name}] Going Down One Folder")
-        result = adapter.down(list_widget.mode, item.details['name'])
+        logger.debug(f"[{self.tab_name}] Going Down One Folder {str(item.details['name'])}")
+        mode_param = {'mode': list_widget.mode}
+        merged_params = {**list_widget.params, **mode_param}
+        result = adapter.down(item.details['name'], params=merged_params)
         if result:
             self.update_item_list(list_widget, adapter, path_label=path_label)
 
     @exception_and_error_handling
     def go_to_parent_dir(self, list_widget, adapter, path_label=None):
         if list_widget.updated:
-            result = adapter.up(list_widget.mode)
+            mode_param = {'mode': list_widget.mode}
+            merged_params = {**list_widget.params, **mode_param}
+            result = adapter.up(params=merged_params)
             if result:
-                logger.info(f"[{self.tab_name}] Going Up One folder")
+                logger.debug(f"[{self.tab_name}] Going Up One folder")
                 self.update_item_list(list_widget, adapter, path_label=path_label)
 
 
@@ -634,218 +641,3 @@ class StandardTab(BaseTab):
                 self.pushButtonParentDirRight.setEnabled(False)
                 self.pushButtonNewFolderRight.setEnabled(False)
 
-
-# This DoubleTab was a failed experiment and isn't used. I'll delete it later when I'm sure I don't need it.
-class DoubleTab(BaseTab):
-
-    def __init__(self, mainwindow, top_copy_override=False, bottom_copy_override=False):
-        super(DoubleTab, self).__init__(mainwindow)
-        double_tab_ui = os.path.join(self.mainwindow.basedir, 'data/double_tab.ui')
-        uic.loadUi(double_tab_ui, self)
-
-        self.pushButtonUpdateLeft.clicked.connect(lambda: self.update_item_list(
-            self.listWidgetTopLeft,
-            self.left_top_adapter,
-            path_label=self.labelTopPathLeft
-        ))
-
-        self.pushButtonUpdateRight.clicked.connect(lambda: self.update_item_list(
-            self.listWidgetTopRight,
-            self.right_top_adapter,
-            path_label=self.labelTopPathRight
-        ))
-
-        self.pushButtonParentDirLeft.clicked.connect(lambda: self.go_to_parent_dir(
-            self.listWidgetTopLeft,
-            self.left_top_adapter,
-            path_label=self.labelTopPathRight
-        ))
-
-        self.pushButtonParentDirRight.clicked.connect(lambda: self.go_to_parent_dir(
-            self.listWidgetTopRight,
-            self.right_top_adapter,
-            path_label=self.labelTopPathRight
-        ))
-
-        self.listWidgetTopLeft.itemDoubleClicked.connect(lambda item: self.double_clicked_item(
-            self.listWidgetTopLeft,
-            self.left_top_adapter,
-            item,
-            path_label=self.labelTopPathLeft
-        ))
-
-        self.listWidgetTopRight.itemDoubleClicked.connect(lambda item: self.double_clicked_item(
-            self.listWidgetTopRight,
-            self.right_top_adapter,
-            item,
-            path_label=self.labelTopPathRight
-        ))
-
-        self.pushButtonNewFolderLeft.clicked.connect(lambda: self.create_folder(
-            self.listWidgetTopLeft,
-            self.left_top_adapter
-        ))
-
-        self.pushButtonNewFolderRight.clicked.connect(lambda: self.create_folder(
-            self.listWidgetTopRight,
-            self.right_top_adapter
-        ))
-
-        self.pushButtonDeleteTopLeft.clicked.connect(lambda: self.delete_item(
-            self.listWidgetTopLeft,
-            self.left_top_adapter
-        ))
-
-        self.pushButtonDeleteTopRight.clicked.connect(lambda: self.delete_item(
-            self.listWidgetTopRight,
-            self.right_top_adapter
-        ))
-
-        self.pushButtonJSONTopLeft.clicked.connect(lambda: self.view_json(
-            self.listWidgetTopLeft,
-            self.left_top_adapter
-        ))
-
-        self.pushButtonJSONTopRight.clicked.connect(lambda: self.view_json(
-            self.listWidgetTopRight,
-            self.right_top_adapter
-        ))
-
-        # Connect Search Bars
-        self.lineEditSearchTopLeft.textChanged.connect(lambda: self.set_listwidget_filter(
-            self.listWidgetTopLeft,
-            self.lineEditSearchTopLeft.text()
-        ))
-
-        self.lineEditSearchTopRight.textChanged.connect(lambda: self.set_listwidget_filter(
-            self.listWidgetTopRight,
-            self.lineEditSearchTopRight.text()
-        ))
-
-        self.lineEditSearchBottomLeft.textChanged.connect(lambda: self.set_listwidget_filter(
-            self.listWidgetBottomLeft,
-            self.lineEditSearchBottomLeft.text()
-        ))
-
-        self.lineEditSearchBottomRight.textChanged.connect(lambda: self.set_listwidget_filter(
-            self.listWidgetBottomRight,
-            self.lineEditSearchBottomRight.text()
-        ))
-
-        if not top_copy_override:
-            self.pushButtonCopyTopLeftToRight.clicked.connect(lambda: self.begin_copy_content(
-                self.listWidgetTopLeft,
-                self.listWidgetTopRight,
-                self.left_top_adapter,
-                self.right_top_adapter,
-                {'replace_source_categories': False}
-            ))
-
-            self.pushButtonCopyTopRightToLeft.clicked.connect(lambda: self.begin_copy_content(
-                self.listWidgetTopRight,
-                self.listWidgetTopLeft,
-                self.right_top_adapter,
-                self.left_top_adapter,
-                {'replace_source_categories': False}
-            ))
-
-        self.pushButtonDeleteBottomLeft.clicked.connect(lambda: self.delete_item(
-            self.listWidgetBottomLeft,
-            self.left_bottom_adapter
-        ))
-
-        self.pushButtonDeleteBottomRight.clicked.connect(lambda: self.delete_item(
-            self.listWidgetBottomRight,
-            self.right_bottom_adapter
-        ))
-
-        self.pushButtonJSONBottomLeft.clicked.connect(lambda: self.view_json(
-            self.listWidgetBottomLeft,
-            self.left_bottom_adapter
-        ))
-
-        self.pushButtonJSONBottomRight.clicked.connect(lambda: self.view_json(
-            self.listWidgetBottomRight,
-            self.right_bottom_adapter
-        ))
-
-        if not bottom_copy_override:
-            self.pushButtonCopyBottomLeftToRight.clicked.connect(lambda: self.begin_copy_content(
-                self.listWidgetBottomLeft,
-                self.listWidgetBottomRight,
-                self.left_bottom_adapter,
-                self.right_bottom_adapter,
-                {'replace_source_categories': False}
-            ))
-
-            self.pushButtonCopyBottomRightToLeft.clicked.connect(lambda: self.begin_copy_content(
-                self.listWidgetBottomRight,
-                self.listWidgetBottomLeft,
-                self.right_bottom_adapter,
-                self.left_bottom_adapter,
-                {'replace_source_categories': False}
-            ))
-
-    def reset_stateful_objects(self, side='both'):
-        super(DoubleTab, self).reset_stateful_objects(side=side)
-        if self.left:
-            self.listWidgetTopLeft.clear()
-            self.listWidgetTopLeft.updated = False
-            self.listWidgetTopLeft.mode = None
-            self.listWidgetTopLeft.side = 'left'
-            self.listWidgetBottomLeft.clear()
-            self.listWidgetBottomLeft.updated = False
-            self.listWidgetBottomLeft.mode = None
-            self.listWidgetBottomLeft.side = 'left'
-            self.labelTopPathLeft.clear()
-            self.clear_listwidget_filters(self.listWidgetTopLeft)
-            if self.left_creds['service'] == "FILESYSTEM:":
-                self.pushButtonParentDirLeft.setEnabled(True)
-                self.pushButtonNewFolderLeft.setEnabled(True)
-                self.left_top_adapter = FilesystemAdapter(self.left_creds, 'left', log_level=self.mainwindow.log_level)
-                self.left_bottom_adapter = FilesystemAdapter(self.left_creds, 'left', log_level=self.mainwindow.log_level)
-            elif ':' not in self.left_creds['service']:
-                self.pushButtonParentDirLeft.setEnabled(False)
-                self.pushButtonNewFolderLeft.setEnabled(False)
-
-        if self.right:
-            self.listWidgetTopRight.clear()
-            self.listWidgetTopRight.updated = False
-            self.listWidgetTopRight.mode = None
-            self.listWidgetTopRight.side = 'right'
-            self.listWidgetBottomRight.clear()
-            self.listWidgetBottomRight.updated = False
-            self.listWidgetBottomRight.mode = None
-            self.listWidgetBottomRight.side = 'right'
-            self.labelTopPathRight.clear()
-            self.clear_listwidget_filters(self.listWidgetTopRight)
-            if self.right_creds['service'] == "FILESYSTEM:":
-                self.pushButtonParentDirRight.setEnabled(True)
-                self.pushButtonNewFolderRight.setEnabled(True)
-                self.right_top_adapter = FilesystemAdapter(self.right_creds, 'right', log_level=self.mainwindow.log_level)
-                self.right_bottom_adapter = FilesystemAdapter(self.right_creds, 'right', log_level=self.mainwindow.log_level)
-            elif ':' not in self.right_creds['service']:
-                self.pushButtonParentDirRight.setEnabled(False)
-                self.pushButtonNewFolderRight.setEnabled(False)
-
-    def clear_listwidget_filters(self, list_widget):
-        if list_widget.side == 'left':
-            self.lineEditSearchTopLeft.clear()
-            self.lineEditSearchBottomLeft.clear()
-        if list_widget.side == 'right':
-            self.lineEditSearchTopRight.clear()
-            self.lineEditSearchBottomRight.clear()
-
-    @exception_and_error_handling
-    def update_item_list(self, list_widget, adapter, path_label=None):
-        contents = adapter.list(list_widget.mode)
-        self.update_list_widget(list_widget, adapter, contents, path_label=path_label)
-        if list_widget.side == 'left':
-            contents = self.left_bottom_adapter.list(self.listWidgetBottomLeft.mode,
-                                                     params=self.listWidgetBottomLeft.params)
-            self.update_list_widget(self.listWidgetBottomLeft, self.left_bottom_adapter, contents, path_label=None)
-        if list_widget.side == 'right':
-            contents = self.right_bottom_adapter.list(self.listWidgetBottomRight.mode,
-                                                      params=self.listWidgetBottomRight.params)
-            self.update_list_widget(self.listWidgetBottomRight, self.right_bottom_adapter, contents, path_label=None)
-        self.clear_listwidget_filters(list_widget)

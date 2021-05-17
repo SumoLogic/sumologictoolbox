@@ -1,18 +1,19 @@
-from qtpy import QtWidgets, QtGui, QtCore, uic
+from PyQt5 import QtWidgets, QtGui, QtCore, uic
 import traceback
 from logzero import logger
 import sys
 import os
 
+
 class ProgressDialog(QtWidgets.QDialog):
 
-    def __init__(self, text, min, max, threadpool, mainwindow):
+    def __init__(self, text, minimum, maximum, threadpool, mainwindow):
         super(ProgressDialog, self).__init__()
         self.setModal(True)
         self.threadpool = threadpool
-        self.min = min
-        self.max = max
-        self.count = min
+        self.min = minimum
+        self.max = maximum
+        self.count = minimum
         self.mainwindow = mainwindow
         source_update_ui = os.path.join(self.mainwindow.basedir, 'data/progress_dialog.ui')
         uic.loadUi(source_update_ui, self)
@@ -24,7 +25,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.show()
 
-    @QtCore.Slot()
+    @QtCore.pyqtSlot()
     def increment(self):
         self.count += 1
         self.progressBar.setValue(self.count)
@@ -36,12 +37,13 @@ class ProgressDialog(QtWidgets.QDialog):
         self.threadpool.clear()
         self.close()
 
+
 class WorkerSignals(QtCore.QObject):
 
-    finished = QtCore.Signal()
-    error = QtCore.Signal(tuple)
-    result = QtCore.Signal(object)
-    progress = QtCore.Signal(int)
+    finished = QtCore.pyqtSignal()
+    error = QtCore.pyqtSignal(tuple)
+    result = QtCore.pyqtSignal(object)
+    progress = QtCore.pyqtSignal(int)
 
 
 class Worker(QtCore.QRunnable):
@@ -71,7 +73,7 @@ class Worker(QtCore.QRunnable):
         if 'progress_callback' in self.fn.__code__.co_varnames:
             self.kwargs['progress_callback'] = self.signals.progress
 
-    @QtCore.Slot()
+    @QtCore.pyqtSlot()
     def run(self):
         '''
         Initialise the runner function with passed args, kwargs.

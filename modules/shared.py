@@ -96,8 +96,9 @@ def exception_and_error_handling(func):
             result = func(*args, **kwargs)
             return result
         except Exception as e:
-            logger.exception(e)
-            errorbox('Something went wrong:\n\n' + str(e))
+            description = f'Something went wrong in {str(func.__module__)}:{str(func.__name__)}:\n\n {str(e)}'
+            logger.exception(description)
+            errorbox(description)
     return wrapper
 
 # Recursively find all instances of a key in a dict/list object. Thanks Stackoverflow. Yoink!

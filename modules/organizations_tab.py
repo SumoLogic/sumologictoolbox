@@ -133,15 +133,15 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
         self.layoutContinuousTierIngest.addWidget(self.labelContinuousTierIngest)
         self.layoutContinuousTierIngest.addWidget(self.lineEditContinuousTierIngest)
 
-        self.labelContinuousTierStorage = QtWidgets.QLabel(Dialog)
-        self.labelContinuousTierStorage.setObjectName("ContinuousTierStorage")
-        self.labelContinuousTierStorage.setText('Continuous Tier Storage (0 - 1,000,000 GB):')
-        self.lineEditContinuousTierStorage = QtWidgets.QLineEdit(Dialog)
+        # self.labelContinuousTierStorage = QtWidgets.QLabel(Dialog)
+        # self.labelContinuousTierStorage.setObjectName("ContinuousTierStorage")
+        # self.labelContinuousTierStorage.setText('Continuous Tier Storage (0 - 1,000,000 GB):')
+        # self.lineEditContinuousTierStorage = QtWidgets.QLineEdit(Dialog)
 
-        self.lineEditContinuousTierStorage.setValidator(self.intValidator)
-        self.layoutContinuousTierStorage = QtWidgets.QHBoxLayout()
-        self.layoutContinuousTierStorage.addWidget(self.labelContinuousTierStorage)
-        self.layoutContinuousTierStorage.addWidget(self.lineEditContinuousTierStorage)
+        # self.lineEditContinuousTierStorage.setValidator(self.intValidator)
+        # self.layoutContinuousTierStorage = QtWidgets.QHBoxLayout()
+        # self.layoutContinuousTierStorage.addWidget(self.labelContinuousTierStorage)
+        # self.layoutContinuousTierStorage.addWidget(self.lineEditContinuousTierStorage)
         
         # Frequent
         self.labelFrequentTierIngest = QtWidgets.QLabel(Dialog)
@@ -154,15 +154,15 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
         self.layoutFrequentTierIngest.addWidget(self.labelFrequentTierIngest)
         self.layoutFrequentTierIngest.addWidget(self.lineEditFrequentTierIngest)
 
-        self.labelFrequentTierStorage = QtWidgets.QLabel(Dialog)
-        self.labelFrequentTierStorage.setObjectName("FrequentTierStorage")
-        self.labelFrequentTierStorage.setText('Frequent Tier Storage (0 - 1,000,000 GB):')
-        self.lineEditFrequentTierStorage = QtWidgets.QLineEdit(Dialog)
-
-        self.lineEditFrequentTierStorage.setValidator(self.intValidator)
-        self.layoutFrequentTierStorage = QtWidgets.QHBoxLayout()
-        self.layoutFrequentTierStorage.addWidget(self.labelFrequentTierStorage)
-        self.layoutFrequentTierStorage.addWidget(self.lineEditFrequentTierStorage)
+        # self.labelFrequentTierStorage = QtWidgets.QLabel(Dialog)
+        # self.labelFrequentTierStorage.setObjectName("FrequentTierStorage")
+        # self.labelFrequentTierStorage.setText('Frequent Tier Storage (0 - 1,000,000 GB):')
+        # self.lineEditFrequentTierStorage = QtWidgets.QLineEdit(Dialog)
+        # 
+        # self.lineEditFrequentTierStorage.setValidator(self.intValidator)
+        # self.layoutFrequentTierStorage = QtWidgets.QHBoxLayout()
+        # self.layoutFrequentTierStorage.addWidget(self.labelFrequentTierStorage)
+        # self.layoutFrequentTierStorage.addWidget(self.lineEditFrequentTierStorage)
         
         # Infrequent
         
@@ -176,15 +176,15 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
         self.layoutInFrequentTierIngest.addWidget(self.labelInFrequentTierIngest)
         self.layoutInFrequentTierIngest.addWidget(self.lineEditInFrequentTierIngest)
 
-        self.labelInFrequentTierStorage = QtWidgets.QLabel(Dialog)
-        self.labelInFrequentTierStorage.setObjectName("InFrequentTierStorage")
-        self.labelInFrequentTierStorage.setText('InFrequent Tier Storage (0 - 1,000,000 GB):')
-        self.lineEditInFrequentTierStorage = QtWidgets.QLineEdit(Dialog)
-
-        self.lineEditInFrequentTierStorage.setValidator(self.intValidator)
-        self.layoutInFrequentTierStorage = QtWidgets.QHBoxLayout()
-        self.layoutInFrequentTierStorage.addWidget(self.labelInFrequentTierStorage)
-        self.layoutInFrequentTierStorage.addWidget(self.lineEditInFrequentTierStorage)
+        # self.labelInFrequentTierStorage = QtWidgets.QLabel(Dialog)
+        # self.labelInFrequentTierStorage.setObjectName("InFrequentTierStorage")
+        # self.labelInFrequentTierStorage.setText('InFrequent Tier Storage (0 - 1,000,000 GB):')
+        # self.lineEditInFrequentTierStorage = QtWidgets.QLineEdit(Dialog)
+        # 
+        # self.lineEditInFrequentTierStorage.setValidator(self.intValidator)
+        # self.layoutInFrequentTierStorage = QtWidgets.QHBoxLayout()
+        # self.layoutInFrequentTierStorage.addWidget(self.labelInFrequentTierStorage)
+        # self.layoutInFrequentTierStorage.addWidget(self.lineEditInFrequentTierStorage)
 
         # Metrics
         self.labelMetrics = QtWidgets.QLabel(Dialog)
@@ -197,61 +197,75 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
         self.layoutMetrics.addWidget(self.labelMetrics)
         self.layoutMetrics.addWidget(self.lineEditMetrics)
 
-        # CSE
+        # Tracing
+        self.labelTracing = QtWidgets.QLabel(Dialog)
+        self.labelTracing.setObjectName("Tracing")
+        self.labelTracing.setText('Tracing Ingest:')
+        self.lineEditTracing = QtWidgets.QLineEdit(Dialog)
+
+        self.lineEditTracing.setValidator(self.intValidator)
+        self.layoutTracing = QtWidgets.QHBoxLayout()
+        self.layoutTracing.addWidget(self.labelTracing)
+        self.layoutTracing.addWidget(self.lineEditTracing)
         
-        self.labelCSEIngest = QtWidgets.QLabel(Dialog)
-        self.labelCSEIngest.setObjectName("CSEIngest")
-        self.labelCSEIngest.setText('CSE Ingest (0 - 1,000,000 GB/day):')
-        self.lineEditCSEIngest = QtWidgets.QLineEdit(Dialog)
+        # CSE
+        #
+        # self.labelCSEIngest = QtWidgets.QLabel(Dialog)
+        # self.labelCSEIngest.setObjectName("CSEIngest")
+        # self.labelCSEIngest.setText('CSE Ingest (0 - 1,000,000 GB/day):')
+        # self.lineEditCSEIngest = QtWidgets.QLineEdit(Dialog)
+        #
+        # self.lineEditCSEIngest.setValidator(self.intValidator)
+        # self.layoutCSEIngest = QtWidgets.QHBoxLayout()
+        # self.layoutCSEIngest.addWidget(self.labelCSEIngest)
+        # self.layoutCSEIngest.addWidget(self.lineEditCSEIngest)
 
-        self.lineEditCSEIngest.setValidator(self.intValidator)
-        self.layoutCSEIngest = QtWidgets.QHBoxLayout()
-        self.layoutCSEIngest.addWidget(self.labelCSEIngest)
-        self.layoutCSEIngest.addWidget(self.lineEditCSEIngest)
-
-        self.labelCSEStorage = QtWidgets.QLabel(Dialog)
-        self.labelCSEStorage.setObjectName("CSEStorage")
-        self.labelCSEStorage.setText('CSE Storage (0 - 1,000,000 GB):')
-        self.lineEditCSEStorage = QtWidgets.QLineEdit(Dialog)
-
-        self.lineEditCSEStorage.setValidator(self.intValidator)
-        self.layoutCSEStorage = QtWidgets.QHBoxLayout()
-        self.layoutCSEStorage.addWidget(self.labelCSEStorage)
-        self.layoutCSEStorage.addWidget(self.lineEditCSEStorage)
+        # self.labelCSEStorage = QtWidgets.QLabel(Dialog)
+        # self.labelCSEStorage.setObjectName("CSEStorage")
+        # self.labelCSEStorage.setText('CSE Storage (0 - 1,000,000 GB):')
+        # self.lineEditCSEStorage = QtWidgets.QLineEdit(Dialog)
+        # 
+        # self.lineEditCSEStorage.setValidator(self.intValidator)
+        # self.layoutCSEStorage = QtWidgets.QHBoxLayout()
+        # self.layoutCSEStorage.addWidget(self.labelCSEStorage)
+        # self.layoutCSEStorage.addWidget(self.lineEditCSEStorage)
 
         if self.org_details:
 
             self.lineEditContinuousTierIngest.setText(str(self.org_details['subscription']['baselines']['continuousIngest']))
-            self.lineEditContinuousTierStorage.setText(str(self.org_details['subscription']['baselines']['continuousStorage']))
+            #self.lineEditContinuousTierStorage.setText(str(self.org_details['subscription']['baselines']['continuousStorage']))
             self.lineEditFrequentTierIngest.setText(str(self.org_details['subscription']['baselines']['frequentIngest']))
-            self.lineEditFrequentTierStorage.setText(str(self.org_details['subscription']['baselines']['frequentStorage']))
+            #self.lineEditFrequentTierStorage.setText(str(self.org_details['subscription']['baselines']['frequentStorage']))
             self.lineEditInFrequentTierIngest.setText(str(self.org_details['subscription']['baselines']['infrequentIngest']))
-            self.lineEditInFrequentTierStorage.setText(str(self.org_details['subscription']['baselines']['infrequentStorage']))
-            self.lineEditCSEIngest.setText(str(self.org_details['subscription']['baselines']['cseIngest']))
-            self.lineEditCSEStorage.setText(str(self.org_details['subscription']['baselines']['cseStorage']))
+            #self.lineEditInFrequentTierStorage.setText(str(self.org_details['subscription']['baselines']['infrequentStorage']))
+            #self.lineEditCSEIngest.setText(str(self.org_details['subscription']['baselines']['cseIngest']))
+            #self.lineEditCSEStorage.setText(str(self.org_details['subscription']['baselines']['cseStorage']))
             self.lineEditMetrics.setText(str(self.org_details['subscription']['baselines']['metrics']))
+            self.lineEditTracing.setText(str(self.org_details['subscription']['baselines']['tracingIngest']))
 
         else:
             self.lineEditContinuousTierIngest.setText('0')
-            self.lineEditContinuousTierStorage.setText('0')
+            #self.lineEditContinuousTierStorage.setText('0')
             self.lineEditFrequentTierIngest.setText('0')
-            self.lineEditFrequentTierStorage.setText('0')
+            #self.lineEditFrequentTierStorage.setText('0')
             self.lineEditInFrequentTierIngest.setText('0')
-            self.lineEditInFrequentTierStorage.setText('0')
+            #self.lineEditInFrequentTierStorage.setText('0')
             self.lineEditMetrics.setText('0')
-            self.lineEditCSEIngest.setText('0')
-            self.lineEditCSEStorage.setText('0')
+            self.lineEditTracing.setText('0')
+            #self.lineEditCSEIngest.setText('0')
+            #self.lineEditCSEStorage.setText('0')
 
             
         self.layout.addLayout(self.layoutContinuousTierIngest)
-        self.layout.addLayout(self.layoutContinuousTierStorage)
+        #self.layout.addLayout(self.layoutContinuousTierStorage)
         self.layout.addLayout(self.layoutFrequentTierIngest)
-        self.layout.addLayout(self.layoutFrequentTierStorage)
+        #self.layout.addLayout(self.layoutFrequentTierStorage)
         self.layout.addLayout(self.layoutInFrequentTierIngest)
-        self.layout.addLayout(self.layoutInFrequentTierStorage)
+        #self.layout.addLayout(self.layoutInFrequentTierStorage)
+        #self.layout.addLayout(self.layoutCSEIngest)
         self.layout.addLayout(self.layoutMetrics)
-        self.layout.addLayout(self.layoutCSEIngest)
-        self.layout.addLayout(self.layoutCSEStorage)
+        self.layout.addLayout(self.layoutTracing)
+        #self.layout.addLayout(self.layoutCSEStorage)
         self.createPresetCheckbox = QtWidgets.QCheckBox("Create Credential Preset")
         self.createPresetCheckbox.setChecked(True)
         self.writeCredsToFileCheckbox = QtWidgets.QCheckBox("Write Credentials to File")
@@ -275,14 +289,15 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
                    'baselines': {}
                    }
         results['baselines']['continuousIngest'] = str(self.lineEditContinuousTierIngest.text())
-        results['baselines']['continuousStorage'] = str(self.lineEditContinuousTierStorage.text())
+        #results['baselines']['continuousStorage'] = str(self.lineEditContinuousTierStorage.text())
         results['baselines']['frequentIngest'] = str(self.lineEditFrequentTierIngest.text())
-        results['baselines']['frequentStorage'] = str(self.lineEditFrequentTierStorage.text())
+        #results['baselines']['frequentStorage'] = str(self.lineEditFrequentTierStorage.text())
         results['baselines']['infrequentIngest'] = str(self.lineEditInFrequentTierIngest.text())
-        results['baselines']['infrequentStorage'] = str(self.lineEditInFrequentTierStorage.text())
+        #results['baselines']['infrequentStorage'] = str(self.lineEditInFrequentTierStorage.text())
         results['baselines']['metrics'] = self.lineEditMetrics.text()
-        results['baselines']['cseIngest'] = str(self.lineEditCSEIngest.text())
-        results['baselines']['cseStorage'] = str(self.lineEditCSEStorage.text())
+        results['baselines']['tracingIngest'] = self.lineEditTracing.text()
+        #results['baselines']['cseIngest'] = str(self.lineEditCSEIngest.text())
+        #results['baselines']['cseStorage'] = str(self.lineEditCSEStorage.text())
         if self.comboBoxLicenseType.currentText() == 'Trial':
             results['trialPlanPeriod'] = str(self.lineEditTrialLength.text())
         if not self.org_details:
@@ -403,14 +418,15 @@ class organizations_tab(QtWidgets.QWidget):
                     'License': raw_org['subscription']['plan']['planName'],
                     'Status': raw_org['subscription']['status'],
                     'Continuous Ingest': raw_org['subscription']['baselines']['continuousIngest'],
-                    'Continuous Storage': raw_org['subscription']['baselines']['continuousStorage'],
+                    #'Continuous Storage': raw_org['subscription']['baselines']['continuousStorage'],
                     'Frequent Ingest': raw_org['subscription']['baselines']['frequentIngest'],
-                    'Frequent Storage': raw_org['subscription']['baselines']['frequentStorage'],
+                    #'Frequent Storage': raw_org['subscription']['baselines']['frequentStorage'],
                     'Infrequent Ingest': raw_org['subscription']['baselines']['infrequentIngest'],
-                    'Infrequent Storage': raw_org['subscription']['baselines']['infrequentStorage'],
+                    #'Infrequent Storage': raw_org['subscription']['baselines']['infrequentStorage'],
                     #'CSE Ingest': raw_org['subscription']['baselines']['cseIngest'],
                     #'CSE Storage': raw_org['subscription']['baselines']['cseStorage'],
-                    'Metrics': raw_org['subscription']['baselines']['metrics']
+                    'Metrics': raw_org['subscription']['baselines']['metrics'],
+                    'Tracing': raw_org['subscription']['baselines']['tracingIngest']
                     }
             orgs.append(org)
 

@@ -19,7 +19,7 @@ class FilesystemAdapter(Adapter):
         self.current_path_list = path_list
         self._update_path_string()
 
-    def list(self, mode, params=None):
+    def list(self, params=None):
         item_list = []
         item_list.extend(self._get_folders())
         if params is not None and 'extension' in params:
@@ -52,14 +52,14 @@ class FilesystemAdapter(Adapter):
                 folder_list.append(folder_dict)
         return folder_list
 
-    def up(self, mode, params=None):
+    def up(self, params=None):
         if self.at_top_of_hierarchy():
             return False
         else:
             self._remove_dir_from_path()
             return True
 
-    def down(self, mode, folder_name, params=None):
+    def down(self, folder_name, params=None):
         path = pathlib.Path(self.get_current_path(), folder_name)
         if path.is_dir():
             self._add_dir_to_path(folder_name)
@@ -68,9 +68,10 @@ class FilesystemAdapter(Adapter):
         else:
             return False
 
-    def create_folder(self, mode, folder_name, list_widget, params=None):
+    def create_folder(self, folder_name, list_widget, params=None):
         try:
             path = pathlib.Path(self.get_current_path(), folder_name)
+            logger.debug(f"Creating filesystem folder: {str(path)}")
             path.mkdir()
             return {'status': 'SUCCESS',
                     'result': True,
@@ -85,9 +86,10 @@ class FilesystemAdapter(Adapter):
                     'exception': str(e)
                     }
 
-    def put(self, mode, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, list_widget, params=None):
         try:
-            file_name = item_name + params['extension']
+            file_name = str(item_name) + str(params['extension'])
+            file_name = file_name.replace('/', '-')
             save_file_path = pathlib.Path(self.get_current_path(), file_name)
             logger.debug(f'Writing to file: {str(save_file_path)}')
             with save_file_path.open('w', encoding='UTF-8') as f:
@@ -105,7 +107,7 @@ class FilesystemAdapter(Adapter):
                     'exception': str(e)
                     }
 
-    def get(self, mode, item_name, item_id, params=None):
+    def get(self, item_name, item_id, params=None):
         try:
             file_name = item_name
             save_file_path = pathlib.Path(self.get_current_path(), file_name)
@@ -124,16 +126,19 @@ class FilesystemAdapter(Adapter):
                     'exception': str(e)
                     }
 
-    def export_item(self, mode, item_name, item_id, params=None):
-        return self.get(mode, item_name, item_id, params=params)
+    def export_item(self, item_name, item_id, params=None):
+        return self.get(item_name, item_id, params=params)
 
-    def import_item(self, mode, item_name, payload, list_widget,  params=None):
-        return self.put(mode, item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, list_widget,  params=None):
+        return self.put(item_name, payload, list_widget, params=params)
 
-    def delete(self, mode, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, list_widget, params=None):
         try:
             path = pathlib.Path(self.get_current_path(), item_name)
-            path.unlink()
+            if path.is_dir():
+                path.rmdir()
+            else:
+                path.unlink()
             return {'status': 'SUCCESS',
                     'result': None,
                     'adapter': self,
