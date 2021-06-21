@@ -47,7 +47,7 @@ class MonitorsTab(StandardTab):
             if ':' not in left_creds['service']:
                 self.pushButtonParentDirLeft.setEnabled(True)
                 self.pushButtonNewFolderLeft.setEnabled(True)
-                self.left_adapter = SumoMonitorAdapter(left_creds, 'left', log_level=self.mainwindow.log_level)
+                self.left_adapter = SumoMonitorAdapter(left_creds, 'left', self.mainwindow)
 
 
         if self.right:
@@ -55,7 +55,7 @@ class MonitorsTab(StandardTab):
             if ':' not in right_creds['service']:
                 self.pushButtonParentDirRight.setEnabled(True)
                 self.pushButtonNewFolderRight.setEnabled(True)
-                self.right_adapter = SumoMonitorAdapter(right_creds, 'right', log_level=self.mainwindow.log_level)
+                self.right_adapter = SumoMonitorAdapter(right_creds, 'right', self.mainwindow)
 
     def load_icons(self):
         super(MonitorsTab, self).load_icons()

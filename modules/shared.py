@@ -3,6 +3,7 @@ from logzero import logger
 import pathlib
 from functools import wraps
 from datetime import datetime, timezone
+import sys
 
 
 class ShowTextDialog(QtWidgets.QDialog):
@@ -96,7 +97,8 @@ def exception_and_error_handling(func):
             result = func(*args, **kwargs)
             return result
         except Exception as e:
-            description = f'Something went wrong in {str(func.__module__)}:{str(func.__name__)}:\n\n {str(e)}'
+            exc_type, exc_obj, tb = sys.exc_info()
+            description = f'{str(exc_type)} in {str(func.__module__)}:{str(func.__name__)}:\n\n {str(e)}'
             logger.exception(description)
             errorbox(description)
     return wrapper
@@ -236,6 +238,98 @@ def import_saml_config(self, saml_export, sumo):
     saml_export['spInitiatedLoginEnabled'] = False
     # End Hacky stuff
     status = sumo.create_saml_config(saml_export)
+
+
+def export_rule(self, item_id, sumo):
+    rule = sumo.get_rule(item_id)
+    return rule
+
+
+def import_rule(self, item, sumo):
+    def remove_json_keys(json):
+        remove_keys = ['created', 'createdBy', 'contentType', 'deleted', 'id', 'lastUpdated', 'lastUpdatedBy', 'ruleId',
+                       'ruleSource', 'ruleType', 'signalCount07d', 'signalCount24h', 'status']
+        for remove_key in remove_keys:
+            if remove_key in json:
+                del json[remove_key]
+        return {'fields': json}
+    rule_type = item['ruleType']
+    rule = remove_json_keys(item)
+    if rule_type == 'templated match':
+        result = sumo.create_templated_match_rule(rule)
+    elif rule_type == 'match':
+        result = sumo.create_match_rule(rule)
+    elif rule_type == 'chain':
+        result = sumo.create_chain_rule(rule)
+    elif rule_type == 'threshold':
+        result = sumo.create_threshold_rule(rule)
+    elif rule_type == 'aggregation':
+        result = sumo.create_aggregation_rule(rule)
+    return result
+
+
+def export_custom_insight(self, item_id, sumo):
+
+    def is_custom_rule(rule_id):
+        parts = str(rule_id).split('-')
+        if parts[1][0] == 'U':
+            return True
+        else:
+            return False
+    custom_insight = sumo.get_custom_insight(str(item_id))
+    custom_insight['rules'] = []
+    for ruleId in custom_insight['ruleIds']:
+        if is_custom_rule(ruleId):
+            custom_insight['rules'].append(export_rule(None, ruleId, sumo))
+    return custom_insight
+
+
+def import_custom_insight(self, item, sumo):
+    def remove_json_keys(json):
+        remove_keys = ['created', 'createdBy', 'contentType', 'deleted', 'id', 'lastUpdated', 'lastUpdatedBy', 'rules']
+        for remove_key in remove_keys:
+            if remove_key in json:
+                del json[remove_key]
+        return {'fields': json}
+
+    def is_custom_rule(rule_id):
+        parts = str(rule_id).split('-')
+        if parts[1][0] == 'U':
+            return True
+        else:
+            return False
+
+    def custom_rule_exists(rule_name):
+        rule_query = 'ruleSource:"user"'
+        custom_rules = sumo.get_rules_sync(rule_query)
+        for custom_rule in custom_rules:
+            if str(custom_rule['name']) == str(rule_name):
+                return True
+        return False
+
+    def get_custom_rule_id_by_name(rule_name):
+        rule_query = 'ruleSource:"user"'
+        custom_rules = sumo.get_rules_sync(rule_query)
+        for custom_rule in custom_rules:
+            if str(custom_rule['name']) == str(rule_name):
+                return custom_rule['id']
+        return False
+    rule_ids_to_replace = []
+    for rule in item['rules']:
+        old_rule_id = rule['id']
+        if is_custom_rule(old_rule_id):
+            if not custom_rule_exists(rule['name']):
+                result = import_rule(None, rule, sumo)
+            new_rule_id = get_custom_rule_id_by_name(rule['name'])
+            rule_ids_to_replace.append({'old_id': old_rule_id, 'new_id': new_rule_id})
+
+    for rule_id_to_replace in rule_ids_to_replace:
+        for index, rule_id in enumerate(item['ruleIds']):
+            if rule_id == rule_id_to_replace['old_id']:
+                item['ruleIds'][index] = rule_id_to_replace['new_id']
+
+    insight = remove_json_keys(item)
+    result = self.sumo.create_custom_insight(insight)
 
 
 def export_user(self, user_id, sumo):

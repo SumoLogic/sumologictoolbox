@@ -650,6 +650,13 @@ If so type 'DELETE' in the box below:"
             self.errorbox('Something went wrong\n\n' + str(e))
         return
 
+    def list_presets_with_creds(self):
+        presets_with_creds = []
+        preset_names = self.credentialstore.list_names()
+        for preset_name in preset_names:
+            presets_with_creds.append(self.credentialstore.get_creds(preset_name))
+        return presets_with_creds
+
     def add_preset_to_combobox(self, preset):
         self.comboBoxPresetLeft.addItem(preset)
         self.comboBoxPresetRight.addItem(preset)

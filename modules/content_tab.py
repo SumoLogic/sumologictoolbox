@@ -1,148 +1,81 @@
-from qtpy import QtGui, QtWidgets, uic
-import os
+from qtpy import QtGui, QtWidgets
 import pathlib
 from logzero import logger
 from modules.adapter import SumoContentAdapter
-from modules.tab_base_class import BaseTab
-from modules.filesystem_adapter import FilesystemAdapter
+from modules.tab_base_class import StandardTab
+
 
 class_name = 'ContentTab'
 
 
-class ContentTab(BaseTab):
+class ContentTab(StandardTab):
 
     def __init__(self, mainwindow):
         super(ContentTab, self).__init__(mainwindow)
         self.tab_name = 'Content'
         self.cred_usage = 'both'
-        content_widget_ui = os.path.join(self.mainwindow.basedir, 'data/content.ui')
-        uic.loadUi(content_widget_ui, self)
+
         # set up some variables to identify the content list widgets. This is read by some of the content methods
         # to determine proper course of action
-        self.contentListWidgetLeft.side = 'left'
-        self.contentListWidgetRight.side = 'right'
-        self.contentListWidgetLeft.params = {'extension': '.sumocontent.json'}
-        self.contentListWidgetRight.params = {'extension': '.sumocontent.json'}
+        self.listWidgetLeft.params = {'extension': '.sumocontent.json'}
+        self.listWidgetRight.params = {'extension': '.sumocontent.json'}
+        self.listWidgetLeft.side = "left"
+        self.listWidgetRight.side = "right"
+        self.QRadioButtonLeftPersonalFolders = QtWidgets.QRadioButton('Personal')
+        self.QRadioButtonLeftPersonalFolders.setChecked(True)
+        self.QRadioButtonLeftGlobalFolders = QtWidgets.QRadioButton('Global')
+        self.QRadioButtonLeftAdminFolders = QtWidgets.QRadioButton('Admin Recommended')
+        self.QRadioButtonGroupLeft = QtWidgets.QButtonGroup()
+        self.QRadioButtonGroupLeft.addButton(self.QRadioButtonLeftPersonalFolders, 0)
+        self.QRadioButtonGroupLeft.addButton(self.QRadioButtonLeftGlobalFolders, 1)
+        self.QRadioButtonGroupLeft.addButton(self.QRadioButtonLeftAdminFolders, 2)
+        self.horizontalLayoutTopPushButtonsLeft.insertWidget(3, self.QRadioButtonLeftPersonalFolders)
+        self.horizontalLayoutTopPushButtonsLeft.insertWidget(4, self.QRadioButtonLeftGlobalFolders)
+        self.horizontalLayoutTopPushButtonsLeft.insertWidget(5, self.QRadioButtonLeftAdminFolders)
+
+        self.QRadioButtonRightPersonalFolders = QtWidgets.QRadioButton('Personal')
+        self.QRadioButtonRightPersonalFolders.setChecked(True)
+        self.QRadioButtonRightGlobalFolders = QtWidgets.QRadioButton('Global')
+        self.QRadioButtonRightAdminFolders = QtWidgets.QRadioButton('Admin Recommended')
+        self.QRadioButtonGroupRight = QtWidgets.QButtonGroup()
+        self.QRadioButtonGroupRight.addButton(self.QRadioButtonRightPersonalFolders, 0)
+        self.QRadioButtonGroupRight.addButton(self.QRadioButtonRightGlobalFolders, 1)
+        self.QRadioButtonGroupRight.addButton(self.QRadioButtonRightAdminFolders, 2)
+        self.horizontalLayoutTopPushButtonsRight.insertWidget(3, self.QRadioButtonRightPersonalFolders)
+        self.horizontalLayoutTopPushButtonsRight.insertWidget(4, self.QRadioButtonRightGlobalFolders)
+        self.horizontalLayoutTopPushButtonsRight.insertWidget(5, self.QRadioButtonRightAdminFolders)
+
+        self.checkBoxIncludeConnections = QtWidgets.QCheckBox()
+        self.checkBoxIncludeConnections.setChecked(True)
+        self.checkBoxIncludeConnections.setText("Include\nConnections")
+        self.verticalLayoutCenterButton.insertWidget(3, self.checkBoxIncludeConnections)
+        self.checkBoxIncludeConnections.show()
+
+        self.toggle_include_roles()
         self.reset_stateful_objects()
 
-        # Content Pane Signals
-        # Left Side
-        self.pushButtonUpdateContentLeft.clicked.connect(lambda: self.update_item_list(
-            self.contentListWidgetLeft,
+        self.QRadioButtonGroupLeft.buttonClicked.connect(lambda: self.radio_button_changed(
+            self.listWidgetLeft,
             self.left_adapter,
-            self.contentCurrentDirLabelLeft
+            self.QRadioButtonGroupLeft.checkedId(),
+            self.labelPathLeft
         ))
 
-        self.contentListWidgetLeft.itemDoubleClicked.connect(lambda item: self.double_clicked_item(
-            self.contentListWidgetLeft,
-            self.left_adapter,
-            item,
-            self.contentCurrentDirLabelLeft
-        ))
-
-        self.pushButtonParentDirContentLeft.clicked.connect(lambda: self.go_to_parent_dir(
-            self.contentListWidgetLeft,
-            self.left_adapter,
-            self.contentCurrentDirLabelLeft
-        ))
-
-        self.buttonGroupContentLeft.buttonClicked.connect(lambda: self.content_radio_button_changed(
-            self.contentListWidgetLeft,
-            self.left_adapter,
-            self.buttonGroupContentLeft.checkedId(),
-            self.contentCurrentDirLabelLeft
-        ))
-
-        self.pushButtonContentNewFolderLeft.clicked.connect(lambda: self.create_folder(
-            self.contentListWidgetLeft,
-            self.left_adapter
-        ))
-
-        self.pushButtonContentDeleteLeft.clicked.connect(lambda: self.delete_item(
-            self.contentListWidgetLeft,
-            self.left_adapter
-        ))
-
-        self.pushButtonContentCopyLeftToRight.clicked.connect(lambda: self.begin_copy_content(
-            self.contentListWidgetLeft,
-            self.contentListWidgetRight,
-            self.left_adapter,
+        self.QRadioButtonGroupRight.buttonClicked.connect(lambda: self.radio_button_changed(
+            self.listWidgetRight,
             self.right_adapter,
-            {'replace_source_categories': False, 'include_connections': self.checkBoxIncludeConnects.isChecked()}
+            self.QRadioButtonGroupRight.checkedId(),
+            self.labelPathRight
         ))
 
-        self.pushButtonContentFindReplaceCopyLeftToRight.clicked.connect(lambda: self.begin_copy_content(
-            self.contentListWidgetLeft,
-            self.contentListWidgetRight,
-            self.left_adapter,
-            self.right_adapter,
-            {'replace_source_categories': True, 'include_connections': self.checkBoxIncludeConnects.isChecked()}
-        ))
+        self.checkBoxIncludeConnections.stateChanged.connect(self.toggle_include_roles)
 
-        # Right Side
-        self.pushButtonUpdateContentRight.clicked.connect(lambda: self.update_item_list(
-            self.contentListWidgetRight,
-            self.right_adapter,
-            self.contentCurrentDirLabelRight
-        ))
-
-        self.contentListWidgetRight.itemDoubleClicked.connect(lambda item: self.double_clicked_item(
-            self.contentListWidgetRight,
-            self.right_adapter,
-            item,
-            self.contentCurrentDirLabelRight
-        ))
-
-        self.pushButtonParentDirContentRight.clicked.connect(lambda: self.go_to_parent_dir(
-            self.contentListWidgetRight,
-            self.right_adapter,
-            self.contentCurrentDirLabelRight
-        ))
-
-        self.buttonGroupContentRight.buttonClicked.connect(lambda: self.content_radio_button_changed(
-            self.contentListWidgetRight,
-            self.right_adapter,
-            self.buttonGroupContentRight.checkedId(),
-            self.contentCurrentDirLabelRight
-        ))
-
-        self.pushButtonContentNewFolderRight.clicked.connect(lambda: self.create_folder(
-            self.contentListWidgetRight,
-            self.right_adapter
-        ))
-
-        self.pushButtonContentDeleteRight.clicked.connect(lambda: self.delete_item(
-            self.contentListWidgetRight,
-            self.right_adapter
-        ))
-
-        self.pushButtonContentCopyRightToLeft.clicked.connect(lambda: self.begin_copy_content(
-            self.contentListWidgetRight,
-            self.contentListWidgetLeft,
-            self.right_adapter,
-            self.left_adapter,
-            {'replace_source_categories': False, 'include_connections': self.checkBoxIncludeConnects.isChecked()}
-        ))
-
-        self.pushButtonContentFindReplaceCopyRightToLeft.clicked.connect(lambda: self.begin_copy_content(
-            self.contentListWidgetRight,
-            self.contentListWidgetLeft,
-            self.right_adapter,
-            self.left_adapter,
-            {'replace_source_categories': True, 'include_connections': self.checkBoxIncludeConnects.isChecked()}
-        ))
-
-        self.pushButtonContentViewJSONLeft.clicked.connect(lambda: self.view_json(
-            self.contentListWidgetLeft,
-            self.left_adapter
-        ))
-
-        self.pushButtonContentViewJSONRight.clicked.connect(lambda: self.view_json(
-            self.contentListWidgetRight,
-            self.right_adapter
-        ))
+    def toggle_include_roles(self):
+        self.listWidgetLeft.params['include_connections'] = self.checkBoxIncludeConnections.isChecked()
+        self.listWidgetRight.params['include_connections'] = self.checkBoxIncludeConnections.isChecked()
 
     def reset_stateful_objects(self, side='both'):
+        super(ContentTab, self).reset_stateful_objects(side=side)
         left = None
         right = None
         if side == 'both':
@@ -156,57 +89,45 @@ class ContentTab(BaseTab):
             right = True
 
         if left:
-            self.contentListWidgetLeft.clear()
-            self.contentListWidgetLeft.updated = False
-            self.radioButtonPersonalLeft.setEnabled(False)
-            self.radioButtonGlobalLeft.setEnabled(False)
-            self.radioButtonAdminLeft.setEnabled(False)
+            self.QRadioButtonLeftPersonalFolders.setEnabled(False)
+            self.QRadioButtonLeftGlobalFolders.setEnabled(False)
+            self.QRadioButtonLeftAdminFolders.setEnabled(False)
             # FindReplaceCopy Requires a Sumo Org as the Destination so it can query source categories
             # turn it off by default
             self.left_find_replace_copy_on = False
-            self.pushButtonContentFindReplaceCopyRightToLeft.setEnabled(False)
-            left_creds = self.mainwindow.get_current_creds('left')
-            if left_creds['service'] == "FILESYSTEM:":
-                self.left_adapter = FilesystemAdapter(left_creds, 'left', log_level=self.mainwindow.log_level)
-            elif ':' not in left_creds['service']:
-                self.radioButtonPersonalLeft.setEnabled(True)
-                self.radioButtonGlobalLeft.setEnabled(True)
-                self.radioButtonAdminLeft.setEnabled(True)
+            self.pushButtonFindReplaceCopyRightToLeft.setEnabled(False)
+
+            if ':' not in self.left_creds['service']:
+                self.QRadioButtonLeftPersonalFolders.setEnabled(True)
+                self.QRadioButtonLeftGlobalFolders.setEnabled(True)
+                self.QRadioButtonLeftAdminFolders.setEnabled(True)
                 # FindReplaceCopy Requires a Sumo Org as the Destination so it can query source categories
                 # turn it on since that's true
                 self.left_find_replace_copy_on = True
-                self.pushButtonContentFindReplaceCopyRightToLeft.setEnabled(True)
-                self.left_adapter = SumoContentAdapter(left_creds, 'left', log_level=self.mainwindow.log_level)
-            self.radioButtonPersonalLeft.setChecked(True)
-            self.contentListWidgetLeft.mode = "personal"
-            self.contentCurrentDirLabelLeft.clear()
-
+                self.pushButtonFindReplaceCopyRightToLeft.setEnabled(True)
+                self.left_adapter = SumoContentAdapter(self.left_creds, 'left', self.mainwindow)
+            self.listWidgetLeft.mode = "personal"
 
         if right:
-            self.contentListWidgetRight.clear()
-            self.contentListWidgetRight.updated = False
-            self.radioButtonPersonalRight.setEnabled(False)
-            self.radioButtonGlobalRight.setEnabled(False)
-            self.radioButtonAdminRight.setEnabled(False)
+
+            self.QRadioButtonRightPersonalFolders.setEnabled(False)
+            self.QRadioButtonRightGlobalFolders.setEnabled(False)
+            self.QRadioButtonRightAdminFolders.setEnabled(False)
             # FindReplaceCopy Requires a Sumo Org as the Destination so it can query source categories
             # turn it off by default
             self.right_find_replace_copy_on = False
-            self.pushButtonContentFindReplaceCopyLeftToRight.setEnabled(False)
-            right_creds = self.mainwindow.get_current_creds('right')
-            if right_creds['service'] == "FILESYSTEM:":
-                self.right_adapter = FilesystemAdapter(right_creds, 'right', log_level=self.mainwindow.log_level)
-            elif ':' not in right_creds['service']:
-                self.radioButtonPersonalRight.setEnabled(True)
-                self.radioButtonGlobalRight.setEnabled(True)
-                self.radioButtonAdminRight.setEnabled(True)
+            self.pushButtonFindReplaceCopyLeftToRight.setEnabled(False)
+
+            if ':' not in self.right_creds['service']:
+                self.QRadioButtonRightPersonalFolders.setEnabled(True)
+                self.QRadioButtonRightGlobalFolders.setEnabled(True)
+                self.QRadioButtonRightAdminFolders.setEnabled(True)
                 # FindReplaceCopy Requires a Sumo Org as the Destination so it can query source categories
                 # turn it on since that's true
                 self.right_find_replace_copy_on = True
-                self.pushButtonContentFindReplaceCopyLeftToRight.setEnabled(True)
-                self.right_adapter = SumoContentAdapter(right_creds, 'right', log_level=self.mainwindow.log_level)
-            self.radioButtonPersonalRight.setChecked(True)
-            self.contentListWidgetRight.mode = "personal"
-            self.contentCurrentDirLabelRight.clear()
+                self.pushButtonFindReplaceCopyLeftToRight.setEnabled(True)
+                self.right_adapter = SumoContentAdapter(self.right_creds, 'right', self.mainwindow)
+            self.listWidgetRight.mode = "personal"
 
     def load_icons(self):
         self.icons = {}
@@ -228,31 +149,30 @@ class ContentTab(BaseTab):
         self.icons['Parser'] = QtGui.QIcon(iconpath)
         return
 
-    def content_radio_button_changed(self, content_list_widget, adapter, radio_selected, path_label=None):
-        content_list_widget.currentdirlist = []
-        if radio_selected == -2:
-            content_list_widget.mode = "personal"
-        elif radio_selected == -3:
-            content_list_widget.mode = "global"
-        elif radio_selected == -4:
-            content_list_widget.mode = "admin"
-        self.update_item_list(content_list_widget, adapter, path_label=path_label)
+    def radio_button_changed(self, list_widget, adapter, radio_selected, path_label=None):
+        list_widget.currentdirlist = []
+        if radio_selected == 0:
+            list_widget.mode = "personal"
+        elif radio_selected == 1:
+            list_widget.mode = "global"
+        elif radio_selected == 2:
+            list_widget.mode = "admin"
+        self.update_item_list(list_widget, adapter, path_label=path_label)
         return
 
     def toggle_content_buttons(self, side, state):
         if side == 'left':
-            self.pushButtonContentCopyRightToLeft.setEnabled(state)
-            self.pushButtonContentNewFolderLeft.setEnabled(state)
-            self.pushButtonContentDeleteLeft.setEnabled(state)
+            self.pushButtonCopyRightToLeft.setEnabled(state)
+            self.pushButtonNewFolderLeft.setEnabled(state)
+            self.pushButtonDeleteLeft.setEnabled(state)
             if self.left_find_replace_copy_on:
-                self.pushButtonContentFindReplaceCopyRightToLeft.setEnabled(state)
+                self.pushButtonFindReplaceCopyRightToLeft.setEnabled(state)
         elif side == 'right':
-            self.pushButtonContentCopyLeftToRight.setEnabled(state)
-            self.pushButtonContentNewFolderRight.setEnabled(state)
-            self.pushButtonContentDeleteRight.setEnabled(state)
+            self.pushButtonCopyLeftToRight.setEnabled(state)
+            self.pushButtonNewFolderRight.setEnabled(state)
+            self.pushButtonDeleteRight.setEnabled(state)
             if self.right_find_replace_copy_on:
-                self.pushButtonContentFindReplaceCopyLeftToRight.setEnabled(state)
-
+                self.pushButtonFindReplaceCopyLeftToRight.setEnabled(state)
 
     def create_list_widget_item(self, item):
         item_name = str(item['name'])

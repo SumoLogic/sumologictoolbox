@@ -19,8 +19,8 @@ class RolesTab(StandardTab):
         super(RolesTab, self).reset_stateful_objects(side=side)
         if self.left:
             if ':' not in self.left_creds['service']:
-                self.left_adapter = SumoRoleAdapter(self.left_creds, 'left', log_level=self.mainwindow.log_level)
+                self.left_adapter = SumoRoleAdapter(self.left_creds, 'left', self.mainwindow)
 
         if self.right:
             if ':' not in self.right_creds['service']:
-                self.right_adapter = SumoRoleAdapter(self.right_creds, 'right', log_level=self.mainwindow.log_level)
+                self.right_adapter = SumoRoleAdapter(self.right_creds, 'right', self.mainwindow)

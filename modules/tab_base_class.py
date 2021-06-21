@@ -388,7 +388,6 @@ class BaseTab(QtWidgets.QWidget):
                     self.workers[index].signals.result.connect(self.merge_results_update_target)
                     self.mainwindow.threadpool.start(self.workers[index])
 
-
     def merge_results_update_target(self, result):
         if result['status'] == 'SUCCESS':
             self.num_successful_threads += 1
@@ -641,7 +640,7 @@ class StandardTab(BaseTab):
             if self.left_creds['service'] == "FILESYSTEM:":
                 self.pushButtonParentDirLeft.setEnabled(True)
                 self.pushButtonNewFolderLeft.setEnabled(True)
-                self.left_adapter = FilesystemAdapter(self.left_creds, 'left', log_level=self.mainwindow.log_level)
+                self.left_adapter = FilesystemAdapter(self.left_creds, 'left', self.mainwindow)
             elif ':' not in self.left_creds['service']:
                 self.pushButtonParentDirLeft.setEnabled(False)
                 self.pushButtonNewFolderLeft.setEnabled(False)
@@ -656,7 +655,7 @@ class StandardTab(BaseTab):
             if self.right_creds['service'] == "FILESYSTEM:":
                 self.pushButtonParentDirRight.setEnabled(True)
                 self.pushButtonNewFolderRight.setEnabled(True)
-                self.right_adapter = FilesystemAdapter(self.right_creds, 'right', log_level=self.mainwindow.log_level)
+                self.right_adapter = FilesystemAdapter(self.right_creds, 'right', self.mainwindow)
             if ':' not in self.right_creds['service']:
                 self.pushButtonParentDirRight.setEnabled(False)
                 self.pushButtonNewFolderRight.setEnabled(False)

@@ -1117,3 +1117,96 @@ class SumoLogic(object):
     def update_lookup_table(self, table_id, content):
         r = self.put('/v1/lookupTables/%s/row' % table_id, params=content)
         return r.json()
+
+    # Cloud SIEM Rules
+
+    def get_rules(self, query, limit=50, offset=0, expand=[]):
+        params = {'q': str(query),
+                  'limit': int(limit),
+                  'offset': int(offset),
+                  'expand': expand}
+        r = self.get('/sec/v1/rules', params=params)
+        return r.json()
+
+    def get_rules_sync(self, query, limit=50, expand=[]):
+        offset = 0
+        results = []
+        while True:
+            r = self.get_rules(query, limit=limit, offset=offset, expand=expand)
+            offset = offset + limit
+            results = results + r['data']['objects']
+            if not r['data']['hasNextPage']:
+                break
+        return results
+
+    def get_rule(self, item_id, expand=[]):
+        params = {'expand': expand}
+        r = self.get('/sec/v1/rules/' + str(item_id), params=params)
+        return r.json()['data']
+
+    def delete_rule(self, item_id):
+        r = self.delete('/sec/v1/rules/' + str(item_id))
+        return r
+
+    def create_aggregation_rule(self, item):
+        r = self.post('/sec/v1/rules/aggregation', item)
+        return r.json()
+
+    def create_chain_rule(self, item):
+        r = self.post('/sec/v1/rules/chain', item)
+        return r.json()
+
+    def create_match_rule(self, item):
+        r = self.post('/sec/v1/rules/match', item)
+        return r.json()
+
+    def create_templated_match_rule(self, item):
+        r = self.post('/sec/v1/rules/templated', item)
+        return r.json()
+
+    def create_threshold_rule(self, item):
+        r = self.post('/sec/v1/rules/threshold', item)
+        return r.json()
+
+    # Cloud SIEM Custom Insights
+    def get_custom_insights(self, limit=50, offset=0):
+        params = {'limit': int(limit),
+                  'offset': int(offset)}
+        r = self.get('/sec/v1/custom-insights', params=params)
+        return r.json()
+
+    def get_custom_insights_sync(self, limit=50):
+        offset = 0
+        results = []
+        while True:
+            r = self.get_custom_insights(limit=limit, offset=offset)
+            offset = offset + limit
+            results = results + r['data']['objects']
+            if not r['data']['hasNextPage']:
+                break
+        return results
+
+    def get_custom_insight(self, item_id):
+        custom_insights = self.get_custom_insights_sync()
+        for custom_insight in custom_insights:
+            if custom_insight['id'] == str(item_id):
+                return custom_insight
+        return False
+
+    def create_custom_insight(self, payload):
+        r = self.post('/sec/v1/custom-insights', payload)
+        return r.json()
+
+    def delete_custom_insight(self, item_id):
+        r = self.delete('/sec/v1/custom-insights/' + str(item_id))
+        return r
+
+    def update_custom_insight(self, item_id, payload):
+        r = self.put('/sec/v1/custom-insights/' + str(item_id), payload)
+        return r.json()
+
+    # Cloud SIEM User API test
+
+    def get_current_user(self):
+        r = self.get('/sec/v1/users/current')
+        return r.json()

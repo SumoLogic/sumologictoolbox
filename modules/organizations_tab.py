@@ -1,308 +1,178 @@
 class_name = 'organizations_tab'
 
-from qtpy import QtCore, QtGui, QtWidgets, uic
+from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import os
 from logzero import logger
 import pathlib
-import json
+from modules.shared import exception_and_error_handling
+from modules.filesystem_adapter import FilesystemAdapter
 from modules.sumologic_orgs import SumoLogic_Orgs
+
 
 class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
 
-    def __init__(self, deployments, org_details=None, trials_enabled=False):
+    def __init__(self, deployments, mainwindow, org_details=None, trials_enabled=False):
         super(CreateOrUpdateOrgDialog, self).__init__()
         self.deployments = deployments
+        self.mainwindow = mainwindow
+        self.adapter = None
+        self.presets = self.mainwindow.list_presets_with_creds()
+        self.intValidator = QtGui.QIntValidator()
         self.available_org_licenses = ["Paid"]
         if trials_enabled and not org_details:
             self.available_org_licenses.append("Trial")
         self.org_details = org_details
-        self.setupUi(self)
+        org_details_ui = os.path.join(self.mainwindow.basedir, 'data/org_details.ui')
+        uic.loadUi(org_details_ui, self)
+        self.params = {'extension': '.json'}
+        self.setupUi()
+        self.load_icons()
+        self.preset_changed()
 
+    def setupUi(self):
 
-
-
-    def setupUi(self, Dialog):
-        Dialog.setObjectName("CreateOrg")
-        self.intValidator = QtGui.QIntValidator()
-        self.setWindowTitle('Enter Org Details')
-
-        QBtn = QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
-        self.buttonBox = QtWidgets.QDialogButtonBox(QBtn)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-
-        self.labelOrgName = QtWidgets.QLabel(Dialog)
-        self.labelOrgName.setObjectName("OrgName")
-        self.labelOrgName.setText('Organization Name:')
-        self.lineEditOrgName = QtWidgets.QLineEdit(Dialog)
-
-        self.layoutOrgName = QtWidgets.QHBoxLayout()
-        self.layoutOrgName.addWidget(self.labelOrgName)
-        self.layoutOrgName.addWidget(self.lineEditOrgName)
-
-        self.labelEmail = QtWidgets.QLabel(Dialog)
-        self.labelEmail.setObjectName("Email")
-        self.labelEmail.setText('Registration Email:')
-        self.lineEditEmail = QtWidgets.QLineEdit(Dialog)
-        self.layoutEmail = QtWidgets.QHBoxLayout()
-        self.layoutEmail.addWidget(self.labelEmail)
-        self.layoutEmail.addWidget(self.lineEditEmail)
-
-        self.labelFirstName = QtWidgets.QLabel(Dialog)
-        self.labelFirstName.setObjectName("FirstName")
-        self.labelFirstName.setText('First Name:')
-        self.lineEditFirstName = QtWidgets.QLineEdit(Dialog)
-        self.layoutFirstName = QtWidgets.QHBoxLayout()
-        self.layoutFirstName.addWidget(self.labelFirstName)
-        self.layoutFirstName.addWidget(self.lineEditFirstName)
-
-        self.labelLastName = QtWidgets.QLabel(Dialog)
-        self.labelLastName.setObjectName("LastName")
-        self.labelLastName.setText('Last Name:')
-        self.lineEditLastName = QtWidgets.QLineEdit(Dialog)
-        self.layoutLastName = QtWidgets.QHBoxLayout()
-        self.layoutLastName.addWidget(self.labelLastName)
-        self.layoutLastName.addWidget(self.lineEditLastName)
-
-        self.labelDeployment = QtWidgets.QLabel(Dialog)
-        self.labelDeployment.setObjectName("Deployment")
-        self.labelDeployment.setText('Deployment:')
-        self.comboBoxDeployment = QtWidgets.QComboBox(Dialog)
+        self.lineEditContinuousIngest.setValidator(self.intValidator)
+        self.lineEditFrequentIngest.setValidator(self.intValidator)
+        self.lineEditInfrequentIngest.setValidator(self.intValidator)
+        self.lineEditMetricsIngest.setValidator(self.intValidator)
+        self.lineEditTracingIngest.setValidator(self.intValidator)
         for deployment in self.deployments:
             self.comboBoxDeployment.addItem(deployment['deploymentId'].strip())
-        self.layoutDeployment = QtWidgets.QHBoxLayout()
-        self.layoutDeployment.addWidget(self.labelDeployment)
-        self.layoutDeployment.addWidget(self.comboBoxDeployment)
-
-        self.labelLicenseType = QtWidgets.QLabel(Dialog)
-        self.labelLicenseType.setObjectName("LicenseType")
-        self.labelLicenseType.setText('License Type:')
-        self.comboBoxLicenseType = QtWidgets.QComboBox(Dialog)
         for license in self.available_org_licenses:
-            self.comboBoxLicenseType.addItem(license.strip())
-        self.layoutLicenseType = QtWidgets.QHBoxLayout()
-        self.layoutLicenseType.addWidget(self.labelLicenseType)
-        self.layoutLicenseType.addWidget(self.comboBoxLicenseType)
+            self.comboBoxPlan.addItem(license.strip())
+        self.comboBoxPreset.addItem('FILESYSTEM:')
+        for preset in self.presets:
+            if ":" in preset['sumoregion'] and preset['sumoregion'] != "MULTI:":
+                self.comboBoxPreset.addItem(preset['name'])
+        self.configure_org_toggle()
 
-        self.labelTrialLength = QtWidgets.QLabel(Dialog)
-        self.labelTrialLength.setObjectName('TrialLength')
-        self.labelTrialLength.setText('Trial Length')
-        self.lineEditTrialLength = QtWidgets.QLineEdit(Dialog)
+        # Connect UI Element Signals
 
-        # Temporarily Disabled for V1 of Orgs. Trial length is fixed at 45 days
-        self.lineEditTrialLength.setText('45')
-        self.lineEditTrialLength.setReadOnly(True)
+        self.checkBoxConfigureOrg.stateChanged.connect(self.configure_org_toggle)
+        self.pushButtonUpdate.clicked.connect(lambda: self.update_item_list())
+        self.pushButtonParentDir.clicked.connect(lambda: self.go_to_parent_dir())
+        self.listWidgetConfigs.itemDoubleClicked.connect(lambda item: self.double_clicked_item(item))
 
-        self.layoutTrialLength = QtWidgets.QHBoxLayout()
-        self.layoutTrialLength.addWidget(self.labelTrialLength)
-        self.layoutTrialLength.addWidget(self.lineEditTrialLength)
-        
         if self.org_details:
+            self.comboBoxDeployment.setEnabled(False)
+            self.checkBoxCreatePreset.setEnabled(False)
+            self.checkBoxConfigureOrg.setEnabled(False)
             self.lineEditOrgName.setText(self.org_details['organizationName'])
             self.lineEditOrgName.setReadOnly(True)
             self.lineEditEmail.setText(self.org_details['email'])
             self.lineEditEmail.setReadOnly(True)
-            self.lineEditFirstName.setText(self.org_details['firstName'])
-            self.lineEditFirstName.setReadOnly(True)
-            self.lineEditLastName.setText(self.org_details['lastName'])
-            self.lineEditLastName.setReadOnly(True)
-            index = self.comboBoxLicenseType.findText(self.org_details['subscription']['plan']['planName'],
+            self.lineEditOwnerFirst.setText(self.org_details['firstName'])
+            self.lineEditOwnerFirst.setReadOnly(True)
+            self.lineEditOwnerLast.setText(self.org_details['lastName'])
+            self.lineEditOwnerLast.setReadOnly(True)
+            index = self.comboBoxPlan.findText(self.org_details['subscription']['plan']['planName'],
                                                       QtCore.Qt.MatchFixedString)
             if index >= 0:
-                self.comboBoxLicenseType.setCurrentIndex(index)
-            self.comboBoxLicenseType.setEditable(False)
+                self.comboBoxPlan.setCurrentIndex(index)
+            if str(self.comboBoxPlan.currentText()) == "Paid":
+                self.comboBoxPlan.setEditable(False)
 
-        
-        self.layout = QtWidgets.QVBoxLayout()
-        self.layout.addLayout(self.layoutOrgName)
-        self.layout.addLayout(self.layoutEmail)
-        self.layout.addLayout(self.layoutFirstName)
-        self.layout.addLayout(self.layoutLastName)
-        self.layout.addLayout(self.layoutDeployment)
-        self.layout.addLayout(self.layoutLicenseType)
-        self.layout.addLayout(self.layoutTrialLength)
-
-        # Continuous
-        self.labelContinuousTierIngest = QtWidgets.QLabel(Dialog)
-        self.labelContinuousTierIngest.setObjectName("ContinuousTierIngest")
-        self.labelContinuousTierIngest.setText('Continuous Tier Ingest (0 - 1,000,000 GB/day):')
-        self.lineEditContinuousTierIngest = QtWidgets.QLineEdit(Dialog)
-
-        self.lineEditContinuousTierIngest.setValidator(self.intValidator)
-        self.layoutContinuousTierIngest = QtWidgets.QHBoxLayout()
-        self.layoutContinuousTierIngest.addWidget(self.labelContinuousTierIngest)
-        self.layoutContinuousTierIngest.addWidget(self.lineEditContinuousTierIngest)
-
-        # self.labelContinuousTierStorage = QtWidgets.QLabel(Dialog)
-        # self.labelContinuousTierStorage.setObjectName("ContinuousTierStorage")
-        # self.labelContinuousTierStorage.setText('Continuous Tier Storage (0 - 1,000,000 GB):')
-        # self.lineEditContinuousTierStorage = QtWidgets.QLineEdit(Dialog)
-
-        # self.lineEditContinuousTierStorage.setValidator(self.intValidator)
-        # self.layoutContinuousTierStorage = QtWidgets.QHBoxLayout()
-        # self.layoutContinuousTierStorage.addWidget(self.labelContinuousTierStorage)
-        # self.layoutContinuousTierStorage.addWidget(self.lineEditContinuousTierStorage)
-        
-        # Frequent
-        self.labelFrequentTierIngest = QtWidgets.QLabel(Dialog)
-        self.labelFrequentTierIngest.setObjectName("FrequentTierIngest")
-        self.labelFrequentTierIngest.setText('Frequent Tier Ingest (0 - 1,000,000 GB/day):')
-        self.lineEditFrequentTierIngest = QtWidgets.QLineEdit(Dialog)
-
-        self.lineEditFrequentTierIngest.setValidator(self.intValidator)
-        self.layoutFrequentTierIngest = QtWidgets.QHBoxLayout()
-        self.layoutFrequentTierIngest.addWidget(self.labelFrequentTierIngest)
-        self.layoutFrequentTierIngest.addWidget(self.lineEditFrequentTierIngest)
-
-        # self.labelFrequentTierStorage = QtWidgets.QLabel(Dialog)
-        # self.labelFrequentTierStorage.setObjectName("FrequentTierStorage")
-        # self.labelFrequentTierStorage.setText('Frequent Tier Storage (0 - 1,000,000 GB):')
-        # self.lineEditFrequentTierStorage = QtWidgets.QLineEdit(Dialog)
-        # 
-        # self.lineEditFrequentTierStorage.setValidator(self.intValidator)
-        # self.layoutFrequentTierStorage = QtWidgets.QHBoxLayout()
-        # self.layoutFrequentTierStorage.addWidget(self.labelFrequentTierStorage)
-        # self.layoutFrequentTierStorage.addWidget(self.lineEditFrequentTierStorage)
-        
-        # Infrequent
-        
-        self.labelInFrequentTierIngest = QtWidgets.QLabel(Dialog)
-        self.labelInFrequentTierIngest.setObjectName("InFrequentTierIngest")
-        self.labelInFrequentTierIngest.setText('InFrequent Tier Ingest (0 - 1,000,000 GB/day):')
-        self.lineEditInFrequentTierIngest = QtWidgets.QLineEdit(Dialog)
-
-        self.lineEditInFrequentTierIngest.setValidator(self.intValidator)
-        self.layoutInFrequentTierIngest = QtWidgets.QHBoxLayout()
-        self.layoutInFrequentTierIngest.addWidget(self.labelInFrequentTierIngest)
-        self.layoutInFrequentTierIngest.addWidget(self.lineEditInFrequentTierIngest)
-
-        # self.labelInFrequentTierStorage = QtWidgets.QLabel(Dialog)
-        # self.labelInFrequentTierStorage.setObjectName("InFrequentTierStorage")
-        # self.labelInFrequentTierStorage.setText('InFrequent Tier Storage (0 - 1,000,000 GB):')
-        # self.lineEditInFrequentTierStorage = QtWidgets.QLineEdit(Dialog)
-        # 
-        # self.lineEditInFrequentTierStorage.setValidator(self.intValidator)
-        # self.layoutInFrequentTierStorage = QtWidgets.QHBoxLayout()
-        # self.layoutInFrequentTierStorage.addWidget(self.labelInFrequentTierStorage)
-        # self.layoutInFrequentTierStorage.addWidget(self.lineEditInFrequentTierStorage)
-
-        # Metrics
-        self.labelMetrics = QtWidgets.QLabel(Dialog)
-        self.labelMetrics.setObjectName("Metrics")
-        self.labelMetrics.setText('Metrics Ingest (0 - 100,000 DPM):')
-        self.lineEditMetrics = QtWidgets.QLineEdit(Dialog)
-
-        self.lineEditMetrics.setValidator(self.intValidator)
-        self.layoutMetrics = QtWidgets.QHBoxLayout()
-        self.layoutMetrics.addWidget(self.labelMetrics)
-        self.layoutMetrics.addWidget(self.lineEditMetrics)
-
-        # Tracing
-        self.labelTracing = QtWidgets.QLabel(Dialog)
-        self.labelTracing.setObjectName("Tracing")
-        self.labelTracing.setText('Tracing Ingest:')
-        self.lineEditTracing = QtWidgets.QLineEdit(Dialog)
-
-        self.lineEditTracing.setValidator(self.intValidator)
-        self.layoutTracing = QtWidgets.QHBoxLayout()
-        self.layoutTracing.addWidget(self.labelTracing)
-        self.layoutTracing.addWidget(self.lineEditTracing)
-        
-        # CSE
-        #
-        # self.labelCSEIngest = QtWidgets.QLabel(Dialog)
-        # self.labelCSEIngest.setObjectName("CSEIngest")
-        # self.labelCSEIngest.setText('CSE Ingest (0 - 1,000,000 GB/day):')
-        # self.lineEditCSEIngest = QtWidgets.QLineEdit(Dialog)
-        #
-        # self.lineEditCSEIngest.setValidator(self.intValidator)
-        # self.layoutCSEIngest = QtWidgets.QHBoxLayout()
-        # self.layoutCSEIngest.addWidget(self.labelCSEIngest)
-        # self.layoutCSEIngest.addWidget(self.lineEditCSEIngest)
-
-        # self.labelCSEStorage = QtWidgets.QLabel(Dialog)
-        # self.labelCSEStorage.setObjectName("CSEStorage")
-        # self.labelCSEStorage.setText('CSE Storage (0 - 1,000,000 GB):')
-        # self.lineEditCSEStorage = QtWidgets.QLineEdit(Dialog)
-        # 
-        # self.lineEditCSEStorage.setValidator(self.intValidator)
-        # self.layoutCSEStorage = QtWidgets.QHBoxLayout()
-        # self.layoutCSEStorage.addWidget(self.labelCSEStorage)
-        # self.layoutCSEStorage.addWidget(self.lineEditCSEStorage)
-
-        if self.org_details:
-
-            self.lineEditContinuousTierIngest.setText(str(self.org_details['subscription']['baselines']['continuousIngest']))
-            #self.lineEditContinuousTierStorage.setText(str(self.org_details['subscription']['baselines']['continuousStorage']))
-            self.lineEditFrequentTierIngest.setText(str(self.org_details['subscription']['baselines']['frequentIngest']))
-            #self.lineEditFrequentTierStorage.setText(str(self.org_details['subscription']['baselines']['frequentStorage']))
-            self.lineEditInFrequentTierIngest.setText(str(self.org_details['subscription']['baselines']['infrequentIngest']))
-            #self.lineEditInFrequentTierStorage.setText(str(self.org_details['subscription']['baselines']['infrequentStorage']))
-            #self.lineEditCSEIngest.setText(str(self.org_details['subscription']['baselines']['cseIngest']))
-            #self.lineEditCSEStorage.setText(str(self.org_details['subscription']['baselines']['cseStorage']))
-            self.lineEditMetrics.setText(str(self.org_details['subscription']['baselines']['metrics']))
-            self.lineEditTracing.setText(str(self.org_details['subscription']['baselines']['tracingIngest']))
+            self.lineEditContinuousIngest.setText(str(self.org_details['subscription']['baselines']['continuousIngest']))
+            self.lineEditFrequentIngest.setText(str(self.org_details['subscription']['baselines']['frequentIngest']))
+            self.lineEditInfrequentIngest.setText(str(self.org_details['subscription']['baselines']['infrequentIngest']))
+            self.lineEditMetricsIngest.setText(str(self.org_details['subscription']['baselines']['metrics']))
+            self.lineEditTracingIngest.setText(str(self.org_details['subscription']['baselines']['tracingIngest']))
 
         else:
-            self.lineEditContinuousTierIngest.setText('0')
-            #self.lineEditContinuousTierStorage.setText('0')
-            self.lineEditFrequentTierIngest.setText('0')
-            #self.lineEditFrequentTierStorage.setText('0')
-            self.lineEditInFrequentTierIngest.setText('0')
-            #self.lineEditInFrequentTierStorage.setText('0')
-            self.lineEditMetrics.setText('0')
-            self.lineEditTracing.setText('0')
-            #self.lineEditCSEIngest.setText('0')
-            #self.lineEditCSEStorage.setText('0')
+            self.lineEditContinuousIngest.setText('0')
+            self.lineEditFrequentIngest.setText('0')
+            self.lineEditInfrequentIngest.setText('0')
+            self.lineEditMetricsIngest.setText('0')
+            self.lineEditTracingIngest.setText('0')
 
-            
-        self.layout.addLayout(self.layoutContinuousTierIngest)
-        #self.layout.addLayout(self.layoutContinuousTierStorage)
-        self.layout.addLayout(self.layoutFrequentTierIngest)
-        #self.layout.addLayout(self.layoutFrequentTierStorage)
-        self.layout.addLayout(self.layoutInFrequentTierIngest)
-        #self.layout.addLayout(self.layoutInFrequentTierStorage)
-        #self.layout.addLayout(self.layoutCSEIngest)
-        self.layout.addLayout(self.layoutMetrics)
-        self.layout.addLayout(self.layoutTracing)
-        #self.layout.addLayout(self.layoutCSEStorage)
-        self.createPresetCheckbox = QtWidgets.QCheckBox("Create Credential Preset")
-        self.createPresetCheckbox.setChecked(True)
-        self.writeCredsToFileCheckbox = QtWidgets.QCheckBox("Write Credentials to File")
-        self.writeCredsToFileCheckbox.setChecked(False)
-        if not self.org_details:
-            self.layoutCheckboxes = QtWidgets.QHBoxLayout()
-            self.layoutCheckboxes.addWidget(self.createPresetCheckbox)
-            self.layoutCheckboxes.addWidget(self.writeCredsToFileCheckbox)
-            self.layout.addLayout(self.layoutCheckboxes)
-        self.layout.addWidget(self.buttonBox)
-        self.setLayout(self.layout)
+    def load_icons(self):
+        self.icons = {}
+        icon_path = str(pathlib.Path(self.mainwindow.basedir + '/data/folder.svg'))
+        self.icons['Folder'] = QtGui.QIcon(icon_path)
+        icon_path = str(pathlib.Path(self.mainwindow.basedir + '/data/json.svg'))
+        self.icons['JSON'] = QtGui.QIcon(icon_path)
+
+
+    def configure_org_toggle(self):
+        check_state = self.checkBoxConfigureOrg.checkState()
+        self.comboBoxPreset.setEnabled(check_state)
+        self.pushButtonUpdate.setEnabled(check_state)
+        self.pushButtonParentDir.setEnabled(check_state)
+
+    def preset_changed(self):
+        selected_preset_name = self.comboBoxPreset.currentText()
+        self.listWidgetConfigs.updated = False
+        if selected_preset_name == 'FILESYSTEM:':
+            self.adapter = FilesystemAdapter(None, 'left', self.mainwindow)
+
+    def create_list_widget_item(self, item):
+        item_name = str(item['name'])
+        if ('contentType' in item) and (item['contentType'] == 'Folder'):
+            list_item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
+        elif ('itemType' in item) and (item['itemType'] == 'Folder'):
+            list_item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
+        else:
+            list_item = QtWidgets.QListWidgetItem(self.icons['JSON'], item_name)
+        return list_item
+
+    @exception_and_error_handling
+    def update_item_list(self):
+        contents = self.adapter.list(params=self.params)
+        logger.debug(f'[Create Orgs Dialog] Updating item list, got: {contents}')
+        self.update_list_widget(contents)
+
+    def update_list_widget(self, payload):
+        try:
+            self.listWidgetConfigs.clear()
+            count = 0
+            for item in payload:
+                list_item = self.create_list_widget_item(item)
+                # attach the details about the item to the entry in listwidget, this makes life much easier
+                list_item.details = item
+                self.listWidgetConfigs.addItem(list_item)  # populate the list widget in the GUI with no icon (fallthrough)
+                count += 1
+
+                self.labelDirectoryPath.setText(self.adapter.get_current_path())
+            self.listWidgetConfigs.updated = True
+        except Exception as e:
+            self.listWidgetConfigs.clear()
+            self.listWidgetConfigs.updated = False
+            logger.exception(e)
         return
-            
+
+    @exception_and_error_handling
+    def double_clicked_item(self, item):
+        if self.listWidgetConfigs.updated:
+            logger.debug(f"[Create Orgs Dialog] Going Down One Folder {str(item.details['name'])}")
+            result = self.adapter.down(item.details['name'], params=self.params)
+            if result:
+                self.update_item_list()
+
+    @exception_and_error_handling
+    def go_to_parent_dir(self):
+        if self.listWidgetConfigs.updated:
+            result = self.adapter.up(params=self.params)
+            if result:
+                logger.debug(f"[Create Orgs Dialog] Going Up One folder")
+                self.update_item_list()
+
     def getresults(self):
 
         results = {'organizationName': str(self.lineEditOrgName.text()),
-                   'firstName': str(self.lineEditFirstName.text()),
-                   'lastName': str(self.lineEditLastName.text()),
+                   'firstName': str(self.lineEditOwnerFirst.text()),
+                   'lastName': str(self.lineEditOwnerLast.text()),
                    'email': str(self.lineEditEmail.text()),
                    'deploymentId': str(self.comboBoxDeployment.currentText()),
                    'baselines': {}
                    }
-        results['baselines']['continuousIngest'] = str(self.lineEditContinuousTierIngest.text())
-        #results['baselines']['continuousStorage'] = str(self.lineEditContinuousTierStorage.text())
-        results['baselines']['frequentIngest'] = str(self.lineEditFrequentTierIngest.text())
-        #results['baselines']['frequentStorage'] = str(self.lineEditFrequentTierStorage.text())
-        results['baselines']['infrequentIngest'] = str(self.lineEditInFrequentTierIngest.text())
-        #results['baselines']['infrequentStorage'] = str(self.lineEditInFrequentTierStorage.text())
-        results['baselines']['metrics'] = self.lineEditMetrics.text()
-        results['baselines']['tracingIngest'] = self.lineEditTracing.text()
-        #results['baselines']['cseIngest'] = str(self.lineEditCSEIngest.text())
-        #results['baselines']['cseStorage'] = str(self.lineEditCSEStorage.text())
-        if self.comboBoxLicenseType.currentText() == 'Trial':
-            results['trialPlanPeriod'] = str(self.lineEditTrialLength.text())
+        results['baselines']['continuousIngest'] = str(self.lineEditContinuousIngest.text())
+        results['baselines']['frequentIngest'] = str(self.lineEditFrequentIngest.text())
+        results['baselines']['infrequentIngest'] = str(self.lineEditInFrequentIngest.text())
+        results['baselines']['metrics'] = self.lineEditMetricsIngest.text()
+        results['baselines']['tracingIngest'] = self.lineEditTracingIngest.text()
         if not self.org_details:
             results['create_preset'] = self.createPresetCheckbox.isChecked()
-            results['write_creds_to_file'] = self.writeCredsToFileCheckbox.isChecked()
+            # results['write_creds_to_file'] = self.writeCredsToFileCheckbox.isChecked()
         return results
 
 
@@ -339,7 +209,6 @@ class organizations_tab(QtWidgets.QWidget):
             self.tableWidgetOrgs.selectedItems(),
             self.mainwindow.get_current_creds('left')
         ))
-
 
         self.tableWidgetOrgs.itemDoubleClicked.connect(self.row_doubleclicked)
 
@@ -386,7 +255,7 @@ class organizations_tab(QtWidgets.QWidget):
 
 
     def update_org_list(self, creds):
-        logger.info("[Organizations] Getting Updated Org List")
+        logger.debug("[Organizations] Getting Updated Org List")
         if self.checkBoxShowActive.isChecked():
             status_filter= "Active"
         else:
@@ -407,7 +276,7 @@ class organizations_tab(QtWidgets.QWidget):
             return
 
     def update_org_table_widget(self):
-        logger.info("[Organizations] Updating Org Table Widget")
+        logger.debug("[Organizations] Updating Org Table Widget")
         self.tableWidgetOrgs.clear()
         orgs = []
         for raw_org in self.tableWidgetOrgs.raw_orgs:
@@ -450,7 +319,7 @@ class organizations_tab(QtWidgets.QWidget):
             self.mainwindow.errorbox('No orgs to display.')
 
     def create_org(self, creds):
-        logger.info("[Organizations]Creating Org")
+        logger.debug("[Organizations]Creating Org")
 
 
         try:
@@ -469,7 +338,7 @@ class organizations_tab(QtWidgets.QWidget):
             logger.exception(e)
             return
 
-        dialog = CreateOrUpdateOrgDialog(deployments, trials_enabled=trials_enabled)
+        dialog = CreateOrUpdateOrgDialog(deployments, self.mainwindow, trials_enabled=trials_enabled)
         dialog.exec()
         dialog.show()
 
@@ -512,7 +381,7 @@ class organizations_tab(QtWidgets.QWidget):
 
     def cancel_subscription(self, selected_row, creds):
         if len(selected_row) > 0:
-            logger.info("[Organizations] Canceling Subscription")
+            logger.debug("[Organizations] Canceling Subscription")
             row_dict = self.create_dict_from_qtable_row(selected_row)
             try:
                 sumo_mam = SumoLogic_Orgs(creds['id'],
@@ -533,7 +402,7 @@ class organizations_tab(QtWidgets.QWidget):
 
     def update_subscription(self, selected_row, creds):
         if len(selected_row) > 0:
-            logger.info("[Organizations] Updating Subscription")
+            logger.debug("[Organizations] Updating Subscription")
             row_dict = self.create_dict_from_qtable_row(selected_row)
             try:
                 sumo_mam = SumoLogic_Orgs(creds['id'],
@@ -550,7 +419,7 @@ class organizations_tab(QtWidgets.QWidget):
                 logger.exception(e)
                 return
 
-            dialog = CreateOrUpdateOrgDialog(deployments, org_details=org_details, trials_enabled=trials_enabled)
+            dialog = CreateOrUpdateOrgDialog(deployments, self.mainwindow, org_details=org_details, trials_enabled=trials_enabled)
             dialog.exec()
             dialog.show()
 

@@ -12,8 +12,8 @@ if platform.system() == 'Windows':
 
 class FilesystemAdapter(Adapter):
 
-    def __init__(self, creds, side, log_level='info'):
-        super(FilesystemAdapter, self).__init__(None, side, log_level=log_level)
+    def __init__(self, creds, side, mainwindow):
+        super(FilesystemAdapter, self).__init__(None, side, mainwindow)
         self.configured = True
         self._go_to_default_dir()
         self.list_windows_drives = False

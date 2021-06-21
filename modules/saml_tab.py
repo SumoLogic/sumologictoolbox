@@ -18,8 +18,8 @@ class SAMLTab(StandardTab):
         if self.left:
             left_creds = self.mainwindow.get_current_creds('left')
             if ':' not in left_creds['service']:
-                self.left_adapter = SumoSAMLAdapter(left_creds, 'left', log_level=self.mainwindow.log_level)
+                self.left_adapter = SumoSAMLAdapter(left_creds, 'left', self.mainwindow)
         if self.right:
             right_creds = self.mainwindow.get_current_creds('right')
             if ':' not in right_creds['service']:
-                self.right_adapter = SumoSAMLAdapter(right_creds, 'right', log_level=self.mainwindow.log_level)
+                self.right_adapter = SumoSAMLAdapter(right_creds, 'right', self.mainwindow)

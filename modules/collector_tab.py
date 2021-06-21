@@ -233,9 +233,8 @@ class CollectorTab(BaseTab):
             if self.left_creds['service'] == "FILESYSTEM:":
                 self.pushButtonParentDirLeft.setEnabled(True)
                 self.pushButtonNewFolderLeft.setEnabled(True)
-                self.left_collector_adapter = FilesystemAdapter(self.left_creds, 'left', log_level=self.mainwindow.log_level)
-                self.left_source_adapter = FilesystemAdapter(self.left_creds, 'left',
-                                                                log_level=self.mainwindow.log_level)
+                self.left_collector_adapter = FilesystemAdapter(self.left_creds, 'left', self.mainwindow)
+                self.left_source_adapter = FilesystemAdapter(self.left_creds, 'left', self.mainwindow)
             elif ':' not in self.left_creds['service']:
                 self.pushButtonParentDirLeft.setEnabled(False)
                 self.pushButtonNewFolderLeft.setEnabled(False)
@@ -243,9 +242,8 @@ class CollectorTab(BaseTab):
                 self.radioButtonFilterHostedLeft.setEnabled(True)
                 self.radioButtonFilterInstalledLeft.setEnabled(True)
                 self.radioButtonFilterDeadLeft.setEnabled(True)
-                self.left_collector_adapter = SumoCollectorAdapter(self.left_creds, 'left', log_level=self.mainwindow.log_level)
-                self.left_source_adapter = SumoSourceAdapter(self.left_creds, 'left',
-                                                                   log_level=self.mainwindow.log_level)
+                self.left_collector_adapter = SumoCollectorAdapter(self.left_creds, 'left', self.mainwindow)
+                self.left_source_adapter = SumoSourceAdapter(self.left_creds, 'left', self.mainwindow)
         if self.right:
             self.listWidgetCollectorsRight.collectors = []
             self.listWidgetCollectorsRight.update = False
@@ -263,9 +261,8 @@ class CollectorTab(BaseTab):
             if self.right_creds['service'] == "FILESYSTEM:":
                 self.pushButtonParentDirRight.setEnabled(True)
                 self.pushButtonNewFolderRight.setEnabled(True)
-                self.right_collector_adapter = FilesystemAdapter(self.right_creds, 'right', log_level=self.mainwindow.log_level)
-                self.right_source_adapter = FilesystemAdapter(self.right_creds, 'right',
-                                                                 log_level=self.mainwindow.log_level)
+                self.right_collector_adapter = FilesystemAdapter(self.right_creds, 'right', self.mainwindow)
+                self.right_source_adapter = FilesystemAdapter(self.right_creds, 'right', self.mainwindow)
             elif ':' not in self.right_creds['service']:
                 self.radioButtonFilterAllRight.setEnabled(True)
                 self.radioButtonFilterHostedRight.setEnabled(True)
@@ -273,9 +270,8 @@ class CollectorTab(BaseTab):
                 self.radioButtonFilterDeadRight.setEnabled(True)
                 self.pushButtonParentDirRight.setEnabled(False)
                 self.pushButtonNewFolderRight.setEnabled(False)
-                self.right_collector_adapter = SumoCollectorAdapter(self.right_creds, 'right', log_level=self.mainwindow.log_level)
-                self.right_source_adapter = SumoSourceAdapter(self.right_creds, 'right',
-                                                                   log_level=self.mainwindow.log_level)
+                self.right_collector_adapter = SumoCollectorAdapter(self.right_creds, 'right', self.mainwindow)
+                self.right_source_adapter = SumoSourceAdapter(self.right_creds, 'right', self.mainwindow)
 
     def load_icons(self):
         super(CollectorTab, self).load_icons()
