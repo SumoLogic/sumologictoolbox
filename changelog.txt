@@ -23,11 +23,11 @@ Changelog for SumoToolBox
     all of that user's roles to the target org. If unchecked then only "Administrators" and/or "Analysts" membership
     will be replicated to the destination org. If the user was not a member of either of these roles and this box
     is unchecked then the user will be made an "Analyst" in the destination org.
-*   [Rules] Added "Rules" Tab. This tab allows management of CSE Rules. This only works for accounts with CSE enabled
-    AND with unified logins/APIs (legacy instances are not supported.)
+*   [Rules] Added "Rules" Tab. This tab allows management of CSE Rules. This only works for accounts for which CSE is
+    enabled AND with unified logins/APIs (legacy instances are not supported.)
 *   [Custom Insights] Added "Custom Insights" Tab. This tab allows management of CSE Custom Insights. This only works
-    for accounts with CSE enabled AND with unified logins/APIs (legacy instances are not supported.) The copy operation
-    for Custom Insights will copy any associated custom rules as well.
+    for accounts for which CSE is enabled AND with unified logins/APIs (legacy instances are not supported.) The copy
+    operation for Custom Insights will copy any associated custom rules as well.
 
 
 1-6-2021 0.9.1

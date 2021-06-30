@@ -240,6 +240,31 @@ def import_saml_config(self, saml_export, sumo):
     status = sumo.create_saml_config(saml_export)
 
 
+def export_log_mapping(self, item_id, sumo):
+    mapping = sumo.get_log_mapping(item_id)
+    return mapping['data']
+
+
+def import_log_mapping(self, item, sumo):
+    def remove_json_keys(json):
+        remove_keys = ['created', 'createdBy', 'contentType', 'deleted', 'input', 'id', 'lastUpdated', 'lastUpdatedBy',
+                       'output', 'source', 'status']
+        for remove_key in remove_keys:
+            if remove_key in json:
+                del json[remove_key]
+        return {'fields': json}
+    item['productGuid'] = item['output']['product_guid']
+    item['recordType'] = item['output']['record_type']
+    item['structuredFields'] = {'eventIdPattern': item['input']['event_id_pattern'],
+                                'logFormat': item['input']['log_format'],
+                                'product': item['input']['product'],
+                                'vendor': item['input']['vendor']}
+ 
+    mapping = remove_json_keys(item)
+    result = sumo.create_log_mapping(mapping)
+    return result
+
+
 def export_rule(self, item_id, sumo):
     rule = sumo.get_rule(item_id)
     return rule

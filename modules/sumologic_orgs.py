@@ -46,8 +46,8 @@ def backoff(func):
                     raise
         logger.debug("Rate limited function still failed after {0} retries.".format(MAX_TRIES))
         raise lastException
-
     return limited
+
 
 class SumoLogic_Orgs:
 

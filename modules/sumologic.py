@@ -691,7 +691,7 @@ class SumoLogic(object):
 
     # User API
 
-    def get_users(self, limit=1000, token=None, sort_by='lastName', email=''):
+    def get_users(self, limit=1000, token='', sort_by='lastName', email=''):
         if email != '':
             params = {'limit': int(limit), 'token': str(token), 'sortBy': str(sort_by), 'email': str(email)}
         else:
@@ -1210,3 +1210,131 @@ class SumoLogic(object):
     def get_current_user(self):
         r = self.get('/sec/v1/users/current')
         return r.json()
+
+    # Cloud SIEM Mappings
+
+    def get_log_mappings(self, query, offset=0, limit=50):
+        params = {'q': str(query),
+                  'limit': int(limit),
+                  'offset': int(offset)}
+        r = self.get('/sec/v1/log-mappings', params=params)
+        return r.json()
+
+    def get_log_mappings_sync(self, query, limit=50):
+        offset = 0
+        results = []
+        while True:
+            r = self.get_log_mappings(query, limit=limit, offset=offset)
+            offset = offset + limit
+            results = results + r['data']['objects']
+            if not r['data']['hasNextPage']:
+                break
+        return results
+
+    def get_custom_log_mappings_sync(self, limit=50):
+        query = 'isCustom:True'
+        offset = 0
+        results = []
+        while True:
+            r = self.get_log_mappings(query, limit=limit, offset=offset)
+            offset = offset + limit
+            results = results + r['data']['objects']
+            if not r['data']['hasNextPage']:
+                break
+        return results
+
+    def get_log_mapping(self, item_id):
+        r = self.get('/sec/v1/log-mappings/' + str(item_id))
+        return r.json()
+
+    def create_log_mapping(self, item):
+        r = self.post('/sec/v1/log-mappings', data=item)
+        return r.json()
+
+    def update_log_mapping(self, item_id, item):
+        r = self.put('/sec/v1/log-mappings/' + str(item_id), item)
+        return r.json()
+
+    def delete_log_mapping(self, item_id):
+        r = self.delete('/sec/v1/log-mappings/' + str(item_id))
+        return r
+
+    #  access key management APIs
+    def get_access_keys(self, limit=100, token=''):
+        params = {'limit': limit, 'token': token}
+        r = self.get('/v1/accessKeys', params=params)
+        return r.json()
+
+    def get_access_keys_sync(self, limit=100):
+        token = None
+        results = []
+        while True:
+            r = self.get_access_keys(limit=limit, token=token)
+            token = r['next']
+            results = results + r['data']
+            if token is None:
+                break
+        return results
+
+    def create_access_key(self, label, cors_headers=None):
+        data = {'label': str(label)}
+        if cors_headers:
+            data['corsHeaders'] = cors_headers
+        r = self.post('/v1/accessKeys', data=data)
+        return r.json()
+
+    def get_personal_access_keys(self):
+        r = self.get('/v1/accessKeys/personal')
+        return r.json()['data']
+
+    def update_access_key(self, item_id, data):
+        r = self.put('/v1/accessKeys/' + str(item_id), data=data)
+        return r.json()
+
+    def delete_access_key(self, item_id):
+        r = self.delete('/v1/accessKeys/' + str(item_id))
+        return r
+
+    #  Account API
+
+    def get_account_owner(self):
+        r = self.get('/v1/account/accountOwner')
+        return r.json()
+
+    def get_account_status(self):
+        r = self.get('/v1/account/status')
+        return r.json()
+
+    def get_account_subdomain(self):
+        r = self.get('/v1/account/subdomain')
+        return r.json()
+
+    def update_account_subdomain(self, subdomain):
+        data = {'subdomain': str(subdomain)}
+        r = self.put('/v1/account/subdomain', data=data)
+        return r.json()
+
+    def create_account_subdomain(self, subdomain):
+        data = {'subdomain': str(subdomain)}
+        r = self.post('/v1/account/subdomain', data=data)
+        return r.json()
+
+    def delete_account_subdomain(self):
+        r = self.post('/v1/account/subdomain')
+        return r
+
+    def recover_account_subdomain(self, email):
+        params = {'email': str(email)}
+        r = self.post('/v1/account/subdomain', params=params)
+        return r.json()
+
+    # convenience functions, these do not map to directly to the API but I find them useful
+
+    def whoami(self):
+        api_keys = self.get_personal_access_keys()
+        user_id = api_keys[0]['createdBy']
+        users = self.get_users_sync()
+        for user in users:
+            if user['id'] == user_id:
+                return user
+        return False

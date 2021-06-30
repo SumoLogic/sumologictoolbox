@@ -144,3 +144,84 @@ class SumoRuleAdapter(SumoAdapter):
                     'line_number': lineno,
                     'exception': str(e)
                     }
+
+
+class SumoLogMappingAdapter(SumoAdapter):
+
+    from modules.shared import import_log_mapping, export_log_mapping
+
+    def __init__(self, creds, side, mainwindow):
+        super(SumoLogMappingAdapter, self).__init__(creds, side, mainwindow)
+
+    def list(self,  params=None):
+        if 'query' in params:
+            query = params['query']
+        else:
+            query = ''
+        return self.sumo.get_log_mappings_sync(query)
+
+    def get(self, item_name, item_id, params=None):
+        try:
+            mapping = self.sumo.get_log_mapping(item_id)
+            return {'status': 'SUCCESS',
+                    'adapter': self,
+                    'payload': mapping,
+                    'params': params}
+        except Exception as e:
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }
+
+    def export_item(self, item_name, item_id, params=None):
+        try:
+            mapping = self.export_log_mapping(item_id, self.sumo)
+            return {'status': 'SUCCESS',
+                    'adapter': self,
+                    'payload': mapping,
+                    'params': params}
+        except Exception as e:
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }
+
+    def put(self, item_name, payload, list_widget, params=None):
+        try:
+            result = self.import_log_mapping(payload, self.sumo)
+            return {'status': 'SUCCESS',
+                    'result': result,
+                    'adapter': self,
+                    'params': params,
+                    'list_widget': list_widget}
+        except Exception as e:
+            print(str(e))
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }
+
+    def import_item(self, item_name, payload, list_widget, params=None):
+        return self.put(item_name, payload, list_widget, params=params)
+
+    def delete(self, item_name, item_id, list_widget, params=None):
+        try:
+            result = self.sumo.delete_log_mapping(item_id)
+            return {'status': 'SUCCESS',
+                    'result': result,
+                    'adapter': self,
+                    'params': params,
+                    'list_widget': list_widget}
+        except Exception as e:
+            _, _, tb = self.sys.exc_info()
+            lineno = tb.tb_lineno
+            return {'status': 'FAIL',
+                    'line_number': lineno,
+                    'exception': str(e)
+                    }

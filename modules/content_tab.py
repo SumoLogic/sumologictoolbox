@@ -98,6 +98,8 @@ class ContentTab(StandardTab):
             self.pushButtonFindReplaceCopyRightToLeft.setEnabled(False)
 
             if ':' not in self.left_creds['service']:
+                self.pushButtonParentDirLeft.setEnabled(True)
+                self.pushButtonNewFolderLeft.setEnabled(True)
                 self.QRadioButtonLeftPersonalFolders.setEnabled(True)
                 self.QRadioButtonLeftGlobalFolders.setEnabled(True)
                 self.QRadioButtonLeftAdminFolders.setEnabled(True)
@@ -119,6 +121,8 @@ class ContentTab(StandardTab):
             self.pushButtonFindReplaceCopyLeftToRight.setEnabled(False)
 
             if ':' not in self.right_creds['service']:
+                self.pushButtonParentDirRight.setEnabled(True)
+                self.pushButtonNewFolderRight.setEnabled(True)
                 self.QRadioButtonRightPersonalFolders.setEnabled(True)
                 self.QRadioButtonRightGlobalFolders.setEnabled(True)
                 self.QRadioButtonRightAdminFolders.setEnabled(True)

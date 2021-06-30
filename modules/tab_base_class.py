@@ -493,8 +493,8 @@ If you are absolutely sure, type "DELETE" in the box below.
                         self.mainwindow.errorbox('That Directory Name Already Exists!')
                         return False
                 logger.debug(f"[{self.tab_name}] Creating New Folder {str(text)}")
-
-                result = adapter.create_folder(str(text), list_widget)
+                params = {'mode': list_widget.mode}
+                result = adapter.create_folder(str(text), list_widget, params=params)
                 if result:
                     self.update_item_list(list_widget, adapter)
                     return True

@@ -1,12 +1,11 @@
-class_name = 'organizations_tab'
-
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import os
 from logzero import logger
-import pathlib
-from modules.shared import exception_and_error_handling
-from modules.filesystem_adapter import FilesystemAdapter
 from modules.sumologic_orgs import SumoLogic_Orgs
+from modules.sumologic import SumoLogic
+from modules.package_editor import PackageEditor
+
+class_name = 'OrganizationsTab'
 
 
 class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
@@ -16,18 +15,17 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
         self.deployments = deployments
         self.mainwindow = mainwindow
         self.adapter = None
-        self.presets = self.mainwindow.list_presets_with_creds()
+        org_details_ui = os.path.join(self.mainwindow.basedir, 'data/org_details.ui')
+        uic.loadUi(org_details_ui, self)
         self.intValidator = QtGui.QIntValidator()
         self.available_org_licenses = ["Paid"]
         if trials_enabled and not org_details:
             self.available_org_licenses.append("Trial")
         self.org_details = org_details
-        org_details_ui = os.path.join(self.mainwindow.basedir, 'data/org_details.ui')
-        uic.loadUi(org_details_ui, self)
-        self.params = {'extension': '.json'}
+        self.parent_org_creds = self.mainwindow.get_current_creds('left')
+        self.parent_org_sumo = self.sumo_from_creds(self.parent_org_creds)
+        self.user_info = self.parent_org_sumo.whoami()
         self.setupUi()
-        self.load_icons()
-        self.preset_changed()
 
     def setupUi(self):
 
@@ -40,21 +38,21 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
             self.comboBoxDeployment.addItem(deployment['deploymentId'].strip())
         for license in self.available_org_licenses:
             self.comboBoxPlan.addItem(license.strip())
-        self.comboBoxPreset.addItem('FILESYSTEM:')
-        for preset in self.presets:
-            if ":" in preset['sumoregion'] and preset['sumoregion'] != "MULTI:":
-                self.comboBoxPreset.addItem(preset['name'])
+        self.comboBoxPlan.currentIndexChanged.connect(self.plan_changed)
         self.configure_org_toggle()
+        self.plan_changed()
 
         # Connect UI Element Signals
 
         self.checkBoxConfigureOrg.stateChanged.connect(self.configure_org_toggle)
-        self.pushButtonUpdate.clicked.connect(lambda: self.update_item_list())
-        self.pushButtonParentDir.clicked.connect(lambda: self.go_to_parent_dir())
-        self.listWidgetConfigs.itemDoubleClicked.connect(lambda item: self.double_clicked_item(item))
+        self.checkBoxSubdomain.stateChanged.connect(self.subdomain_toggle)
 
         if self.org_details:
             self.comboBoxDeployment.setEnabled(False)
+            index = self.comboBoxDeployment.findText(self.org_details['deploymentId'],
+                                               QtCore.Qt.MatchFixedString)
+            if index >= 0:
+                self.comboBoxDeployment.setCurrentIndex(index)
             self.checkBoxCreatePreset.setEnabled(False)
             self.checkBoxConfigureOrg.setEnabled(False)
             self.lineEditOrgName.setText(self.org_details['organizationName'])
@@ -65,6 +63,7 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
             self.lineEditOwnerFirst.setReadOnly(True)
             self.lineEditOwnerLast.setText(self.org_details['lastName'])
             self.lineEditOwnerLast.setReadOnly(True)
+            print(self.org_details)
             index = self.comboBoxPlan.findText(self.org_details['subscription']['plan']['planName'],
                                                       QtCore.Qt.MatchFixedString)
             if index >= 0:
@@ -85,76 +84,46 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
             self.lineEditMetricsIngest.setText('0')
             self.lineEditTracingIngest.setText('0')
 
-    def load_icons(self):
-        self.icons = {}
-        icon_path = str(pathlib.Path(self.mainwindow.basedir + '/data/folder.svg'))
-        self.icons['Folder'] = QtGui.QIcon(icon_path)
-        icon_path = str(pathlib.Path(self.mainwindow.basedir + '/data/json.svg'))
-        self.icons['JSON'] = QtGui.QIcon(icon_path)
+    def sumo_from_creds(self, creds):
+        return SumoLogic(creds['id'],
+                         creds['key'],
+                         endpoint=creds['url'],
+                         log_level=self.mainwindow.log_level)
 
+    def plan_changed(self):
+        if self.comboBoxPlan.currentText() == 'Trial':
+            self.lineEditContinuousIngest.setText('5')
+            self.lineEditContinuousIngest.setEnabled(False)
+            self.lineEditFrequentIngest.setText('5')
+            self.lineEditFrequentIngest.setEnabled(False)
+            self.lineEditInfrequentIngest.setText('5')
+            self.lineEditInfrequentIngest.setEnabled(False)
+        else:
+            self.lineEditContinuousIngest.setEnabled(True)
+            self.lineEditFrequentIngest.setEnabled(True)
+            self.lineEditInfrequentIngest.setEnabled(True)
 
     def configure_org_toggle(self):
         check_state = self.checkBoxConfigureOrg.checkState()
-        self.comboBoxPreset.setEnabled(check_state)
-        self.pushButtonUpdate.setEnabled(check_state)
-        self.pushButtonParentDir.setEnabled(check_state)
-
-    def preset_changed(self):
-        selected_preset_name = self.comboBoxPreset.currentText()
-        self.listWidgetConfigs.updated = False
-        if selected_preset_name == 'FILESYSTEM:':
-            self.adapter = FilesystemAdapter(None, 'left', self.mainwindow)
-
-    def create_list_widget_item(self, item):
-        item_name = str(item['name'])
-        if ('contentType' in item) and (item['contentType'] == 'Folder'):
-            list_item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
-        elif ('itemType' in item) and (item['itemType'] == 'Folder'):
-            list_item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
+        self.comboBoxConfigPackage.setEnabled(check_state)
+        if check_state:
+            self.lineEditEmail.setEnabled(False)
+            self.lineEditEmail.setText(self.user_info['email'])
+            self.lineEditOwnerFirst.setEnabled(False)
+            self.lineEditOwnerFirst.setText(self.user_info['firstName'])
+            self.lineEditOwnerLast.setEnabled(False)
+            self.lineEditOwnerLast.setText(self.user_info['lastName'])
         else:
-            list_item = QtWidgets.QListWidgetItem(self.icons['JSON'], item_name)
-        return list_item
+            self.lineEditEmail.setEnabled(True)
+            self.lineEditEmail.clear()
+            self.lineEditOwnerFirst.setEnabled(True)
+            self.lineEditOwnerFirst.clear()
+            self.lineEditOwnerLast.setEnabled(True)
+            self.lineEditOwnerLast.clear()
 
-    @exception_and_error_handling
-    def update_item_list(self):
-        contents = self.adapter.list(params=self.params)
-        logger.debug(f'[Create Orgs Dialog] Updating item list, got: {contents}')
-        self.update_list_widget(contents)
-
-    def update_list_widget(self, payload):
-        try:
-            self.listWidgetConfigs.clear()
-            count = 0
-            for item in payload:
-                list_item = self.create_list_widget_item(item)
-                # attach the details about the item to the entry in listwidget, this makes life much easier
-                list_item.details = item
-                self.listWidgetConfigs.addItem(list_item)  # populate the list widget in the GUI with no icon (fallthrough)
-                count += 1
-
-                self.labelDirectoryPath.setText(self.adapter.get_current_path())
-            self.listWidgetConfigs.updated = True
-        except Exception as e:
-            self.listWidgetConfigs.clear()
-            self.listWidgetConfigs.updated = False
-            logger.exception(e)
-        return
-
-    @exception_and_error_handling
-    def double_clicked_item(self, item):
-        if self.listWidgetConfigs.updated:
-            logger.debug(f"[Create Orgs Dialog] Going Down One Folder {str(item.details['name'])}")
-            result = self.adapter.down(item.details['name'], params=self.params)
-            if result:
-                self.update_item_list()
-
-    @exception_and_error_handling
-    def go_to_parent_dir(self):
-        if self.listWidgetConfigs.updated:
-            result = self.adapter.up(params=self.params)
-            if result:
-                logger.debug(f"[Create Orgs Dialog] Going Up One folder")
-                self.update_item_list()
+    def subdomain_toggle(self):
+        check_state = self.checkBoxSubdomain.checkState()
+        self.lineEditSubdomain.setEnabled(check_state)
 
     def getresults(self):
 
@@ -167,20 +136,22 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
                    }
         results['baselines']['continuousIngest'] = str(self.lineEditContinuousIngest.text())
         results['baselines']['frequentIngest'] = str(self.lineEditFrequentIngest.text())
-        results['baselines']['infrequentIngest'] = str(self.lineEditInFrequentIngest.text())
+        results['baselines']['infrequentIngest'] = str(self.lineEditInfrequentIngest.text())
         results['baselines']['metrics'] = self.lineEditMetricsIngest.text()
         results['baselines']['tracingIngest'] = self.lineEditTracingIngest.text()
+        if self.comboBoxPlan.currentText() == "Trial":
+            results['trialPlanPeriod'] = 45
         if not self.org_details:
-            results['create_preset'] = self.createPresetCheckbox.isChecked()
+            results['create_preset'] = self.checkBoxCreatePreset.isChecked()
             # results['write_creds_to_file'] = self.writeCredsToFileCheckbox.isChecked()
         return results
 
 
-class organizations_tab(QtWidgets.QWidget):
+class OrganizationsTab(QtWidgets.QWidget):
 
     def __init__(self, mainwindow):
 
-        super(organizations_tab, self).__init__()
+        super(OrganizationsTab, self).__init__()
         self.mainwindow = mainwindow
         self.tab_name = 'Organizations'
         self.cred_usage = 'left'
@@ -210,7 +181,14 @@ class organizations_tab(QtWidgets.QWidget):
             self.mainwindow.get_current_creds('left')
         ))
 
+        self.pushButtonPackageEditor.clicked.connect(self.package_editor)
         self.tableWidgetOrgs.itemDoubleClicked.connect(self.row_doubleclicked)
+
+    def package_editor(self):
+        dialog = PackageEditor(self.mainwindow)
+        dialog.exec()
+        dialog.show()
+        dialog.close()
 
     def row_doubleclicked(self, qtablewidgetitem):
         selected = self.tableWidgetOrgs.selectedItems()
@@ -251,8 +229,6 @@ class organizations_tab(QtWidgets.QWidget):
         #     self.pushButtonCreateOrg.setEnabled(False)
         #     self.pushButtonUpdateSubscription.setEnabled(False)
         #     self.pushButtonCancelSubscription.setEnabled(False)
-
-
 
     def update_org_list(self, creds):
         logger.debug("[Organizations] Getting Updated Org List")
@@ -320,8 +296,6 @@ class organizations_tab(QtWidgets.QWidget):
 
     def create_org(self, creds):
         logger.debug("[Organizations]Creating Org")
-
-
         try:
             sumo_mam = SumoLogic_Orgs(creds['id'],
                                       creds['key'],
@@ -330,8 +304,6 @@ class organizations_tab(QtWidgets.QWidget):
             deployments = sumo_mam.get_deployments()
             org_info = sumo_mam.get_parent_org_info()
             trials_enabled = org_info['isEligibleForTrialOrgs']
-
-
 
         except Exception as e:
             self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
@@ -346,10 +318,8 @@ class organizations_tab(QtWidgets.QWidget):
             org_details = dialog.getresults()
 
             try:
-
                 response = sumo_mam.create_org(org_details)
                 dialog.close()
-
             except Exception as e:
                 self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
                 logger.exception(e)
