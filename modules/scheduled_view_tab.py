@@ -20,6 +20,11 @@ class ScheduledViewTab(StandardTab):
         self.listWidgetLeft.params = {'extension': '.sumoscheduledview.json'}
         self.listWidgetRight.params = {'extension': '.sumoscheduledview.json'}
 
+        # disconnect the signals from the base class
+        self.pushButtonCopyLeftToRight.disconnect()
+        self.pushButtonCopyRightToLeft.disconnect()
+
+        # connect new signals
         self.pushButtonCopyLeftToRight.clicked.connect(lambda: self.begin_copy_content(
             self.listWidgetLeft,
             self.listWidgetRight,

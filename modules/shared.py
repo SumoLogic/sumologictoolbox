@@ -432,6 +432,7 @@ def export_scheduled_view(self, sv_id, sumo):
 def import_scheduled_view(self, sv, sumo, use_current_date=True):
     if use_current_date:
         sv['startTime'] = str(datetime.now(timezone.utc).astimezone().isoformat())
+    print(sv)
     return sumo.create_scheduled_view(sv)
 
 

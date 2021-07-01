@@ -862,7 +862,11 @@ class SumoLogic(object):
     #start time must be in RFC3339 format
     # https://tools.ietf.org/html/rfc3339
     # https://medium.com/easyread/understanding-about-rfc-3339-for-datetime-formatting-in-software-engineering-940aa5d5f68a
-    def create_scheduled_view(self, index_name, query, start_time, retention_period=-1, data_forwarding_id=None):
+    def create_scheduled_view(self, item):
+        r = self.post('/v1/scheduledViews', item)
+        return r.json()
+
+    def create_scheduled_view_by_field(self, index_name, query, start_time, retention_period=-1, data_forwarding_id=None):
         data = {'indexName': str(index_name), 'query': str(query), 'startTime': str(start_time), 'retentionPeriod': int(retention_period), "dataForwardingId": str(data_forwarding_id) }
         r = self.post('/v1/scheduledViews', data)
         return r.json()
@@ -899,7 +903,11 @@ class SumoLogic(object):
                 break
         return results
 
-    def create_partition(self, name, routing_expression, analytics_tier="enhanced", retention_period=-1, data_forwarding_id=None, is_compliant=False):
+    def create_partition(self, item):
+        r = self.post('/v1/partitions', item)
+        return r.json()
+
+    def create_partition_by_field(self, name, routing_expression, analytics_tier="enhanced", retention_period=-1, data_forwarding_id=None, is_compliant=False):
         data = {'name': str(name),
                 'routingExpression': str(routing_expression),
                 'analyticsTier': str(analytics_tier),

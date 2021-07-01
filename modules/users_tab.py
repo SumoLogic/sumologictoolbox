@@ -21,7 +21,9 @@ class UsersTab(StandardTab):
         self.listWidgetLeft.params = {'extension': '.sumouser.json'}
         self.listWidgetRight.params = {'extension': '.sumouser.json'}
 
-
+        # disconnect the signals from the base class
+        self.pushButtonCopyLeftToRight.disconnect()
+        self.pushButtonCopyRightToLeft.disconnect()
         # Connect the UI buttons to methods
 
         self.pushButtonCopyLeftToRight.clicked.connect(lambda: self.begin_copy_content(
@@ -29,7 +31,8 @@ class UsersTab(StandardTab):
             self.listWidgetRight,
             self.left_adapter,
             self.right_adapter,
-            {'replace_source_categories': False, 'include_roles': self.checkBoxIncludeRoles.isChecked()}
+            {'replace_source_categories': False,
+             'include_roles': self.checkBoxIncludeRoles.isChecked()}
         ))
 
         self.pushButtonCopyRightToLeft.clicked.connect(lambda: self.begin_copy_content(
@@ -37,7 +40,8 @@ class UsersTab(StandardTab):
             self.listWidgetLeft,
             self.right_adapter,
             self.left_adapter,
-            {'replace_source_categories': False, 'include_roles': self.checkBoxIncludeRoles.isChecked()}
+            {'replace_source_categories': False,
+             'include_roles': self.checkBoxIncludeRoles.isChecked()}
         ))
 
     def reset_stateful_objects(self, side='both'):

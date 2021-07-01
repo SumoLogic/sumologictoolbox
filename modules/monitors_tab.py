@@ -22,6 +22,9 @@ class MonitorsTab(StandardTab):
         self.listWidgetLeft.params = {'extension': '.sumomonitor.json'}
         self.listWidgetRight.params = {'extension': '.sumomonitor.json'}
 
+        # disconnect the signals from the base class
+        self.pushButtonCopyLeftToRight.disconnect()
+        self.pushButtonCopyRightToLeft.disconnect()
         # Connect the UI buttons to methods
 
         self.pushButtonCopyLeftToRight.clicked.connect(lambda: self.begin_copy_content(
