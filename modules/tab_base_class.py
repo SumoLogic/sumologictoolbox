@@ -324,7 +324,6 @@ class BaseTab(QtWidgets.QWidget):
                            source_adapter,
                            destination_adapter,
                            params):
-        print(params)
         selected_items = source_list_widget.selectedItems()
         num_selected_items = len(selected_items)
         if num_selected_items < 1: return # make sure something was selected

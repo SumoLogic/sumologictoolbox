@@ -1,6 +1,6 @@
 Changelog for SumoToolBox
 
-6-?-2021 0.10.0
+6-30-2021 0.10.0
 *   [General] Major Code Refactor! Most tabs now inherit code/UI from a base class.
 *   [General] An adapter model is now in place that should allow reading and writing to/from other services. The
     first 2 adapters are the Sumo Logic (duh) and filesystem adapters. The filesystem adapter replaces the
@@ -14,6 +14,8 @@ Changelog for SumoToolBox
     adapter system.
 *   [General] Split "Monitors and Connections" into 2 tabs, "Monitors" and "Connections". This was done to simplify
     implementation of the adapter system.
+*   [General] A new wiki is available here: https://github.com/SumoLogic/sumologictoolbox/wiki
+*   [General] "wiki" and "report issue" entries are now available in the help menu. 
 *   [Orgs SDK] Added the correct GA endpoint to the SDK. It was previously the alpha endpoint.
 *   [Organizations] Removed CSE credits and storage from the view as they don't exist in the API at the moment.
 *   [Content] Add an "Include Connections" checkbox. If checked this will make sure that any connections used by
@@ -28,7 +30,8 @@ Changelog for SumoToolBox
 *   [Custom Insights] Added "Custom Insights" Tab. This tab allows management of CSE Custom Insights. This only works
     for accounts for which CSE is enabled AND with unified logins/APIs (legacy instances are not supported.) The copy
     operation for Custom Insights will copy any associated custom rules as well.
-
+*   [Log Mappings] Added "Log Mappings" Tab. This tab allows management of CSE custom log mappings. This only works
+    for accounts for which CSE is enabled AND with unified logins/APIs (legacy instances are not supported.)
 
 1-6-2021 0.9.1
 *   [Collectors] The new Cloud 2 Cloud sources added by Sumo Logic have a different JSON definition/schema than other

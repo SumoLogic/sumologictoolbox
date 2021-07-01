@@ -1,5 +1,5 @@
 import pathlib
-from qtpy import QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets
 from modules.adapter import SumoMonitorAdapter
 from modules.tab_base_class import StandardTab
 

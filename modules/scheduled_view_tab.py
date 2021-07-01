@@ -1,4 +1,4 @@
-from qtpy import QtWidgets, uic
+from PyQt5 import QtWidgets, uic
 import os
 from modules.adapter import SumoScheduledViewAdapter
 from modules.tab_base_class import StandardTab

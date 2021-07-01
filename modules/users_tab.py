@@ -1,4 +1,4 @@
-from qtpy import QtWidgets
+from PyQt5 import QtWidgets
 from modules.adapter import SumoUserAdapter
 from modules.tab_base_class import StandardTab
 

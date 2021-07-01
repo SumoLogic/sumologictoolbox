@@ -5,10 +5,8 @@ Sumotoolbox
  it easier to perform common API tasks such as copying sources and generating CSV files from
  searches.
 
-This version contains critical updates to the 'collectors' and 'source updates' tab. It is highly recommended that you
-upgrade to this version or later (0.9.1)
 
-For a description of functionality please see the [wiki](https://github.com/SumoLogic/sumologictoolbox/wiki)
+##For a description of functionality please see the new [wiki](https://github.com/SumoLogic/sumologictoolbox/wiki)
 
 Recommended Method of Getting and Running Sumotoolbox, download the binaries
 ============================================================================
