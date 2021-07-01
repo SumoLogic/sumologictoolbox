@@ -14,7 +14,8 @@ class RolesTab(StandardTab):
         # customize UI
         self.listWidgetLeft.params = {'extension': '.sumorole.json'}
         self.listWidgetRight.params = {'extension': '.sumorole.json'}
-
+        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
+        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
     def reset_stateful_objects(self, side='both'):
         super(RolesTab, self).reset_stateful_objects(side=side)
         if self.left:

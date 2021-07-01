@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
+from qtpy import QtCore, QtGui, QtWidgets, uic
 import os
 from logzero import logger
 from modules.sumologic_orgs import SumoLogic_Orgs

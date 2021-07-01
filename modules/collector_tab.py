@@ -1,7 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
+from qtpy import QtGui, QtWidgets, uic
 import os
 import pathlib
-import json
 from logzero import logger
 from modules.shared import ShowTextDialog, exception_and_error_handling
 from modules.tab_base_class import BaseTab

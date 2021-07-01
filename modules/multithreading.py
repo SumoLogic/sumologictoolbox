@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui, QtCore, uic
+from qtpy import QtWidgets, QtCore, uic
 import traceback
 from logzero import logger
 import sys
@@ -25,7 +25,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.show()
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def increment(self):
         self.count += 1
         self.progressBar.setValue(self.count)
@@ -40,10 +40,10 @@ class ProgressDialog(QtWidgets.QDialog):
 
 class WorkerSignals(QtCore.QObject):
 
-    finished = QtCore.pyqtSignal()
-    error = QtCore.pyqtSignal(tuple)
-    result = QtCore.pyqtSignal(object)
-    progress = QtCore.pyqtSignal(int)
+    finished = QtCore.Signal()
+    error = QtCore.Signal(tuple)
+    result = QtCore.Signal(object)
+    progress = QtCore.Signal(int)
 
 
 class Worker(QtCore.QRunnable):
@@ -73,7 +73,7 @@ class Worker(QtCore.QRunnable):
         if 'progress_callback' in self.fn.__code__.co_varnames:
             self.kwargs['progress_callback'] = self.signals.progress
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def run(self):
         '''
         Initialise the runner function with passed args, kwargs.

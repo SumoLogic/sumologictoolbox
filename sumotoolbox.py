@@ -18,7 +18,8 @@ import os.path
 import re
 from datetime import datetime
 from tzlocal import get_localzone
-from PyQt5 import QtCore, QtGui, QtWidgets, Qt, uic
+from qtpy import QtCore, QtGui, QtWidgets, uic
+import webbrowser
 import pathlib
 import os
 import logzero
@@ -1245,10 +1246,10 @@ If so type 'DELETE' in the box below:"
         self.thememenugroup.triggered.connect(self.change_theme)
         # setup the version menu
         self.actionVersion.triggered.connect(lambda: self.infobox("Version: " + __version__))
-        self.actionWiki.triggered.connect(lambda: Qt.QDesktopServices.openUrl(
-            Qt.QUrl("https://github.com/SumoLogic/sumologictoolbox/wiki")))
-        self.actionReport_Issue.triggered.connect(lambda: Qt.QDesktopServices.openUrl(
-            Qt.QUrl("https://github.com/SumoLogic/sumologictoolbox/issues")))
+        self.actionWiki.triggered.connect(lambda: webbrowser.open("https://github.com/SumoLogic/sumologictoolbox/wiki",
+                                                                  new=2))
+        self.actionReport_Issue.triggered.connect(lambda:webbrowser.open("https://github.com/SumoLogic/sumologictoolbox/issues",
+                                                                         new=2))
 
     # End Misc/Utility Methods
 

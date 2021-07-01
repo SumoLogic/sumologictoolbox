@@ -1,4 +1,4 @@
-from PyQt5 import QtGui, QtWidgets
+from qtpy import QtGui, QtWidgets
 import pathlib
 from logzero import logger
 from modules.adapter import SumoContentAdapter

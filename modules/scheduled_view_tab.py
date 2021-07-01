@@ -1,5 +1,4 @@
-from PyQt5 import QtWidgets, uic
-import os
+from qtpy import QtWidgets
 from modules.adapter import SumoScheduledViewAdapter
 from modules.tab_base_class import StandardTab
 
@@ -19,7 +18,8 @@ class ScheduledViewTab(StandardTab):
         self.useCurrentDate.show()
         self.listWidgetLeft.params = {'extension': '.sumoscheduledview.json'}
         self.listWidgetRight.params = {'extension': '.sumoscheduledview.json'}
-
+        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
+        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
         # disconnect the signals from the base class
         self.pushButtonCopyLeftToRight.disconnect()
         self.pushButtonCopyRightToLeft.disconnect()

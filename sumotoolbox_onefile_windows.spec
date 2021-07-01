@@ -29,7 +29,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           name='sumotoolbox_windows',
-          debug=False,
+          debug=True,
           strip=None,
           upx=True,
-          console=False )
+          console=True )

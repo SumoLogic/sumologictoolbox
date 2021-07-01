@@ -1,5 +1,5 @@
 from modules.filesystem_adapter import FilesystemAdapter
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
+from qtpy import QtCore, QtGui, QtWidgets, uic
 import pathlib
 import os
 from modules.shared import exception_and_error_handling

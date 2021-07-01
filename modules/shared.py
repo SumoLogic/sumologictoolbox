@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from qtpy import QtWidgets, QtGui
 from logzero import logger
 import pathlib
 from functools import wraps

@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from qtpy import QtWidgets
 from modules.adapter import SumoUserAdapter
 from modules.tab_base_class import StandardTab
 
@@ -20,7 +20,8 @@ class UsersTab(StandardTab):
         self.checkBoxIncludeRoles.show()
         self.listWidgetLeft.params = {'extension': '.sumouser.json'}
         self.listWidgetRight.params = {'extension': '.sumouser.json'}
-
+        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
+        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
         # disconnect the signals from the base class
         self.pushButtonCopyLeftToRight.disconnect()
         self.pushButtonCopyRightToLeft.disconnect()

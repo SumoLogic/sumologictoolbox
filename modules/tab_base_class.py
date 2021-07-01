@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
+from qtpy import QtCore, QtGui, QtWidgets, uic
 from modules.multithreading import Worker, ProgressDialog
 from modules.shared import ShowTextDialog, exception_and_error_handling
 from modules.filesystem_adapter import FilesystemAdapter

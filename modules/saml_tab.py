@@ -12,6 +12,8 @@ class SAMLTab(StandardTab):
         self.cred_usage = 'both'
         self.listWidgetLeft.params = {'extension': '.sumosamlconfig.json'}
         self.listWidgetRight.params = {'extension': '.sumosamlconfig.json'}
+        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
+        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
 
     def reset_stateful_objects(self, side='both'):
         super(SAMLTab, self).reset_stateful_objects(side=side)

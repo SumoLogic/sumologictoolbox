@@ -1,5 +1,5 @@
 import pathlib
-from PyQt5 import QtGui, QtWidgets
+from qtpy import QtGui, QtWidgets
 from modules.adapter import SumoMonitorAdapter
 from modules.tab_base_class import StandardTab
 
@@ -21,7 +21,8 @@ class MonitorsTab(StandardTab):
         self.checkBoxIncludeConnects.show()
         self.listWidgetLeft.params = {'extension': '.sumomonitor.json'}
         self.listWidgetRight.params = {'extension': '.sumomonitor.json'}
-
+        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
+        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
         # disconnect the signals from the base class
         self.pushButtonCopyLeftToRight.disconnect()
         self.pushButtonCopyRightToLeft.disconnect()
