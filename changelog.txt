@@ -15,7 +15,7 @@ Changelog for SumoToolBox
 *   [General] Split "Monitors and Connections" into 2 tabs, "Monitors" and "Connections". This was done to simplify
     implementation of the adapter system.
 *   [General] A new wiki is available here: https://github.com/SumoLogic/sumologictoolbox/wiki
-*   [General] "wiki" and "report issue" entries are now available in the help menu. 
+*   [General] "wiki" and "report issue" entries are now available in the help menu.
 *   [Orgs SDK] Added the correct GA endpoint to the SDK. It was previously the alpha endpoint.
 *   [Organizations] Removed CSE credits and storage from the view as they don't exist in the API at the moment.
 *   [Content] Add an "Include Connections" checkbox. If checked this will make sure that any connections used by
