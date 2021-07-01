@@ -387,6 +387,7 @@ class CollectorTab(BaseTab):
                 self.update_source_listwidget(source_list_widget, sources)
 
     def update_source_listwidget(self, source_list_widget, sources):
+        source_list_widget.clear()
         for source in sources:
             logger.debug(f'Adding source to list widget: {source}')
             if 'itemType' in source and source['itemType'] == 'Folder':

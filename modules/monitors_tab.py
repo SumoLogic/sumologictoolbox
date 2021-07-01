@@ -15,7 +15,7 @@ class MonitorsTab(StandardTab):
 
         # customize UI
         self.checkBoxIncludeConnects = QtWidgets.QCheckBox()
-        self.checkBoxIncludeConnects.setChecked(False)
+        self.checkBoxIncludeConnects.setChecked(True)
         self.checkBoxIncludeConnects.setText("Include\nConnections")
         self.verticalLayoutCenterButton.insertWidget(3, self.checkBoxIncludeConnects)
         self.checkBoxIncludeConnects.show()

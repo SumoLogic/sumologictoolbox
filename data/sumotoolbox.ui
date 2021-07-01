@@ -1305,7 +1305,7 @@ Preset</string>
      <x>0</x>
      <y>0</y>
      <width>1175</width>
-     <height>29</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSettings">
@@ -1334,6 +1334,8 @@ Preset</string>
      <string>Help</string>
     </property>
     <addaction name="actionVersion"/>
+    <addaction name="actionWiki"/>
+    <addaction name="actionReport_Issue"/>
    </widget>
    <addaction name="menuSettings"/>
    <addaction name="menuHelp"/>
@@ -1380,6 +1382,16 @@ Preset</string>
   <action name="actionVersion">
    <property name="text">
     <string>Version</string>
+   </property>
+  </action>
+  <action name="actionWiki">
+   <property name="text">
+    <string>Wiki</string>
+   </property>
+  </action>
+  <action name="actionReport_Issue">
+   <property name="text">
+    <string>Report Issue</string>
    </property>
   </action>
  </widget>
