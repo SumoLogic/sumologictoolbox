@@ -15,8 +15,7 @@ class LogMappingsTab(StandardTab):
                                       'query': 'isCustom:True'}
         self.listWidgetRight.params = {'extension': '.sumologmapping.json',
                                        'query': 'isCustom:True'}
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
+
         # self.QRadioButtonLeftAllRules = QtWidgets.QRadioButton('All')
         # self.QRadioButtonLeftCustomRules = QtWidgets.QRadioButton('Custom')
         # self.QRadioButtonLeftCustomRules.setChecked(True)

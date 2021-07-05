@@ -260,54 +260,6 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonFindReplaceCopyLeftToRight">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="font">
-        <font>
-         <family>Waree</family>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="contextMenuPolicy">
-        <enum>Qt::NoContextMenu</enum>
-       </property>
-       <property name="toolTip">
-        <string>Coming Soon!</string>
-       </property>
-       <property name="text">
-        <string>Find 
-Replace-&gt;
-Copy</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonFindReplaceCopyRightToLeft">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="font">
-        <font>
-         <family>Waree</family>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="contextMenuPolicy">
-        <enum>Qt::NoContextMenu</enum>
-       </property>
-       <property name="toolTip">
-        <string>Coming Soon!</string>
-       </property>
-       <property name="text">
-        <string>Find 
-&lt;-Replace
-Copy</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="verticalSpacer_21">
        <property name="orientation">
         <enum>Qt::Vertical</enum>

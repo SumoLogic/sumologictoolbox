@@ -51,6 +51,16 @@ class ContentTab(StandardTab):
         self.verticalLayoutCenterButton.insertWidget(3, self.checkBoxIncludeConnections)
         self.checkBoxIncludeConnections.show()
 
+        self.pushButtonFindReplaceCopyLeftToRight = QtWidgets.QPushButton()
+        self.pushButtonFindReplaceCopyLeftToRight.setText("Find / Replace/\n Copy -->")
+        self.verticalLayoutCenterButton.insertWidget(5, self.pushButtonFindReplaceCopyLeftToRight)
+        self.pushButtonFindReplaceCopyLeftToRight.show()
+
+        self.pushButtonFindReplaceCopyRightToLeft = QtWidgets.QPushButton()
+        self.pushButtonFindReplaceCopyRightToLeft.setText("Find / Replace/\n <-- Copy")
+        self.verticalLayoutCenterButton.insertWidget(6, self.pushButtonFindReplaceCopyRightToLeft)
+        self.pushButtonFindReplaceCopyRightToLeft.show()
+
         self.toggle_include_roles()
         self.reset_stateful_objects()
 
@@ -66,6 +76,22 @@ class ContentTab(StandardTab):
             self.right_adapter,
             self.QRadioButtonGroupRight.checkedId(),
             self.labelPathRight
+        ))
+
+        self.pushButtonFindReplaceCopyLeftToRight.clicked.connect(lambda: self.begin_copy_content(
+            self.listWidgetLeft,
+            self.listWidgetRight,
+            self.left_adapter,
+            self.right_adapter,
+            {'replace_source_categories': True}
+        ))
+
+        self.pushButtonFindReplaceCopyRightToLeft.clicked.connect(lambda: self.begin_copy_content(
+            self.listWidgetRight,
+            self.listWidgetLeft,
+            self.right_adapter,
+            self.left_adapter,
+            {'replace_source_categories': True}
         ))
 
         self.checkBoxIncludeConnections.stateChanged.connect(self.toggle_include_roles)

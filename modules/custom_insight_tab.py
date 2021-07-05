@@ -13,8 +13,7 @@ class CustomInsightTab(StandardTab):
         self.cred_usage = 'both'
         self.listWidgetLeft.params = {'extension': '.sumocustominsight.json'}
         self.listWidgetRight.params = {'extension': '.sumocustominsight.json'}
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
+
     def reset_stateful_objects(self, side='both'):
         super(CustomInsightTab, self).reset_stateful_objects(side=side)
         if self.left:

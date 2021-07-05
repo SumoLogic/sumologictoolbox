@@ -13,8 +13,7 @@ class PartitionsTab(StandardTab):
         self.cred_usage = 'both'
         self.listWidgetLeft.params = {'extension': '.sumopartition.json'}
         self.listWidgetRight.params = {'extension': '.sumopartition.json'}
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
+
     def reset_stateful_objects(self, side='both'):
         super(PartitionsTab, self).reset_stateful_objects(side=side)
         if self.left:

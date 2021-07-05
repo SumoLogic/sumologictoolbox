@@ -14,8 +14,6 @@ class ConnectionsTab(StandardTab):
         # customize UI
         self.listWidgetLeft.params = {'extension': '.sumoconnection.json'}
         self.listWidgetRight.params = {'extension': '.sumoconnection.json'}
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
 
     def reset_stateful_objects(self, side='both'):
         super(ConnectionsTab, self).reset_stateful_objects(side=side)

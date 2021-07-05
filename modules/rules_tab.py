@@ -15,8 +15,7 @@ class RulesTab(StandardTab):
                                       'query': 'ruleSource:"user"'}
         self.listWidgetRight.params = {'extension': '.sumorule.json',
                                        'query': 'ruleSource:"user"'}
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
+
     #     self.QRadioButtonLeftAllRules = QtWidgets.QRadioButton('All')
     #     self.QRadioButtonLeftCustomRules = QtWidgets.QRadioButton('Custom')
     #     self.QRadioButtonLeftCustomRules.setChecked(True)

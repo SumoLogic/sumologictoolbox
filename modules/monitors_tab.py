@@ -21,8 +21,7 @@ class MonitorsTab(StandardTab):
         self.checkBoxIncludeConnects.show()
         self.listWidgetLeft.params = {'extension': '.sumomonitor.json'}
         self.listWidgetRight.params = {'extension': '.sumomonitor.json'}
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
+
         # disconnect the signals from the base class
         self.pushButtonCopyLeftToRight.disconnect()
         self.pushButtonCopyRightToLeft.disconnect()

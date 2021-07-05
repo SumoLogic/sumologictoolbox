@@ -13,8 +13,7 @@ class FieldExtractionRuleTab(StandardTab):
         self.cred_usage = 'both'
         self.listWidgetLeft.params = {'extension': '.sumofer.json'}
         self.listWidgetRight.params = {'extension': '.sumofer.json'}
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyLeftToRight)
-        self.verticalLayoutCenterButton.removeWidget(self.pushButtonFindReplaceCopyRightToLeft)
+
     def reset_stateful_objects(self, side='both'):
         super(FieldExtractionRuleTab, self).reset_stateful_objects(side=side)
         if self.left:
