@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 pyinstaller = ">=3.6"
+macholib = ">=1.14"
 
 [packages]
 pyqt5 = "*"
