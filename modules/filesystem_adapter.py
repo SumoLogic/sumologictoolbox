@@ -115,7 +115,7 @@ class FilesystemAdapter(Adapter):
             else:
                 return False
 
-    def create_folder(self, folder_name, list_widget, params=None):
+    def create_folder(self, folder_name, params=None):
         try:
             path = pathlib.Path(self.get_current_path(), folder_name)
             logger.debug(f"Creating filesystem folder: {str(path)}")
@@ -123,19 +123,17 @@ class FilesystemAdapter(Adapter):
             return {'status': 'SUCCESS',
                     'result': True,
                     'adapter': self,
-                    'params': params,
-                    'list_widget': list_widget}
+                    'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
-    def put(self, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, params=None):
         try:
-            file_name = str(item_name) + str(params['extension'])
+            if 'extension' in params:
+                extension = str(params['extension'])
+            else:
+                extension = ''
+            file_name = str(item_name) + extension
             file_name = file_name.replace('/', '-')
             save_file_path = pathlib.Path(self.get_current_path(), file_name)
             logger.debug(f'Writing to file: {str(save_file_path)}')
@@ -144,15 +142,9 @@ class FilesystemAdapter(Adapter):
             return {'status': 'SUCCESS',
                     'result': True,
                     'adapter': self,
-                    'params': params,
-                    'list_widget': list_widget}
+                    'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
     def get(self, item_name, item_id, params=None):
         try:
@@ -165,21 +157,17 @@ class FilesystemAdapter(Adapter):
                     'adapter': self,
                     'payload': contents,
                     'params': params}
+
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
     def export_item(self, item_name, item_id, params=None):
         return self.get(item_name, item_id, params=params)
 
-    def import_item(self, item_name, payload, list_widget,  params=None):
-        return self.put(item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, params=None):
+        return self.put(item_name, payload, params=params)
 
-    def delete(self, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, params=None):
         try:
             path = pathlib.Path(self.get_current_path(), item_name)
             if path.is_dir():
@@ -189,12 +177,6 @@ class FilesystemAdapter(Adapter):
             return {'status': 'SUCCESS',
                     'result': None,
                     'adapter': self,
-                    'params': params,
-                    'list_widget': list_widget}
+                    'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e

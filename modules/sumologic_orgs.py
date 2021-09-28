@@ -49,7 +49,7 @@ def backoff(func):
     return limited
 
 
-class SumoLogic_Orgs:
+class SumoLogicOrgs:
 
     def __init__(self,
                  accessId,
@@ -215,4 +215,28 @@ class SumoLogic_Orgs:
         r = self.get('/v1/organizations/parentOrg', headers=headers)
         return r.json()
 
+    def create_access_key(self, label, org_id, cors_headers=None):
+        headers = {'parentDeploymentId': self.parent_deployment}
+        body = {'label': str(label)}
+        if cors_headers:
+            body['corsHeaders'] = cors_headers
+        else:
+            body['corsHeaders'] = []
+        r = self.post('/v1/organizations/' + str(org_id) + '/accessKey', body, headers=headers)
+        return r.json()
+
+    def get_usage_details_parent_org(self):
+        headers = {'parentDeploymentId': self.parent_deployment}
+        r = self.get('/v1/organizations/usages', headers=headers)
+        return r.json()
+
+    def get_usage_details(self, org_id):
+        headers = {'parentDeploymentId': self.parent_deployment}
+        r = self.get('/v1/organizations/usages/' + str(org_id), headers=headers)
+        return r.json()
+
+    def get_subdomain_login_url(self, org_id):
+        headers = {'parentDeploymentId': self.parent_deployment}
+        r = self.get('/v1/organizations/' + str(org_id) + 'subdomainLoginUrl', headers=headers)
+        return r.json()
 

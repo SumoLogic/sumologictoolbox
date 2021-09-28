@@ -38,6 +38,39 @@ class ProgressDialog(QtWidgets.QDialog):
         self.close()
 
 
+class SearchProgressDialog(QtWidgets.QDialog):
+
+    def __init__(self, text, minimum, maximum, threadpool, mainwindow):
+        super(SearchProgressDialog, self).__init__()
+        self.setModal(True)
+        self.threadpool = threadpool
+        self.min = minimum
+        self.max = maximum
+        self.count = minimum
+        self.mainwindow = mainwindow
+        source_update_ui = os.path.join(self.mainwindow.basedir, 'data/progress_dialog.ui')
+        uic.loadUi(source_update_ui, self)
+        self.label.setText(str(text))
+        self.progressBar.setMinimum(self.min)
+        self.progressBar.setMaximum(self.max)
+        self.progressBar.setValue(self.count)
+        self.pushButtonCancel.clicked.connect(self.cancel)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.show()
+
+    @QtCore.Slot()
+    def increment(self):
+        self.count += 1
+        self.progressBar.setValue(self.count)
+        logger.debug(f'Progress is {self.count}/{self.max}')
+        if self.count >= self.max:
+            self.close()
+
+    def cancel(self):
+        self.threadpool.clear()
+        self.close()
+
+
 class WorkerSignals(QtCore.QObject):
 
     finished = QtCore.Signal()

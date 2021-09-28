@@ -1,55 +1,10 @@
-from modules.filesystem_adapter import FilesystemAdapter
+import json
+from modules.item_selector import ItemSelector
+from modules.package import SumoPackage
 from qtpy import QtCore, QtGui, QtWidgets, uic
 import pathlib
 import os
-from modules.shared import exception_and_error_handling
 from logzero import logger
-
-
-class SumoListWidgetItem(QtWidgets.QListWidgetItem):
-
-    def __init__(self, preset, path):
-        super().__init__()
-        self.preset = preset
-        self.path = path
-        self.attributes = []
-        self.widget = QtWidgets.QWidget()
-
-
-class ContentWidget(QtWidgets.QWidget):
-    def __init__(self, name, parent=None):
-        super(ContentWidget, self).__init__(parent)
-        self.create_widget(name)
-
-    def create_widget(self, name):
-        self.widget_layout = QtWidgets.QHBoxLayout()
-        self.label = QtWidgets.QLabel(name)
-        self.widget_layout.addWidget(self.label)
-
-        self.checkbox_org_share = QtWidgets.QCheckBox("Share RO with Org")
-        self.checkbox_org_share.setStyleSheet("QCheckBox::indicator"
-                                              "{"
-                                              "border : 1px solid grey;"
-                                              "}")
-        self.widget_layout.addWidget(self.checkbox_org_share)
-        self.checkbox_admin_share = QtWidgets.QCheckBox("Share RW with Admin")
-        self.widget_layout.addWidget(self.checkbox_admin_share)
-        self.widget_layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        self.widget_layout.addStretch()
-        self.setLayout(self.widget_layout)
-
-
-
-
-class ContentListWidgetItem(SumoListWidgetItem):
-
-    def __init__(self, preset, path):
-        super().__init__(preset, path)
-        self.share_ro_global = True
-        self.share_rw_admin = False
-        self.widget = ContentWidget('test')
-
-        # build
 
 
 class PackageEditor(QtWidgets.QDialog):
@@ -57,26 +12,22 @@ class PackageEditor(QtWidgets.QDialog):
     def __init__(self, mainwindow):
         super(PackageEditor, self).__init__()
         self.mainwindow = mainwindow
-        self.presets = self.mainwindow.list_presets_with_creds()
         package_editor_ui = os.path.join(self.mainwindow.basedir, 'data/package_editor.ui')
         uic.loadUi(package_editor_ui, self)
-        self.comboBoxPreset.addItem('FILESYSTEM:')
-        for preset in self.presets:
-            if ":" in preset['sumoregion'] and preset['sumoregion'] != "MULTI:":
-                self.comboBoxPreset.addItem(preset['name'])
-        self.params = {'extension': '.json'}
         self.load_icons()
-        self.preset_changed()
-        self.pushButtonUpdate.clicked.connect(lambda: self.update_item_list())
-        self.pushButtonParentDir.clicked.connect(lambda: self.go_to_parent_dir())
-        self.listWidgetConfigs.itemDoubleClicked.connect(lambda item: self.double_clicked_item(item))
+        self.init_package()
+        self.selector = ItemSelector(self.mainwindow, file_filter='.json', multi_select=True)
+        self.verticalLayoutSelector.insertWidget(0, self.selector)
+        self.textEditItemData.setAcceptRichText(False)
+        self.textEditItemData.setReadOnly(True)
+        self.pushButtonAddToPackage.clicked.connect(self.add_items_to_package)
+        self.listWidgetPackageItems.itemClicked.connect(lambda item: self.display_item_options(item))
+        self.tableWidgetProperties.cellChanged.connect(lambda row, column: self.update_item_config(row, column))
+        self.pushButtonRemove.clicked.connect(self.remove_item_from_package)
+        self.pushButtonClearAll.clicked.connect(self.init_package)
+        self.pushButtonSavePackage.clicked.connect(self.save_package)
+        self.pushButtonLoadPackage.clicked.connect(self.load_package)
 
-        #testing
-        test_item = QtWidgets.QListWidgetItem()
-        test_widget = ContentWidget('test')
-        test_item.setSizeHint(test_widget.sizeHint())
-        self.listWidgetPackages.addItem(test_item)
-        self.listWidgetPackages.setItemWidget(test_item, test_widget)
 
     def load_icons(self):
         self.icons = {}
@@ -85,61 +36,91 @@ class PackageEditor(QtWidgets.QDialog):
         icon_path = str(pathlib.Path(self.mainwindow.basedir + '/data/json.svg'))
         self.icons['JSON'] = QtGui.QIcon(icon_path)
         iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/dashboard.svg'))
-        self.icons['Dashboard'] = QtGui.QIcon(iconpath)
+        self.icons['sumocontent'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/user.svg'))
+        self.icons['sumouser'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/role.svg'))
+        self.icons['sumorole'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/partition.svg'))
+        self.icons['sumopartition'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/sv.svg'))
+        self.icons['sumoscheduledview'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/fer.svg'))
+        self.icons['sumofer'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/monitor.svg'))
+        self.icons['sumomonitor'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/saml.svg'))
+        self.icons['sumosamlconfig'] = QtGui.QIcon(iconpath)
+        iconpath = str(pathlib.Path(self.mainwindow.basedir + '/data/connection.svg'))
+        self.icons['sumoconnection'] = QtGui.QIcon(iconpath)
 
-    def preset_changed(self):
-        selected_preset_name = self.comboBoxPreset.currentText()
-        self.listWidgetConfigs.updated = False
-        if selected_preset_name == 'FILESYSTEM:':
-            self.adapter = FilesystemAdapter(None, 'left', self.mainwindow)
+    def save_package(self):
+        package = self.current_package.package_export()
+        self.selector.write_item(package, self, extension='.sumopackage.json')
 
-    def create_list_widget_item(self, item):
-        item_name = str(item['name'])
-        if ('contentType' in item) and (item['contentType'] == 'Folder'):
-            list_item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
-        elif ('itemType' in item) and (item['itemType'] == 'Folder'):
-            list_item = QtWidgets.QListWidgetItem(self.icons['Folder'], item_name)
-        else:
-            list_item = QtWidgets.QListWidgetItem(self.icons['JSON'], item_name)
-        return list_item
+    def load_package(self):
+        items = self.selector.get_selected_items()
+        if len(items) == 1 and items[0]['item_type'] == 'sumopackage':
+            logger.debug(f'Loading Package: {items[0]}')
+            self.current_package = SumoPackage(package_data=items[0]['item_data'])
+        self.update_item_listwidget()
 
-    @exception_and_error_handling
-    def update_item_list(self):
-        contents = self.adapter.list(params=self.params)
-        logger.debug(f'[Create Orgs Dialog] Updating item list, got: {contents}')
-        self.update_list_widget(contents)
+    def remove_item_from_package(self):
+        self.current_package.package_items.remove(self.current_entry)
+        self.update_item_listwidget()
+        self.tableWidgetProperties.clear()
+        self.textEditItemData.setPlainText('')
 
-    def update_list_widget(self, payload):
-        try:
-            self.listWidgetConfigs.clear()
-            count = 0
-            for item in payload:
-                list_item = self.create_list_widget_item(item)
-                # attach the details about the item to the entry in listwidget, this makes life much easier
-                list_item.details = item
-                self.listWidgetConfigs.addItem(list_item)  # populate the list widget in the GUI with no icon (fallthrough)
-                count += 1
+    def init_package(self):
+        self.current_package = SumoPackage()
+        self.current_entry = None
+        self.update_item_listwidget()
+        self.tableWidgetProperties.clear()
+        self.textEditItemData.setPlainText('')
 
-                self.labelDirectoryPath.setText(self.adapter.get_current_path())
-            self.listWidgetConfigs.updated = True
-        except Exception as e:
-            self.listWidgetConfigs.clear()
-            self.listWidgetConfigs.updated = False
-            logger.exception(e)
-        return
+    def update_item_listwidget(self):
+        self.listWidgetPackageItems.clear()
+        for entry in self.current_package.package_items:
+            item = QtWidgets.QListWidgetItem()
+            item.setText(entry.item_name)
+            item.setIcon(self.icons[entry.item_type])
+            item.entry = entry
+            self.listWidgetPackageItems.addItem(item)
 
-    @exception_and_error_handling
-    def double_clicked_item(self, item):
-        if self.listWidgetConfigs.updated:
-            logger.debug(f"[Create Orgs Dialog] Going Down One Folder {str(item.details['name'])}")
-            result = self.adapter.down(item.details['name'], params=self.params)
-            if result:
-                self.update_item_list()
+    def display_item_options(self, item):
+        self.current_entry = item.entry
+        self.textEditItemData.setPlainText(json.dumps(self.current_entry.item_data, indent=4, sort_keys=True))
+        self.tableWidgetProperties.clear()
+        self.tableWidgetProperties.setRowCount(0)
+        self.tableWidgetProperties.setHorizontalHeaderItem(0, QtWidgets.QTableWidgetItem('Attribute'))
+        self.tableWidgetProperties.setHorizontalHeaderItem(1, QtWidgets.QTableWidgetItem('Value'))
+        for index, item_option in enumerate(self.current_entry.item_options):
+            self.tableWidgetProperties.insertRow(self.tableWidgetProperties.rowCount())
+            # Add the name of the option
+            item = QtWidgets.QTableWidgetItem(item_option['option_display_name'])
+            self.tableWidgetProperties.setItem(self.tableWidgetProperties.rowCount() - 1, 0, item)
+            # Add the checkbox
+            item = QtWidgets.QTableWidgetItem()
+            # link the actual option dict back to this temporary entry so we can reference it when the checkbox
+            # is clicked
+            item.option_index = index
+            item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            if item_option['value']:
+                item.setCheckState(QtCore.Qt.Checked)
+            else:
+                item.setCheckState(QtCore.Qt.Unchecked)
+            self.tableWidgetProperties.setItem(self.tableWidgetProperties.rowCount() - 1, 1, item)
+            
+    def update_item_config(self, row, column):
+        item = self.tableWidgetProperties.item(row, column)
+        if 'option_index' in (dir(item)):
+            if item.checkState() == 2:
+                self.current_entry.set_option_value(item.option_index, True)
+            else:
+                self.current_entry.set_option_value(item.option_index, False)
 
-    @exception_and_error_handling
-    def go_to_parent_dir(self):
-        if self.listWidgetConfigs.updated:
-            result = self.adapter.up(params=self.params)
-            if result:
-                logger.debug(f"[Create Orgs Dialog] Going Up One folder")
-                self.update_item_list()
+    def add_items_to_package(self):
+        items = self.selector.get_selected_items()
+        self.current_package.add_items(items)
+        self.update_item_listwidget()
+

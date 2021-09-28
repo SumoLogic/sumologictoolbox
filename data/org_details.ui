@@ -6,18 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
-    <height>542</height>
+    <width>588</width>
+    <height>564</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <layout class="QFormLayout" name="formLayout">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetDefaultConstraint</enum>
+       </property>
        <item row="0" column="0">
         <widget class="QLabel" name="labelOrgName">
          <property name="text">
@@ -47,16 +56,44 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEditOrgName"/>
+        <widget class="QLineEdit" name="lineEditOrgName">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="lineEditEmail"/>
+        <widget class="QLineEdit" name="lineEditEmail">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLineEdit" name="lineEditOwnerFirst"/>
+        <widget class="QLineEdit" name="lineEditOwnerFirst">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLineEdit" name="lineEditOwnerLast"/>
+        <widget class="QLineEdit" name="lineEditOwnerLast">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item row="4" column="0">
         <widget class="QLabel" name="labelDeployment">
@@ -64,9 +101,6 @@
           <string>Deployment:</string>
          </property>
         </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QComboBox" name="comboBoxDeployment"/>
        </item>
        <item row="5" column="0">
         <widget class="QLabel" name="labelLicense">
@@ -76,7 +110,14 @@
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="QComboBox" name="comboBoxPlan"/>
+        <widget class="QComboBox" name="comboBoxPlan">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item row="6" column="0">
         <widget class="QLabel" name="labelContinuousIngest">
@@ -92,11 +133,15 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
-        <widget class="QLineEdit" name="lineEditContinuousIngest"/>
-       </item>
        <item row="7" column="1">
-        <widget class="QLineEdit" name="lineEditFrequentIngest"/>
+        <widget class="QLineEdit" name="lineEditFrequentIngest">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item row="8" column="0">
         <widget class="QLabel" name="labelInfrequentIngest">
@@ -113,10 +158,24 @@
         </widget>
        </item>
        <item row="8" column="1">
-        <widget class="QLineEdit" name="lineEditInfrequentIngest"/>
+        <widget class="QLineEdit" name="lineEditInfrequentIngest">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item row="9" column="1">
-        <widget class="QLineEdit" name="lineEditMetricsIngest"/>
+        <widget class="QLineEdit" name="lineEditMetricsIngest">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item row="10" column="0">
         <widget class="QLabel" name="labelTracingIngest">
@@ -126,12 +185,72 @@
         </widget>
        </item>
        <item row="10" column="1">
-        <widget class="QLineEdit" name="lineEditTracingIngest"/>
+        <widget class="QLineEdit" name="lineEditTracingIngest">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
-       <item row="11" column="0">
+       <item row="12" column="0">
+        <widget class="QCheckBox" name="checkBoxSubdomain">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Create Subdomain</string>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <widget class="QLineEdit" name="lineEditSubdomain">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="0">
+        <widget class="QCheckBox" name="checkBoxConfigureOrg">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Configure Org</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLineEdit" name="lineEditContinuousIngest">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <widget class="QLineEdit" name="lineEditConfigureOrg">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="0">
         <widget class="QCheckBox" name="checkBoxCreatePreset">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="text">
           <string>Create Cred Preset</string>
@@ -141,33 +260,50 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="0">
-        <widget class="QCheckBox" name="checkBoxSubdomain">
-         <property name="enabled">
-          <bool>false</bool>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="comboBoxDeployment">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
          </property>
-         <property name="text">
-          <string>Create Subdomain</string>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <widget class="QLineEdit" name="lineEditSubdomain"/>
-       </item>
-       <item row="13" column="0">
-        <widget class="QCheckBox" name="checkBoxConfigureOrg">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Configure Org</string>
+         <property name="insertPolicy">
+          <enum>QComboBox::InsertAlphabetically</enum>
          </property>
         </widget>
-       </item>
-       <item row="13" column="1">
-        <widget class="QComboBox" name="comboBoxConfigPackage"/>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QFrame" name="frameSelector">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <property name="lineWidth">
+        <number>3</number>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayoutSelector">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QPushButton" name="pushButtonSelectPackage">
+              <property name="text">
+               <string>Select Package</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </item>
@@ -185,22 +321,6 @@
  </widget>
  <resources/>
  <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>Dialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>

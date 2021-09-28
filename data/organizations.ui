@@ -140,9 +140,17 @@ Subscription</string>
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="pushButtonPackageDeploy">
+       <property name="text">
+        <string>Package
+Deploy</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pushButtonPackageEditor">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">

@@ -298,9 +298,7 @@ class CollectorTab(BaseTab):
     @exception_and_error_handling
     def create_folder(self, collector_list_widget, source_list_widget, collector_adapter, source_adapter, radiobuttongroup, filter_text, path_label=None):
         if collector_list_widget.updated:
-            message = '''
-        Please enter the name of the folder you wish to create:
-
+            message = '''Please enter the name of the folder you wish to create:
                         '''
             text, result = QtWidgets.QInputDialog.getText(self, 'Create Folder...', message)
             if result:
@@ -310,7 +308,7 @@ class CollectorTab(BaseTab):
                         return False
                 logger.debug(f"[{self.tab_name}] Creating New Folder {str(text)}")
 
-                result = collector_adapter.create_folder(str(text), collector_list_widget)
+                result = collector_adapter.create_folder(str(text))
                 if result:
                     self.update_collector_list(collector_list_widget, source_list_widget, collector_adapter, source_adapter, radiobuttongroup, filter_text, path_label=path_label)
                     return True
@@ -440,7 +438,6 @@ class CollectorTab(BaseTab):
                     logger.debug(f"Importing {exported_source['payload']['source']['name']}")
                     to_source_adapter.import_item(exported_source['payload']['source']['name'],
                                                   exported_source['payload'],
-                                                  to_source_list_widget,
                                                   params=merged_params
                                                   )
         else: # not a sumologic collector a the destination
@@ -448,7 +445,6 @@ class CollectorTab(BaseTab):
                 logger.debug(f"Importing {exported_source['payload']['source']['name']}")
                 to_source_adapter.import_item(exported_source['payload']['source']['name'],
                                               exported_source['payload'],
-                                              to_source_list_widget,
                                               params=to_source_list_widget.params
                                               )
         # update the target
@@ -599,9 +595,7 @@ class CollectorTab(BaseTab):
         message = message + '''
 This could be exceedingly DANGEROUS!!!! 
 Please be VERY, VERY, VERY sure you want to do this!
-
 If you are absolutely sure, type "DELETE" in the box below.
-
                 '''
         text, result = QtWidgets.QInputDialog.getText(self, 'Warning!!', message)
         if (result and (str(text) == 'DELETE')):
@@ -625,11 +619,8 @@ If you are absolutely sure, type "DELETE" in the box below.
                 self.workers.append(Worker(adapter.delete,
                                            item_name,
                                            item_id,
-                                           source_list_widget,
                                            params=params))
                 self.workers[index].signals.finished.connect(self.progress.increment)
                 self.workers[index].signals.result.connect(self.custom_merge_results_update_target)
                 self.mainwindow.threadpool.start(self.workers[index])
-
-
-
+                

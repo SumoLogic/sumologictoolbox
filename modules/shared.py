@@ -1,4 +1,4 @@
-from qtpy import QtWidgets, QtGui
+from qtpy import QtWidgets, QtGui, QtCore
 from logzero import logger
 import pathlib
 from functools import wraps
@@ -29,6 +29,9 @@ class ShowTextDialog(QtWidgets.QDialog):
         self.searchdown.clicked.connect(lambda: self.search_down(
             self.searchbox.text()
         ))
+        self.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
+        self.raise_()
+        self.activateWindow()
 
     def setupUi(self, Dialog):
         Dialog.setObjectName("JSONDisplay")
@@ -387,7 +390,7 @@ def import_user(self, user, sumo, include_roles=False):
                     if updated_dest_role['name'] == source_role['name']:
                         user['roleIds'].append(updated_dest_role['id'])
                 user['roleIds'].remove(source_role_id)
-        result = sumo.create_user(user['firstName'], user['lastName'], user['email'], user['roleIds'])
+        result = sumo.create_user_by_field(user['firstName'], user['lastName'], user['email'], user['roleIds'])
     else:
         #  if the user is an admin or analyst find that ID in the list of roles from the destination org
         #  and add it to the new role list
@@ -408,7 +411,7 @@ def import_user(self, user, sumo, include_roles=False):
                 if dest_role['name'] == 'Analyst':
                     new_role_list.append(dest_role['id'])
         user['roleIds'] = new_role_list
-        result = sumo.create_user(user['firstName'], user['lastName'], user['email'], user['roleIds'])
+        result = sumo.create_user_by_field(user['firstName'], user['lastName'], user['email'], user['roleIds'])
     return result
 
 
@@ -448,7 +451,7 @@ def export_content(self, item_id, sumo, adminmode):
             # if we find a match export the connection and attach it to the monitor JSON
             if connection['id'] == connection_id:
                 connection_type = connection['type']
-                exported_connection = export_connection(connection_id, sumo)
+                exported_connection = export_connection(None, connection_id, sumo)
                 content['connections'].append(exported_connection)
                 break
     return content
@@ -472,7 +475,7 @@ def import_content(self, content, folder_id, sumo, adminmode, include_connection
                         connection_found = True
                         break
                 if not connection_found:
-                    result = import_connection(content_connection, sumo)
+                    result = import_connection(None, content_connection, sumo)
                     org_connection_list = sumo.get_connections_sync()
 
         for connection_lookup in connection_lookups:

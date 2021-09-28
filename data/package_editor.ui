@@ -13,71 +13,26 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <layout class="QHBoxLayout" name="horizontalLayout"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayoutFiles">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QLabel" name="labelSelectPreset">
-           <property name="text">
-            <string>Select Preset:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="comboBoxPreset"/>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QPushButton" name="pushButtonUpdate">
-           <property name="text">
-            <string>Update</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButtonParentDir">
-           <property name="text">
-            <string>Parent Dir</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelDirectoryPath">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QListWidget" name="listWidgetConfigs">
-         <property name="sortingEnabled">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <widget class="QFrame" name="frame">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayoutSelector"/>
+        </item>
+       </layout>
+      </widget>
      </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayoutArrows">
@@ -97,14 +52,21 @@
        <item>
         <widget class="QPushButton" name="pushButtonAddToPackage">
          <property name="text">
-          <string>----&gt;</string>
+          <string>Add to Package -&gt;</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonRemoveFromPackage">
+        <widget class="QPushButton" name="pushButtonSavePackage">
          <property name="text">
-          <string>&lt;----</string>
+          <string>&lt;- Save Package</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonLoadPackage">
+         <property name="text">
+          <string>Load Package -&gt;</string>
          </property>
         </widget>
        </item>
@@ -124,32 +86,56 @@
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayoutPackage">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
-          <widget class="QPushButton" name="pushButtonLoadPackage">
+          <widget class="QPushButton" name="pushButtonRemove">
            <property name="text">
-            <string>Load</string>
+            <string>Remove</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButtonSavePackage">
+          <widget class="QPushButton" name="pushButtonClearAll">
            <property name="text">
-            <string>Save</string>
+            <string>Clear All</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
        <item>
-        <widget class="QListWidget" name="listWidgetPackages"/>
+        <widget class="QListWidget" name="listWidgetPackageItems"/>
        </item>
       </layout>
      </item>
      <item>
-      <widget class="QTableWidget" name="tableWidgetProperties"/>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QTableWidget" name="tableWidgetProperties">
+         <property name="columnCount">
+          <number>2</number>
+         </property>
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>150</number>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>Option</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Value</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textEditItemData"/>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>

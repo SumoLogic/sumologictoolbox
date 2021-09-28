@@ -1,5 +1,5 @@
 __author__ = 'Tim MacDonald'
-__version__ = '0.10.0'
+__version__ = '0.11'
 # Copyright 2015 Timothy MacDonald
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -52,7 +52,6 @@ qtMainWindowUI = os.path.join(basedir, 'data/sumotoolbox.ui')
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtMainWindowUI)
 
 
-
 class ShowTextDialog(QtWidgets.QDialog):
 
     def __init__(self, title, text):
@@ -68,6 +67,7 @@ class ShowTextDialog(QtWidgets.QDialog):
         self.textedit.setText(self.text)
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.textedit)
+
 
 class NewPasswordDialog(QtWidgets.QDialog):
 
@@ -273,8 +273,6 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         # disable right credential box because we always start on the search tab
         # which only uses the left credentials
         self.tabchange(0)
-
-
 
         # initial clear of all stateful objects (This makes sure all of the tabs are cleared and initialized)
         self.reset_stateful_objects()
@@ -484,7 +482,6 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.reset_stateful_objects(side=side)
 
-
     def get_current_creds(self, side):
         if side == 'left':
             service = self.comboBoxRegionLeft.currentText()
@@ -518,6 +515,26 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lineEditPasswordRight.clear()
         self.comboBoxPresetRight.clear()
 
+    def endpoint_lookup(self, deployment):
+        # there are duplicates here because most deployments have 2 names
+        endpoints = {'prod': 'https://api.sumologic.com/api',
+                     'us1': 'https://api.sumologic.com/api',
+                     'us2': 'https://api.us2.sumologic.com/api',
+                     'eu': 'https://api.eu.sumologic.com/api',
+                     'dub': 'https://api.eu.sumologic.com/api',
+                     'ca': 'https://api.ca.sumologic.com/api',
+                     'mon': 'https://api.ca.sumologic.com/api',
+                     'de': 'https://api.de.sumologic.com/api',
+                     'fra': 'https://api.de.sumologic.com/api',
+                     'au': 'https://api.au.sumologic.com/api',
+                     'syd': 'https://api.au.sumologic.com/api',
+                     'jp': 'https://api.jp.sumologic.com/api',
+                     'tky': 'https://api.jp.sumologic.com/api',
+                     'in': 'https://api.in.sumologic.com/api',
+                     'mum': 'https://api.in.sumologic.com/api',
+                     'fed': 'https://api.fed.sumologic.com/api',
+                     }
+        return endpoints[str(deployment).lower()]
 
     # Start methods for Credential Database
 
@@ -600,7 +617,6 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
                     # disable right region box if we are on one of the tabs that don't use it
                     self.tabchange(self.tabWidget.currentIndex())
 
-                        
                 except Exception as e:
                     logger.exception(e)
                     self.errorbox(str(e))
@@ -1255,6 +1271,7 @@ If so type 'DELETE' in the box below:"
 
 if __name__ == "__main__":
 
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_DisableHighDpiScaling)
     app = QtWidgets.QApplication(sys.argv)
 
     # This loads the splash screen

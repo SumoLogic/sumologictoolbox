@@ -1,5 +1,11 @@
 Changelog for SumoToolBox
 
+9-??-2021 0.11.0
+
+*   [Content] Fixed a bug that made it impossible to copy from Admin and Global folders.
+*   [General] Made the JSON viewer stay on top of the main window instead of popping up underneath it.
+*   [Content] Fixed a bug that caused copying a scheduled search with a webhook connection to fail.
+
 6-30-2021 0.10.0
 *   [General] Major Code Refactor! Most tabs now inherit code/UI from a base class.
 *   [General] An adapter model is now in place that should allow reading and writing to/from other services. The

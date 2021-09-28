@@ -93,6 +93,7 @@ class FindReplaceCopyDialog(QtWidgets.QDialog):
                 results.append(objectdata)
         return results
 
+
 class BaseTab(QtWidgets.QWidget):
 
     def __init__(self, mainwindow):
@@ -110,7 +111,6 @@ class BaseTab(QtWidgets.QWidget):
         self.num_successful_threads = 0
 
         self.load_icons()
-
 
     def reset_stateful_objects(self, side='both'):
         self.left = None
@@ -335,7 +335,8 @@ class BaseTab(QtWidgets.QWidget):
         self.workers = []
         base_params = {'destination_list_widget': destination_list_widget,
                        'destination_adapter': destination_adapter,
-                       'mode': destination_list_widget.mode}
+                       'read_mode': source_list_widget.mode,
+                       'write_mode': destination_list_widget.mode}
         merged_params = {**base_params, **params}
         merged_params = {**merged_params, **source_list_widget.params}
         for index, selected_item in enumerate(selected_items):
@@ -381,7 +382,6 @@ class BaseTab(QtWidgets.QWidget):
                     self.workers.append(Worker(result['params']['destination_adapter'].import_item,
                                                item['name'],
                                                item,
-                                               result['params']['destination_list_widget'],
                                                params=result['params']
                                                ))
                     self.workers[index].signals.finished.connect(self.import_progress.increment)
@@ -435,7 +435,6 @@ If you are absolutely sure, type "DELETE" in the box below.
                 self.workers.append(Worker(adapter.delete,
                                            item_name,
                                            item_id,
-                                           list_widget,
                                            params=params))
                 self.workers[index].signals.finished.connect(self.progress.increment)
                 self.workers[index].signals.result.connect(self.merge_results_update_target)
@@ -451,7 +450,8 @@ If you are absolutely sure, type "DELETE" in the box below.
         self.progress = ProgressDialog('Viewing items...', 0, self.num_threads, self.mainwindow.threadpool, self.mainwindow)
         self.json_text = ''
         self.workers = []
-        params = {'mode': list_widget.mode}
+        params = {'read_mode': list_widget.mode,
+                  'list_widget': list_widget}
         for index, selected_item in enumerate(selected_items):
             item_name = selected_item.details['name']
             if 'id' in selected_item.details:

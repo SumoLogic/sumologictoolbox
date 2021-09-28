@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="29.105108mm"
+   height="7.9798498mm"
+   viewBox="0 0 29.105108 7.9798498"
+   version="1.1"
+   id="svg7272"
+   inkscape:version="1.1 (c4e8f9ed74, 2021-05-24)"
+   sodipodi:docname="partition.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7274"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="0.60756173"
+     inkscape:cx="-203.27153"
+     inkscape:cy="204.09449"
+     inkscape:window-width="1415"
+     inkscape:window-height="878"
+     inkscape:window-x="1449"
+     inkscape:window-y="996"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs7269" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-25.508276,-94.405829)">
+    <text
+       xml:space="preserve"
+       style="font-weight:bold;font-size:10.5833px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';fill:#0000ff;stroke:#000000;stroke-width:0.264583"
+       x="24.669054"
+       y="102.25339"
+       id="text14560"><tspan
+         sodipodi:role="line"
+         id="tspan14558"
+         style="fill:#0000ff;stroke:#000000;stroke-width:0.264583"
+         x="24.669054"
+         y="102.25339">PART</tspan></text>
+  </g>
+</svg>

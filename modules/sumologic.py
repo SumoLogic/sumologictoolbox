@@ -7,6 +7,7 @@ import sys
 import warnings
 from logzero import logger
 import logzero
+from functools import wraps
 try:
     import cookielib
 except ImportError:
@@ -21,38 +22,43 @@ PERIOD = 1  # in seconds
 
 
 def backoff(func):
+    @wraps(func)
     def limited(*args, **kwargs):
-        delay = PERIOD / NUMBER_OF_CALLS
+        delay = PERIOD / NUMBER_OF_CALLS *2
         tries = 0
-        lastException = None
         while tries < MAX_TRIES:
-            tries += 1
             try:
                 return func(*args, **kwargs)
-            except requests.exceptions.HTTPError as e:
-                if e.response.status_code == 429: # rate limited
-                    logger.debug("Rate limited, sleeping for {0}s".format(delay))
-                    time.sleep(delay)
-                    delay = delay * 2
+            except Exception as e:
+                if e.response.status_code == 429:  # rate limited
                     lastException = e
-                    continue
+                    tries += 1
+                    logger.debug("Rate limited, sleeping for {0}s".format(delay))
                 else:
                     raise
+            logger.debug(f"delay: {delay} attempts: {tries}")
+            time.sleep(delay)
+            delay = delay * 2
         logger.debug("Rate limited function still failed after {0} retries.".format(MAX_TRIES))
         raise lastException
-
     return limited
 
 
 class SumoLogic(object):
-    def __init__(self, accessId, accessKey, endpoint=None, log_level='info', log_file=None, caBundle=None, cookieFile='cookies.txt'):
+    def __init__(self, access_id, access_key, endpoint=None, log_level='info', log_file=None, caBundle=None, cookieFile='cookies.txt', use_session=True):
         self.session = requests.Session()
         self.log_level = log_level
         self.set_log_level(self.log_level)
         if log_file:
             logzero.logfile(str(log_file))
-        self.session.auth = (accessId, accessKey)
-        self.session.headers = {'content-type': 'application/json', 'accept': 'application/json'}
+        self.access_key = access_key
+        self.access_id = access_id
+        self.endpoint = endpoint
+        self.use_session = use_session
+        self.auth = (access_id, access_key)
+        self.session.auth = self.auth
+        self.headers = {'content-type': 'application/json', 'accept': 'application/json'}
+        self.session.headers = self.headers
         if caBundle is not None:
             self.session.verify = caBundle
         cj = cookielib.FileCookieJar(cookieFile)
@@ -120,7 +126,10 @@ class SumoLogic(object):
         logger.debug(params)
         logger.debug("Body:")
         logger.debug(data)
-        r = self.session.delete(self.endpoint + method, params=params, headers=headers, data=data)
+        if self.use_session:
+            r = self.session.delete(self.endpoint + method, params=params, headers=headers, data=data)
+        else:
+            r = requests.delete(self.endpoint + method, params=params, headers=headers, data=data, auth=self.auth)
         logger.debug("Response:")
         logger.debug(r)
         logger.debug("Response Body:")
@@ -137,7 +146,11 @@ class SumoLogic(object):
         logger.debug(headers)
         logger.debug("Params:")
         logger.debug(params)
-        r = self.session.get(self.endpoint + method, params=params, headers=headers)
+        if self.use_session:
+            r = self.session.get(self.endpoint + method, params=params, headers=headers)
+        else:
+            r = requests.get(self.endpoint + method, params=params, headers=headers, auth=self.auth)
+
         logger.debug("Response:")
         logger.debug(r)
         logger.debug("Response Body:")
@@ -148,7 +161,7 @@ class SumoLogic(object):
         return r
 
     @backoff
-    def post(self, method, data, headers=None, params=None):
+    def post(self, method, data, headers={}, params=None):
         logger.debug("POST: " + self.endpoint + method)
         logger.debug("Headers:")
         logger.debug(headers)
@@ -156,7 +169,10 @@ class SumoLogic(object):
         logger.debug(params)
         logger.debug("Body:")
         logger.debug(data)
-        r = self.session.post(self.endpoint + method, data=json.dumps(data), headers=headers, params=params)
+        if self.use_session:
+            r = self.session.post(self.endpoint + method, data=json.dumps(data), headers=headers, params=params)
+        else:
+            r = requests.post(self.endpoint + method, data=json.dumps(data), headers={**self.headers, **headers}, params=params, auth=self.auth)
         logger.debug("Response:")
         logger.debug(r)
         logger.debug("Response Body:")
@@ -175,7 +191,10 @@ class SumoLogic(object):
         logger.debug(params)
         logger.debug("Body:")
         logger.debug(data)
-        r = self.session.put(self.endpoint + method, data=json.dumps(data), headers=headers, params=params)
+        if self.use_session:
+            r = self.session.put(self.endpoint + method, data=json.dumps(data), headers=headers, params=params)
+        else:
+            r = requests.put(self.endpoint + method, data=json.dumps(data), headers=headers, params=params, auth=self.auth)
         logger.debug("Response:")
         logger.debug(r)
         logger.debug("Response Body:")
@@ -481,7 +500,7 @@ class SumoLogic(object):
         r = self.get('/v2/content/folders/global/' + str(job_id) + '/status')
         return r.json()
 
-    def get_global_folder(self, adminmode=False):
+    def get_global_folder(self, adminmode=True):
         headers = {'isAdminMode': str(adminmode).lower()}
         r = self.get('/v2/content/folders/global', headers=headers)
         return r.json()
@@ -490,7 +509,7 @@ class SumoLogic(object):
         r = self.get('/v2/content/folders/global/' + str(job_id) + '/result')
         return r.json()
 
-    def get_global_folder_sync(self, adminmode=False):
+    def get_global_folder_sync(self, adminmode=True):
         r = self.get_global_folder(adminmode=adminmode)
         job_id = str(r['id'])
         status = self.get_global_folder_job_status(job_id)
@@ -507,7 +526,7 @@ class SumoLogic(object):
         r = self.get('/v2/content/folders/adminRecommended/' + str(job_id) + '/status')
         return r.json()
 
-    def get_admin_folder(self, adminmode=False):
+    def get_admin_folder(self, adminmode=True):
         headers = {'isAdminMode': str(adminmode).lower()}
         r = self.get('/v2/content/folders/adminRecommended', headers=headers)
         return r.json()
@@ -516,7 +535,7 @@ class SumoLogic(object):
         r = self.get('/v2/content/folders/adminRecommended/' + str(job_id) + '/result')
         return r.json()
 
-    def get_admin_folder_sync(self, adminmode=False):
+    def get_admin_folder_sync(self, adminmode=True):
         r = self.get_admin_folder(adminmode=adminmode)
         job_id = str(r['id'])
         status = self.get_admin_folder_job_status(job_id)
@@ -724,22 +743,30 @@ class SumoLogic(object):
             user['roles'].append(role)
         return user
 
-    def create_user(self, first_name, last_name, email, roleIDs):
-        data = {'firstName': str(first_name), 'lastName': str(last_name), 'email': str(email), 'roleIds': roleIDs}
+    def create_user(self, data):
         r = self.post('/v1/users', data)
         return r.json()
 
-    def update_user(self, id, first_name, last_name, email, roleIDs):
+    def create_user_by_field(self, first_name, last_name, email, roleIDs):
         data = {'firstName': str(first_name), 'lastName': str(last_name), 'email': str(email), 'roleIds': roleIDs}
-        r = self.put('/v1/users' + str(id), data)
+        r = self.create_user(data)
+        return r
+
+    def update_user(self, user_id, data):
+        r = self.put('/v1/users/' + str(user_id), data)
         return r.json()
 
-    def delete_user(self, id, transferTo=None):
+    def update_user_by_field(self, user_id, first_name, last_name, is_active, role_ids):
+        data = {'firstName': str(first_name), 'lastName': str(last_name), 'isActive': is_active,  'roleIds': role_ids}
+        r = self.update_user(user_id, data)
+        return r
+
+    def delete_user(self, user_id, transferTo=None):
         if transferTo:
             params = {'transferTo': str(transferTo)}
         else:
             params = None
-        r = self.delete('/v1/users/' + str(id), params=params)
+        r = self.delete('/v1/users/' + str(user_id), params=params)
         return r
 
     def change_user_email(self, id, email):

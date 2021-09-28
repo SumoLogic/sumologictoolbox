@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32.303871mm"
+   height="8.2692366mm"
+   viewBox="0 0 32.303871 8.2692366"
+   version="1.1"
+   id="svg23346"
+   inkscape:version="1.1 (c4e8f9ed74, 2021-05-24)"
+   sodipodi:docname="saml.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview23348"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.7184441"
+     inkscape:cx="17.166692"
+     inkscape:cy="-100.09054"
+     inkscape:window-width="1415"
+     inkscape:window-height="878"
+     inkscape:window-x="1638"
+     inkscape:window-y="810"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <defs
+     id="defs23343" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-44.516277,-94.000297)">
+    <text
+       xml:space="preserve"
+       style="font-weight:bold;font-size:10.5833px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';fill:#0000ff;stroke:#000000;stroke-width:0.264583"
+       x="43.888927"
+       y="101.98738"
+       id="text26146"><tspan
+         sodipodi:role="line"
+         id="tspan26144"
+         style="fill:#0000ff;stroke:#000000;stroke-width:0.264583"
+         x="43.888927"
+         y="101.98738">SAML</tspan></text>
+  </g>
+</svg>

@@ -52,12 +52,14 @@ class ContentTab(StandardTab):
         self.checkBoxIncludeConnections.show()
 
         self.pushButtonFindReplaceCopyLeftToRight = QtWidgets.QPushButton()
-        self.pushButtonFindReplaceCopyLeftToRight.setText("Find / Replace/\n Copy -->")
+        self.pushButtonFindReplaceCopyLeftToRight.setFont(QtGui.QFont('Waree', 12))
+        self.pushButtonFindReplaceCopyLeftToRight.setText("Find / Replace/\n Copy ->")
         self.verticalLayoutCenterButton.insertWidget(5, self.pushButtonFindReplaceCopyLeftToRight)
         self.pushButtonFindReplaceCopyLeftToRight.show()
 
         self.pushButtonFindReplaceCopyRightToLeft = QtWidgets.QPushButton()
-        self.pushButtonFindReplaceCopyRightToLeft.setText("Find / Replace/\n <-- Copy")
+        self.pushButtonFindReplaceCopyRightToLeft.setFont(QtGui.QFont('Waree', 12))
+        self.pushButtonFindReplaceCopyRightToLeft.setText("Find / Replace/\n <- Copy")
         self.verticalLayoutCenterButton.insertWidget(6, self.pushButtonFindReplaceCopyRightToLeft)
         self.pushButtonFindReplaceCopyRightToLeft.show()
 
