@@ -275,14 +275,21 @@ def export_rule(self, item_id, sumo):
 
 def import_rule(self, item, sumo):
     def remove_json_keys(json):
+        # all of the following keys are part of the rule export but will cause the import to fail
         remove_keys = ['created', 'createdBy', 'contentType', 'deleted', 'id', 'lastUpdated', 'lastUpdatedBy', 'ruleId',
-                       'ruleSource', 'ruleType', 'signalCount07d', 'signalCount24h', 'status']
+                       'ruleSource', 'ruleType', 'signalCount07d', 'signalCount24h', 'status',
+                       'descriptionExpressionOverride', 'entitySelectorsOverride', 'nameExpressionOverride',
+                       'scoreMappingOverride', 'summaryExpressionOverride', 'hasOverride', 'nameOverride',
+                       'isPrototypeOverride', 'tagsOverride']
         for remove_key in remove_keys:
             if remove_key in json:
                 del json[remove_key]
         return {'fields': json}
+
     rule_type = item['ruleType']
     rule = remove_json_keys(item)
+    if rule['fields']['scoreMapping']['mapping'] is None:
+        rule['fields']['scoreMapping']['mapping'] = []
     if rule_type == 'templated match':
         result = sumo.create_templated_match_rule(rule)
     elif rule_type == 'match':
@@ -435,7 +442,6 @@ def export_scheduled_view(self, sv_id, sumo):
 def import_scheduled_view(self, sv, sumo, use_current_date=True):
     if use_current_date:
         sv['startTime'] = str(datetime.now(timezone.utc).astimezone().isoformat())
-    print(sv)
     return sumo.create_scheduled_view(sv)
 
 

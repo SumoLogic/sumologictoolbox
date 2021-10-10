@@ -270,7 +270,6 @@ class CredentialsDB:
             update_dict,
             synchronize_session = 'fetch'
         )
-        print(status)
         if status:
             self.session.commit()
         return status

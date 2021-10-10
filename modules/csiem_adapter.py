@@ -19,12 +19,7 @@ class SumoCustomInsightAdapter(SumoAdapter):
                     'payload': custom_insight,
                     'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
     def export_item(self, item_name, item_id, params=None):
         try:
@@ -34,47 +29,30 @@ class SumoCustomInsightAdapter(SumoAdapter):
                     'payload': custom_insight,
                     'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
-    def put(self, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, params=None):
         try:
             result = self.import_custom_insight(payload, self.sumo)
             return {'status': 'SUCCESS',
                     'result': result,
                     'adapter': self,
-                    'params': params,
-                    'list_widget': list_widget}
+                    'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
-    def import_item(self, item_name, payload, list_widget, params=None):
-        return self.put(item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, params=None):
+        return self.put(item_name, payload, params=params)
 
-    def delete(self, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, params=None):
         try:
             result = self.sumo.delete_custom_insight(item_id)
             return {'status': 'SUCCESS',
                     'result': result,
                     'adapter': self,
-                    'params': params,
-                    'list_widget': list_widget}
+                    'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
 
 class SumoRuleAdapter(SumoAdapter):
@@ -99,51 +77,33 @@ class SumoRuleAdapter(SumoAdapter):
                     'payload': rule,
                     'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
     def export_item(self, item_name, item_id, params=None):
         return self.get(item_name, item_id, params=params)
 
-    def put(self, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, params=None):
         try:
             result = self.import_rule(payload, self.sumo)
             return {'status': 'SUCCESS',
                     'result': result,
                     'adapter': self,
-                    'params': params,
-                    'list_widget': list_widget}
+                    'params': params}
         except Exception as e:
-            print(str(e))
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
-    def import_item(self, item_name, payload, list_widget, params=None):
-        return self.put(item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, params=None):
+        return self.put(item_name, payload, params=params)
 
-    def delete(self, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id, params=None):
         try:
             result = self.sumo.delete_rule(item_id)
             return {'status': 'SUCCESS',
                     'result': result,
                     'adapter': self,
-                    'params': params,
-                    'list_widget': list_widget}
+                    'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
 
 class SumoLogMappingAdapter(SumoAdapter):
@@ -168,12 +128,7 @@ class SumoLogMappingAdapter(SumoAdapter):
                     'payload': mapping,
                     'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
     def export_item(self, item_name, item_id, params=None):
         try:
@@ -183,45 +138,27 @@ class SumoLogMappingAdapter(SumoAdapter):
                     'payload': mapping,
                     'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
-    def put(self, item_name, payload, list_widget, params=None):
+    def put(self, item_name, payload, params=None):
         try:
             result = self.import_log_mapping(payload, self.sumo)
             return {'status': 'SUCCESS',
                     'result': result,
                     'adapter': self,
-                    'params': params,
-                    'list_widget': list_widget}
+                    'params': params}
         except Exception as e:
-            print(str(e))
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e
 
-    def import_item(self, item_name, payload, list_widget, params=None):
-        return self.put(item_name, payload, list_widget, params=params)
+    def import_item(self, item_name, payload, params=None):
+        return self.put(item_name, payload, params=params)
 
-    def delete(self, item_name, item_id, list_widget, params=None):
+    def delete(self, item_name, item_id,  params=None):
         try:
             result = self.sumo.delete_log_mapping(item_id)
             return {'status': 'SUCCESS',
                     'result': result,
                     'adapter': self,
-                    'params': params,
-                    'list_widget': list_widget}
+                    'params': params}
         except Exception as e:
-            _, _, tb = self.sys.exc_info()
-            lineno = tb.tb_lineno
-            return {'status': 'FAIL',
-                    'line_number': lineno,
-                    'exception': str(e)
-                    }
+            raise e

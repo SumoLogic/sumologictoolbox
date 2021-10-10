@@ -5,6 +5,15 @@ Changelog for SumoToolBox
 *   [Content] Fixed a bug that made it impossible to copy from Admin and Global folders.
 *   [General] Made the JSON viewer stay on top of the main window instead of popping up underneath it.
 *   [Content] Fixed a bug that caused copying a scheduled search with a webhook connection to fail.
+*   [Rules] Fixed a bug that caused an error when copy CSE rules
+*   [Organizations] Added package editor. You can now create pacakges of configuration that can be deployed at
+    org provisioning time or later using the Package Deployer.
+*   [Organizations] Added the packaged deployer. This allows you to deploy a package to one or more existing orgs.
+    This feature is multi-threaded.
+*   [Organizations] Create org option now allows you to configure an org's subdomain name as well as deploy a package
+    to the org as part of provisioning. You can also add the new org to your list of presets. Any of these three features
+    require that the account owner of the child org be the same email address as the provisioner in the parent org
+    (all API keys are tied to users, who are uniquely identified by email address.)
 
 6-30-2021 0.10.0
 *   [General] Major Code Refactor! Most tabs now inherit code/UI from a base class.

@@ -35,7 +35,7 @@ import importlib
 from modules.sumologic import SumoLogic
 from modules.credentials import CredentialsDB
 
-
+# This guy helps give more informative error messages for threads
 faulthandler.enable(all_threads=True)
 # detect if in Pyinstaller package and build appropriate base directory path
 if getattr(sys, 'frozen', False):
@@ -44,7 +44,7 @@ else:
     basedir = os.path.dirname(os.path.abspath(__file__))
 # Setup logging
 logzero.logfile("sumotoolbox.log")
-logzero.loglevel(level=20)  #  Info Logging
+logzero.loglevel(level=20)  # Info Logging
 # Log messages
 logger.info("SumoLogicToolBox started. Version %s", __version__)
 # This script uses Qt Designer files to define the UI elements which must be loaded
@@ -632,7 +632,6 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.errorbox("You don't appear to have a credentials database. You must create one first.")
             return
-
 
     def deletecreddb(self):
         db_file = pathlib.Path('credentials.db')
@@ -1227,7 +1226,6 @@ If so type 'DELETE' in the box below:"
 
         return
 
-
     def change_logging_level(self):
         level = self.loggingmenugroup.checkedAction()
         if level.text() == "Informational":
@@ -1243,8 +1241,6 @@ If so type 'DELETE' in the box below:"
             qtmodern.styles.dark(QtWidgets.QApplication.instance())
         elif theme.text() == "Light":
             qtmodern.styles.light(QtWidgets.QApplication.instance())
-
-
 
     def setup_menus(self):
 
@@ -1266,14 +1262,11 @@ If so type 'DELETE' in the box below:"
                                                                   new=2))
         self.actionReport_Issue.triggered.connect(lambda:webbrowser.open("https://github.com/SumoLogic/sumologictoolbox/issues",
                                                                          new=2))
-
     # End Misc/Utility Methods
 
-if __name__ == "__main__":
-
+def main():
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_DisableHighDpiScaling)
     app = QtWidgets.QApplication(sys.argv)
-
     # This loads the splash screen
     start = time.time()
     splash_pix = QtGui.QPixmap(os.path.join(basedir, 'data/sumotoolbox_logo_small.png'))
@@ -1291,8 +1284,11 @@ if __name__ == "__main__":
     window = qtmodern.windows.ModernWindow(sumotoolbox())
     # Close the splash screen and transition to the main UI
     splash.finish(window)
-
-
     window.show()
-
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()
+
+
+

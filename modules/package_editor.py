@@ -55,8 +55,9 @@ class PackageEditor(QtWidgets.QDialog):
         self.icons['sumoconnection'] = QtGui.QIcon(iconpath)
 
     def save_package(self):
-        package = self.current_package.package_export()
-        self.selector.write_item(package, self, extension='.sumopackage.json')
+        if not self.current_package.is_empty():
+            package = self.current_package.package_export()
+            self.selector.write_item(package, extension='.sumopackage.json')
 
     def load_package(self):
         items = self.selector.get_selected_items()

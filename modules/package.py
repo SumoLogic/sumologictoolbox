@@ -6,7 +6,15 @@ class SumoPackage:
     def __init__(self, package_data=None):
         self.package_items = []
         self.package_version = 1.0
-        self.item_types = ['sumocontent']
+        self.item_types = ['sumorole',
+                           'sumoconnection',
+                           'sumouser',
+                           'sumosamlconfig',
+                           'sumopartition',
+                           'sumofer',
+                           'sumoscheduledview',
+                           'sumocontent',
+                           'sumoconnection']
         if package_data:
             logger.debug('Loading data into package object.')
             self.package_import(package_data)
@@ -73,11 +81,29 @@ class SumoPackage:
                 self.add_item(item)
             logger.debug(f'Imported package data: {self.package_items}')
 
-    def deploy(self, sumo):
+    def deploy(self, target_name, sumo):
+        errors = []
         for item_type in self.item_types:
-            for content in self.package_items:
-                if content['item_type'] == item_type:
-                    content.deploy(sumo)
+            for package_item in self.package_items:
+                if package_item.item_type == item_type:
+                    try:
+                        package_item.deploy(sumo)
+                    except Exception as e:
+                        errors.append(str(e))
+        results = {'target_name': target_name,
+                   'errors': errors}
+        if len(errors) == 0:
+            results['status'] = 'SUCCESS'
+            return results
+        elif len(errors) < len(self.package_items):
+            results['status'] = 'ERRORS'
+            return results
+        else:
+            results['status'] = 'FAIL'
+            return results
+
+    def is_empty(self):
+        return len(self.package_items) == 0
 
 
 class SumoPackageEntry:
@@ -137,7 +163,43 @@ class SumoContentEntry(SumoPackageEntry):
                 rw_share_admin = item_option['value']
             elif item_option['option_name'] == 'include_connections':
                 include_connections = item_option['value']
-        self.import_content(self.item_data, admin_folder_id, adminmode, include_connections=include_connections)
+        results = self.import_content(self.item_data, admin_folder_id, sumo, adminmode, include_connections=include_connections)
+        if results['status'] == 'Success':
+            item_id = str(results['statusMessage']).split(":")
+            item_id = item_id[1]
+            if ro_share_global:
+                contract = sumo.get_contract()
+                explicit_permissions = {
+                    'contentPermissionAssignments': [
+                        {'permissionName': 'View',
+                         'sourceType': 'org',
+                         'sourceId': contract['orgId'],
+                         'contentId': str(item_id)}
+                    ],
+                    'notifyRecipients': False,
+                    'notificationMessage': 'none'}
+                results = sumo.add_permissions(item_id, explicit_permissions, adminmode=True)
+            if rw_share_admin:
+                roles = sumo.get_roles_sync()
+                for role in roles:
+                    if role['name'] == 'Administrator':
+                        role_id = role['id']
+                        break
+
+                explicit_permissions = {
+                    'contentPermissionAssignments': [
+                        {'permissionName': 'GrantManage',
+                         'sourceType': 'role',
+                         'sourceId': str(role_id),
+                         'contentId': str(item_id)}
+                    ],
+                    'notifyRecipients': False,
+                    'notificationMessage': 'none'}
+                results = sumo.add_permissions(item_id, explicit_permissions, adminmode=True)
+
+        else:
+            return results['error']['message']
+        return None
 
 
 class SumoUserEntry(SumoPackageEntry):

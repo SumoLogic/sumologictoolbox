@@ -1,12 +1,12 @@
 from qtpy import QtCore, QtGui, QtWidgets, uic
 import os
+import re
 from logzero import logger
 from modules.sumologic_orgs import SumoLogicOrgs
 from modules.sumologic import SumoLogic
 from modules.package_editor import PackageEditor
 from modules.package_deploy import PackageDeploy
 from modules.package import SumoPackage
-from modules.shared import exception_and_error_handling
 from modules.filesystem_adapter import FilesystemAdapter
 from modules.item_selector import ItemSelector
 
@@ -19,14 +19,18 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
         super(CreateOrUpdateOrgDialog, self).__init__()
         self.mainwindow = mainwindow
         self.package = None
-        org_details_ui = os.path.join(self.mainwindow.basedir, 'data/org_details.ui')
-        uic.loadUi(org_details_ui, self)
+        self.is_update = bool(org_details)
+        create_org_dialog_ui = os.path.join(self.mainwindow.basedir, 'data/org_details.ui')
+        uic.loadUi(create_org_dialog_ui, self)
         self.selector = ItemSelector(self.mainwindow, file_filter='.sumopackage.json')
         self.verticalLayoutSelector.insertWidget(0, self.selector)
         self.intValidator = QtGui.QIntValidator()
         self.available_org_licenses = ["Paid"]
 
         self.org_details = org_details
+        if org_details:
+            logger.debug(f'Org Details: {self.org_details}')
+
         self.parent_org_creds = self.mainwindow.get_current_creds('left')
         self.parent_org_sumo = self.mainwindow.sumo_from_creds(self.parent_org_creds)
         self.sumo_mam = SumoLogicOrgs(self.parent_org_creds['id'],
@@ -34,30 +38,32 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
                                       str(self.parent_org_creds['service']).lower(),
                                       log_level=self.mainwindow.log_level)
 
-        self.deployments = self.sumo_mam.get_deployments()
-        self.parent_org_info = self.sumo_mam.get_parent_org_info()
-        trials_enabled = self.parent_org_info['isEligibleForTrialOrgs']
-        if trials_enabled and not org_details:
-            self.available_org_licenses.append("Trial")
-        self.user_info = self.parent_org_sumo.whoami()
+        self.deployments = []
+        try:
+            self.deployments = self.sumo_mam.get_deployments()
+            self.parent_org_info = self.sumo_mam.get_parent_org_info()
+            self.user_info = self.parent_org_sumo.whoami()
+            trials_enabled = self.parent_org_info['isEligibleForTrialOrgs']
+            if trials_enabled and not org_details:
+                self.available_org_licenses.append("Trial")
+        except Exception as e:
+            logger.info(f'Failed to get org details. {e}')
+            self.mainwindow.errorbox("Couldn't get parent org details. Have you selected the credentials for a parent org?")
         self.setupUi()
-        self.configure_org_toggle()
         self.subdomain_toggle()
 
     def setupUi(self):
-
         self.lineEditContinuousIngest.setValidator(self.intValidator)
         self.lineEditFrequentIngest.setValidator(self.intValidator)
         self.lineEditInfrequentIngest.setValidator(self.intValidator)
         self.lineEditMetricsIngest.setValidator(self.intValidator)
         self.lineEditTracingIngest.setValidator(self.intValidator)
         for deployment in self.deployments:
-            self.comboBoxDeployment.addItem(deployment['deploymentId'].strip())
+            self.comboBoxDeployment.insertItem(0, deployment['deploymentId'].strip())
+        self.comboBoxDeployment.model().sort(0)
+        self.comboBoxDeployment.setCurrentIndex(0)
         for license in self.available_org_licenses:
             self.comboBoxPlan.addItem(license.strip())
-
-        self.configure_org_toggle()
-        self.plan_changed()
 
         # Connect UI Element Signals
         self.comboBoxPlan.currentIndexChanged.connect(self.plan_changed)
@@ -65,9 +71,23 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
         self.checkBoxSubdomain.stateChanged.connect(self.subdomain_toggle)
         self.checkBoxCreatePreset.stateChanged.connect(self.configure_org_toggle)
         self.pushButtonSelectPackage.clicked.connect(self.load_package)
-        self.buttonBox.accepted.connect(self.create_org)
 
-        if self.org_details:
+        # Connect Fields to Validator
+        self.lineEditOrgName.textChanged.connect(self.validate_field_contents)
+        self.lineEditEmail.textChanged.connect(self.validate_field_contents)
+        self.lineEditOwnerFirst.textChanged.connect(self.validate_field_contents)
+        self.lineEditOwnerLast.textChanged.connect(self.validate_field_contents)
+        self.lineEditContinuousIngest.textChanged.connect(self.validate_field_contents)
+        self.lineEditFrequentIngest.textChanged.connect(self.validate_field_contents)
+        self.lineEditInfrequentIngest.textChanged.connect(self.validate_field_contents)
+        self.lineEditMetricsIngest.textChanged.connect(self.validate_field_contents)
+        self.lineEditTracingIngest.textChanged.connect(self.validate_field_contents)
+        self.lineEditSubdomain.textChanged.connect(self.validate_field_contents)
+        self.lineEditConfigureOrg.textChanged.connect(self.validate_field_contents)
+
+        if self.is_update: # we're updating an existing org
+
+            self.buttonBox.accepted.connect(self.update_org)
             self.comboBoxDeployment.setEnabled(False)
             index = self.comboBoxDeployment.findText(self.org_details['deploymentId'],
                                                QtCore.Qt.MatchFixedString)
@@ -75,6 +95,7 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
                 self.comboBoxDeployment.setCurrentIndex(index)
             self.checkBoxCreatePreset.setEnabled(False)
             self.checkBoxConfigureOrg.setEnabled(False)
+            self.checkBoxSubdomain.setEnabled(False)
             self.lineEditOrgName.setText(self.org_details['organizationName'])
             self.lineEditOrgName.setReadOnly(True)
             self.lineEditEmail.setText(self.org_details['email'])
@@ -90,18 +111,18 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
             if str(self.comboBoxPlan.currentText()) == "Paid":
                 self.comboBoxPlan.setEditable(False)
 
-            self.lineEditContinuousIngest.setText(str(self.org_details['subscription']['baselines']['continuousIngest']))
-            self.lineEditFrequentIngest.setText(str(self.org_details['subscription']['baselines']['frequentIngest']))
-            self.lineEditInfrequentIngest.setText(str(self.org_details['subscription']['baselines']['infrequentIngest']))
-            self.lineEditMetricsIngest.setText(str(self.org_details['subscription']['baselines']['metrics']))
-            self.lineEditTracingIngest.setText(str(self.org_details['subscription']['baselines']['tracingIngest']))
 
-        else:
-            self.lineEditContinuousIngest.setText('0')
-            self.lineEditFrequentIngest.setText('0')
-            self.lineEditInfrequentIngest.setText('0')
-            self.lineEditMetricsIngest.setText('0')
-            self.lineEditTracingIngest.setText('0')
+        else:  # We're creating a new org
+            # Set the default license type to "Trial" for new orgs
+            index = self.comboBoxPlan.findText('Trial',
+                                               QtCore.Qt.MatchFixedString)
+            self.comboBoxPlan.setCurrentIndex(index)
+            # Map the OK button to the "create_org" method.
+            self.buttonBox.accepted.connect(self.create_org)
+
+        # once everything is populated execute the state change methods to set everything correctly based on values
+        self.subdomain_toggle()
+        self.plan_changed()
 
     def plan_changed(self):
         if self.comboBoxPlan.currentText() == 'Trial':
@@ -111,20 +132,39 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
             self.lineEditFrequentIngest.setEnabled(False)
             self.lineEditInfrequentIngest.setText('5')
             self.lineEditInfrequentIngest.setEnabled(False)
+            self.lineEditMetricsIngest.setText('5000')
+            self.lineEditTracingIngest.setText('0')
         else:
             self.lineEditContinuousIngest.setEnabled(True)
             self.lineEditFrequentIngest.setEnabled(True)
             self.lineEditInfrequentIngest.setEnabled(True)
+            if self.is_update:
+                # Populate the UI with existing plan values
+                self.lineEditContinuousIngest.setText(
+                    str(self.org_details['subscription']['baselines']['continuousIngest']))
+                self.lineEditFrequentIngest.setText(
+                    str(self.org_details['subscription']['baselines']['frequentIngest']))
+                self.lineEditInfrequentIngest.setText(
+                    str(self.org_details['subscription']['baselines']['infrequentIngest']))
+                self.lineEditMetricsIngest.setText(str(self.org_details['subscription']['baselines']['metrics']))
+                self.lineEditTracingIngest.setText(str(self.org_details['subscription']['baselines']['tracingIngest']))
+            else:
+                self.lineEditContinuousIngest.setText('1')
+                self.lineEditFrequentIngest.setText('0')
+                self.lineEditInfrequentIngest.setText('0')
+                self.lineEditMetricsIngest.setText('0')
+                self.lineEditTracingIngest.setText('0')
 
     def configure_org_toggle(self):
         config_org = self.checkBoxConfigureOrg.checkState()
         create_subdomain = self.checkBoxSubdomain.checkState()
         create_preset = self.checkBoxCreatePreset.checkState()
-
+        self.validate_field_contents()
         if config_org:
             self.frameSelector.show()
         else:
             self.frameSelector.hide()
+            self.lineEditConfigureOrg.setText('')
             self.resize(588, 564)
             self.adjustSize()
         if config_org or create_subdomain or create_preset:
@@ -145,6 +185,8 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
     def subdomain_toggle(self):
         check_state = self.checkBoxSubdomain.checkState()
         self.lineEditSubdomain.setEnabled(check_state)
+        if not check_state:
+            self.lineEditSubdomain.clear()
         self.configure_org_toggle()
 
     def preset_changed(self):
@@ -156,6 +198,7 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
         items = self.selector.get_selected_items()
         if len(items) == 1:
             self.package = SumoPackage(package_data=items[0])
+            self.lineEditConfigureOrg.setText(items[0]['item_name'])
 
     def create_org(self):
         logger.debug("[Organizations]Creating Org")
@@ -195,30 +238,76 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
 
             if create_subdomain:
                 subdomain = self.lineEditSubdomain.text()
-                result = child_sumo.create_account_subdomain(subdomain)
-
+                try:
+                    result = child_sumo.create_account_subdomain(subdomain)
+                except Exception as e:
+                    logger.exception(e)
             if config_org:
                 result = self.package.deploy(child_sumo)
+            self.accept()
 
-            self.close()
-        # if org_details['create_preset']:
-        #     self.mainwindow.create_preset_non_interactive(response_dict['organizationName'],
-        #                                                   response_dict['deploymentId'],
-        #                                                   response_dict['accessKey']['id'],
-        #                                                   response_dict['accessKey']['key']
-        #                                                   )
-        # if org_details['write_creds_to_file']:
-        #     savepath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Save Credentials Location')
-        #     file = pathlib.Path(savepath + r'/' + str(response_dict['organizationName'] + r'.user.json'))
-        #     try:
-        #         with open(str(file), 'w') as filepointer:
-        #             json.dump(response_dict, filepointer)
-        #
-        #     except Exception as e:
-        #         self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
-        #         logger.exception(e)
-        #     #  secure the credentials file
-        #     os.chmod(file, 600)
+    def update_org(self):
+        org_details_new = self.getresults()
+        org_id = self.org_details['orgId']
+        try:
+            response = self.sumo_mam.update_org(org_id, org_details_new['baselines'])
+            self.accept()
+        except Exception as e:
+            self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
+            logger.exception(e)
+            self.reject()
+
+    def validate_field_contents(self):
+        email_validation_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        field_contents = self.getresults()
+        org_name_is_populated = bool(field_contents['organizationName'])
+        account_owner_name_is_populated = bool(field_contents['firstName']) and bool(field_contents['lastName'])
+        account_owner_email_is_populated = bool(re.fullmatch(email_validation_regex, field_contents['email']))
+        if field_contents['baselines']['continuousIngest']:
+            continous_ingest_validated = bool(int(field_contents['baselines']['continuousIngest']) > 0)
+        else:
+            continous_ingest_validated = False
+        if field_contents['baselines']['frequentIngest']:
+            frequent_ingest_validated = bool(int(field_contents['baselines']['frequentIngest']) >= 0)
+        else:
+            frequent_ingest_validated = False
+        if field_contents['baselines']['infrequentIngest']:
+            infrequent_ingest_validated = bool(int(field_contents['baselines']['infrequentIngest']) >= 0)
+        else:
+            infrequent_ingest_validated = False
+        if field_contents['baselines']['metrics']:
+            metrics_ingest_validated = bool(int(field_contents['baselines']['metrics']) >= 0)
+        else:
+            metrics_ingest_validated = False
+        if field_contents['baselines']['tracingIngest']:
+            tracing_ingest_validated = bool(int(field_contents['baselines']['tracingIngest']) >= 0)
+        else:
+            tracing_ingest_validated = False
+        if self.checkBoxSubdomain.checkState():
+            subdomain_is_populated_or_unchecked = bool(self.lineEditSubdomain.text())
+        else:
+            subdomain_is_populated_or_unchecked = True
+        if self.checkBoxConfigureOrg.checkState():
+            configure_org_is_populated_or_unchecked = bool(self.lineEditConfigureOrg.text())
+        else:
+            configure_org_is_populated_or_unchecked = True
+
+        ready_to_go = bool(org_name_is_populated
+                           and account_owner_name_is_populated
+                           and account_owner_email_is_populated
+                           and continous_ingest_validated
+                           and frequent_ingest_validated
+                           and infrequent_ingest_validated
+                           and metrics_ingest_validated
+                           and tracing_ingest_validated
+                           and subdomain_is_populated_or_unchecked
+                           and configure_org_is_populated_or_unchecked)
+
+        ok_button = self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok)
+        if ready_to_go:
+            ok_button.setEnabled(True)
+        else:
+            ok_button.setEnabled(False)
 
     def getresults(self):
 
@@ -236,7 +325,6 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
         results['baselines']['tracingIngest'] = self.lineEditTracingIngest.text()
         if self.comboBoxPlan.currentText() == "Trial":
             results['trialPlanPeriod'] = 45
-
         return results
 
 
@@ -315,19 +403,6 @@ class OrganizationsTab(QtWidgets.QWidget):
         self.pushButtonUpdateSubscription.setEnabled(True)
         self.pushButtonCancelSubscription.setEnabled(True)
 
-        # try:
-        #     sumo_mam = SumoLogic_Orgs(id, key, parent_deployment, log_level=self.mainwindow.log_level)
-        #     test = sumo_mam.get_deployments()
-        #     logger.info('Current org has Multi Org Management enabled.')
-        # except Exception as e:
-        #     logger.info('Current org does not have Multi Org Management enabled.')
-        #     logger.debug('Exception calling Orgs API: {}'.format(str(e)))
-        #     self.pushButtonGetOrgs.setEnabled(False)
-        #     self.checkBoxShowActive.setEnabled(False)
-        #     self.pushButtonCreateOrg.setEnabled(False)
-        #     self.pushButtonUpdateSubscription.setEnabled(False)
-        #     self.pushButtonCancelSubscription.setEnabled(False)
-
     def update_org_list(self, creds):
         logger.debug("[Organizations] Getting Updated Org List")
         if self.checkBoxShowActive.isChecked():
@@ -394,6 +469,12 @@ class OrganizationsTab(QtWidgets.QWidget):
 
     def cancel_subscription(self, selected_row, creds):
         if len(selected_row) > 0:
+            verify = QtWidgets.QMessageBox.question(self,
+                                                    'Verify Org Cancellation',
+                                                    'Are you sure you want to cancel this org? There is no undo.',
+                                                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            if verify == QtWidgets.QMessageBox.No:
+                return
             logger.debug("[Organizations] Canceling Subscription")
             row_dict = self.create_dict_from_qtable_row(selected_row)
             try:
@@ -414,11 +495,12 @@ class OrganizationsTab(QtWidgets.QWidget):
             self.mainwindow.errorbox('Nothing Selected')
 
     def create_org(self):
-        dialog = CreateOrUpdateOrgDialog(self.mainwindow)
-        dialog.exec()
-        dialog.show()
-        dialog.close()
-        self.update_org_list(self.mainwindow.get_current_creds('left'))
+        parent_org_creds = self.mainwindow.get_current_creds('left')
+        if parent_org_creds['id'] and parent_org_creds['key']:
+            dialog = CreateOrUpdateOrgDialog(self.mainwindow)
+            result = dialog.exec()
+            if result:
+                self.update_org_list(self.mainwindow.get_current_creds('left'))
 
     def update_subscription(self, selected_row, creds):
         if len(selected_row) > 0:
@@ -439,20 +521,8 @@ class OrganizationsTab(QtWidgets.QWidget):
                 logger.exception(e)
                 return
 
-            dialog = CreateOrUpdateOrgDialog(deployments, self.mainwindow, org_details=org_details, trials_enabled=trials_enabled)
-            dialog.exec()
-            dialog.show()
-
-            if str(dialog.result()) == '1':
-                org_update_details = dialog.getresults()
-                try:
-
-                    response = sumo_mam.update_org(org_details['orgId'], org_update_details['baselines'])
-                except Exception as e:
-                    self.mainwindow.errorbox('Something went wrong:\n\n' + str(e))
-                    logger.exception(e)
-                    dialog.close()
-
-                dialog.close()
+            dialog = CreateOrUpdateOrgDialog(self.mainwindow, org_details=org_details)
+            result = dialog.exec()
+            if result:
                 self.update_org_list(creds)
 

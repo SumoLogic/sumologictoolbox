@@ -148,7 +148,6 @@ class CredentialsDB:
         )
         # here's our encryption key
         key = kdf.derive(self.password)
-        print(sys.getsizeof(key))
         # we also need to generate a random initialization vector
         nonce = os.urandom(12)
         cipher = AESGCM(key)
@@ -267,7 +266,6 @@ class CredentialsDB:
             update_dict,
             synchronize_session = 'fetch'
         )
-        print(status)
         if status:
             self.session.commit()
         return status

@@ -1363,6 +1363,12 @@ class SumoLogic(object):
         r = self.post('/v1/account/subdomain', params=params)
         return r.json()
 
+    # undocumented functions that appear to work (tee hee. Use at your own risk)
+
+    def get_contract(self):
+        r = self.get('/v1/account/contract')
+        return r.json()
+
     # convenience functions, these do not map to directly to the API but I find them useful
 
     def whoami(self):

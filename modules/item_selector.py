@@ -9,6 +9,24 @@ from modules.filesystem_adapter import FilesystemAdapter
 
 class ItemSelector(QtWidgets.QWidget):
 
+    class ItemNameInput(QtWidgets.QDialog):
+
+        def __init__(self, mainwindow, name='', extension=''):
+            super().__init__()
+            self.mainwindow = mainwindow
+            item_name_input_ui = os.path.join(self.mainwindow.basedir, 'data/item_name_input.ui')
+            uic.loadUi(item_name_input_ui, self)
+            self.lineEditName.setText(name)
+            self.labelExtension.setText(extension)
+
+        def get_results(self):
+            if self.exec_() == QtWidgets.QDialog.Accepted:
+                # get all values
+                val = self.lineEditName.text()
+                return val
+            else:
+                return None
+
     def __init__(self, mainwindow, util_buttons_on=False, file_filter='', multi_select=False, enable_sumo=False):
         super().__init__()
         self.mainwindow = mainwindow
@@ -100,18 +118,15 @@ class ItemSelector(QtWidgets.QWidget):
         except Exception as e:
             raise e
 
-    def input_item_name(self, pre_populated_text: str, qt_parent):
-        name, pressed = QtWidgets.QInputDialog.getText(qt_parent, "Enter Item Name", "Name: ",
-                                             QtWidgets.QLineEdit.Normal, pre_populated_text)
-        if pressed:
-            return str(name)
-        else:
-            return None
+    def input_item_name(self, name: str, extension: str):
+        input_dialog = self.ItemNameInput(self.mainwindow, name=name, extension=extension)
+        name = input_dialog.get_results()
+        return name
 
-    def write_item(self, item, qt_parent, name='', extension='', ask=True):
+    def write_item(self, item, name='', extension='', ask=True):
         if not name or ask:
             pre_populated_text = '' + str(name)
-            name = self.input_item_name(pre_populated_text, qt_parent)
+            name = self.input_item_name(pre_populated_text, extension)
         if name:
             params = {}
             params['extension'] = str(extension)

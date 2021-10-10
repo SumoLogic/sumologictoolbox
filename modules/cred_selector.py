@@ -1,21 +1,19 @@
 from qtpy import QtGui, QtWidgets, uic
 import os
 
+
 class ItemSelector(QtWidgets.QWidget):
 
-    def __init__(self, mainwindow, side, ):
+    def __init__(self, mainwindow, side, credstore):
         super().__init__()
         self.side = side
         self.mainwindow = mainwindow
-        self.credential_database = None
+        self.credstore = credstore
         item_selector_ui = os.path.join(self.mainwindow.basedir, 'data/cred_selector.ui')
         uic.loadUi(item_selector_ui, self)
 
-    def register_credential_database(self, cred_database):
-        self.credential_database = cred_database
-
     def load_presets(self):
-        if self.credential_database:
+        if self.credstore:
             pass
 
     def clear_creds(self):

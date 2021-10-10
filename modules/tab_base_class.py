@@ -353,6 +353,7 @@ class BaseTab(QtWidgets.QWidget):
             self.workers[index].signals.finished.connect(self.export_progress.increment)
             self.workers[index].signals.result.connect(self.merge_begin_copy_results)
             self.mainwindow.threadpool.start(self.workers[index])
+
         return
 
     def merge_begin_copy_results(self, result):
