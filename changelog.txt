@@ -1,19 +1,22 @@
 Changelog for SumoToolBox
 
-9-??-2021 0.11.0
+10-11-2021 0.11.0
 
 *   [Content] Fixed a bug that made it impossible to copy from Admin and Global folders.
 *   [General] Made the JSON viewer stay on top of the main window instead of popping up underneath it.
 *   [Content] Fixed a bug that caused copying a scheduled search with a webhook connection to fail.
 *   [Rules] Fixed a bug that caused an error when copy CSE rules
-*   [Organizations] Added package editor. You can now create pacakges of configuration that can be deployed at
-    org provisioning time or later using the Package Deployer.
+*   [Organizations] Added package editor. You can now create packages of configuration that can be deployed at
+    org provisioning time or later using the Package Deployer. In this initial release you must create backup
+    files of your configuration first before adding them to the package.
 *   [Organizations] Added the packaged deployer. This allows you to deploy a package to one or more existing orgs.
     This feature is multi-threaded.
 *   [Organizations] Create org option now allows you to configure an org's subdomain name as well as deploy a package
     to the org as part of provisioning. You can also add the new org to your list of presets. Any of these three features
     require that the account owner of the child org be the same email address as the provisioner in the parent org
-    (all API keys are tied to users, who are uniquely identified by email address.)
+    (all API keys are tied to users, who are uniquely identified by email address.) You cannot deploy rules, mappings,
+    or custom insights as part of org provisioning as Cloud SIEM Enterprise must be enabled manually after initial
+    org provisioning. Any of these CSE specific config items will be ignored when deployed as part of an org provision.
 
 6-30-2021 0.10.0
 *   [General] Major Code Refactor! Most tabs now inherit code/UI from a base class.
