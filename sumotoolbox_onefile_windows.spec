@@ -3,18 +3,26 @@ import PyInstaller.config
 PyInstaller.config.CONF['distpath'] = "dist\\windows"
 block_cipher = None
 
-added_files = [
+from PyInstaller.utils.hooks import collect_all
+
+datas = [
     ( 'data/*', 'data' ),
     ( 'qtmodern', 'qtmodern' ),
     ( 'modules/*', 'modules' )
     ]
+hiddenimports = []
+binaries = []
+tmp_ret = collect_all('tzdata')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+
+
 
 
 a = Analysis(['sumotoolbox.py'],
              pathex=['Z:\\Projects\\PycharmProjects\\sumologictoolbox'],
-             binaries=[],
-             datas=added_files,
-             hiddenimports=[],
+             binaries=binaries,
+             datas=datas,
+             hiddenimports=hiddenimports,
              hookspath=None,
              runtime_hooks=None,
              excludes=None,
