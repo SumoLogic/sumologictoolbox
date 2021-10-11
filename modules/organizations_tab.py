@@ -197,7 +197,8 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
     def load_package(self):
         items = self.selector.get_selected_items()
         if len(items) == 1:
-            self.package = SumoPackage(package_data=items[0])
+            logger.info(f'Loading package: {items[0]}')
+            self.package = SumoPackage(package_data=items[0]['item_data'])
             self.lineEditConfigureOrg.setText(items[0]['item_name'])
 
     def create_org(self):
@@ -243,7 +244,9 @@ class CreateOrUpdateOrgDialog(QtWidgets.QDialog):
                 except Exception as e:
                     logger.exception(e)
             if config_org:
-                result = self.package.deploy(child_sumo)
+                self.package.log_items()
+                result = self.package.deploy(child_org_name, child_sumo)
+                logger.info(f'Package deploy attempted. Results: {result}')
             self.accept()
 
     def update_org(self):

@@ -416,7 +416,6 @@ class sumotoolbox(QtWidgets.QMainWindow, Ui_MainWindow):
             str(self.lineEditPasswordLeft.text())
         ))
 
-
     # method to reset all objects that are dependent on creds (such as collectors and content lists)
     def reset_stateful_objects(self, side='both'):
         for tab in self.tabs:
@@ -819,9 +818,22 @@ If so type 'DELETE' in the box below:"
 
     def create_preset_non_interactive(self, preset_name, sumo_region, accesskeyid, accesskey):
         if self.cred_db_authenticated == True:
-
+            deployment_conversion = { 'fra': 'DE',
+                                      'dub': 'EU',
+                                      'mum': 'IN',
+                                      'tky': 'JP',
+                                      'syd': 'AU',
+                                      'prod': 'US1',
+                                      'us2': 'US2',
+                                      'fed': 'FED',
+                                      'mon': 'CA'}
+            if sumo_region in deployment_conversion:
+                deployment = deployment_conversion[sumo_region]
+            else:
+                logger.info(f'Unknown deployment: {sumo_region}')
+                return 'ERROR'
             try:
-                self.credentialstore.add_creds(preset_name, sumo_region.upper(), accesskeyid, accesskey)
+                self.credentialstore.add_creds(preset_name, deployment, accesskeyid, accesskey)
                 self.add_preset_to_combobox(preset_name)
 
             except Exception as e:

@@ -84,7 +84,8 @@ class PackageEditor(QtWidgets.QDialog):
         for entry in self.current_package.package_items:
             item = QtWidgets.QListWidgetItem()
             item.setText(entry.item_name)
-            item.setIcon(self.icons[entry.item_type])
+            if entry.item_type in self.icons:
+                item.setIcon(self.icons[entry.item_type])
             item.entry = entry
             self.listWidgetPackageItems.addItem(item)
 

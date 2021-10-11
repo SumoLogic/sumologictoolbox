@@ -14,7 +14,11 @@ class SumoPackage:
                            'sumofer',
                            'sumoscheduledview',
                            'sumocontent',
-                           'sumoconnection']
+                           'sumomonitor',
+                           'sumomapping',
+                           'sumorule',
+                           'sumocustominsight'
+                           ]
         if package_data:
             logger.debug('Loading data into package object.')
             self.package_import(package_data)
@@ -22,6 +26,10 @@ class SumoPackage:
     def add_items(self, items: list):
         for item in items:
             self.add_item(item)
+
+    def log_items(self):
+        for item in self.package_items:
+            logger.info(f'Package contains: {item.item_name} of type: {item.item_type}')
 
     def add_item(self, item: dict):
         """
@@ -62,6 +70,12 @@ class SumoPackage:
                 self.package_items.append(SumoMonitorEntry(item_name, item_data, item_options=item_options))
             elif item_type == 'sumoconnection':
                 self.package_items.append(SumoConnectionEntry(item_name, item_data, item_options=item_options))
+            elif item_type == 'sumomapping':
+                self.package_items.append(SumoMappingEntry(item_name, item_data, item_options=item_options))
+            elif item_type == 'sumorule':
+                self.package_items.append(SumoRuleEntry(item_name, item_data, item_options=item_options))
+            elif item_type == 'sumocustominsight':
+                self.package_items.append(SumoCustomInsightEntry(item_name, item_data, item_options=item_options))
             elif item_type == 'sumopackage':
                 pass
             else:
@@ -312,3 +326,39 @@ class SumoMonitorEntry(SumoPackageEntry):
                 include_connection = item_option['value']
         monitor_root_folder_id = sumo.get_monitor_folder_root()['id']
         self.import_monitor(monitor_root_folder_id, self.item_data, sumo, include_connection=include_connection)
+
+
+class SumoRuleEntry(SumoPackageEntry):
+
+    from modules.shared import import_rule
+
+    def __init__(self, item_name, item_data, item_options=None):
+        super().__init__(item_name, item_data, item_options=item_options)
+        self.item_type = 'sumorule'
+
+    def deploy(self, sumo):
+        self.import_rule(self.item_data, sumo)
+
+
+class SumoMappingEntry(SumoPackageEntry):
+
+    from modules.shared import import_log_mapping
+
+    def __init__(self, item_name, item_data, item_options=None):
+        super().__init__(item_name, item_data, item_options=item_options)
+        self.item_type = 'sumomapping'
+
+    def deploy(self, sumo):
+        self.import_log_mapping(self.item_data, sumo)
+
+
+class SumoCustomInsightEntry(SumoPackageEntry):
+
+    from modules.shared import import_custom_insight
+
+    def __init__(self, item_name, item_data, item_options=None):
+        super().__init__(item_name, item_data, item_options=item_options)
+        self.item_type = 'sumocustominsight'
+
+    def deploy(self, sumo):
+        self.import_custom_insight(self.item_data, sumo)

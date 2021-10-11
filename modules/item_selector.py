@@ -57,7 +57,7 @@ class ItemSelector(QtWidgets.QWidget):
     def detect_item_type(self, item):
         if 'collectorType' in item:
             return 'sumocollector'
-        elif 'source' in item:
+        elif 'source' in item and 'category' in item['source']:
             return 'sumosource'
         elif 'type' in item:
             if (item['type'] == "SavedSearchWithScheduleSyncDefinition")\
@@ -83,7 +83,7 @@ class ItemSelector(QtWidgets.QWidget):
             return 'sumofer'
         elif 'analyticsTier' in item:
             return 'sumopartition'
-        elif 'data' in item and 'input' in item['data'] and 'output' in item['data']:
+        elif ('input' in item) and ('output' in item):
             return 'sumomapping'
         elif 'ruleId' in item:
             return 'sumorule'
