@@ -1,5 +1,5 @@
 __author__ = 'Tim MacDonald'
-__version__ = '0.11'
+__version__ = '0.11.1'
 # Copyright 2015 Timothy MacDonald
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
@@ -826,9 +826,16 @@ If so type 'DELETE' in the box below:"
                                       'prod': 'US1',
                                       'us2': 'US2',
                                       'fed': 'FED',
-                                      'mon': 'CA'}
-            if sumo_region in deployment_conversion:
-                deployment = deployment_conversion[sumo_region]
+                                      'mon': 'CA',
+                                      'de': 'DE',
+                                      'eu': 'EU',
+                                      'in': 'IN',
+                                      'jp': 'JP',
+                                      'au': 'AU',
+                                      'us1': 'US1',
+                                      'ca': 'CA'}
+            if str(sumo_region).lower() in deployment_conversion:
+                deployment = deployment_conversion[str(sumo_region).lower()]
             else:
                 logger.info(f'Unknown deployment: {sumo_region}')
                 return 'ERROR'

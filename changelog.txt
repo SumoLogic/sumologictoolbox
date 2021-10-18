@@ -1,5 +1,9 @@
 Changelog for SumoToolBox
 
+10-18-2021 0.11.1
+
+*   [General] Fixed bugs preventing the addition of new presets.
+
 10-11-2021 0.11.0
 
 *   [Content] Fixed a bug that made it impossible to copy from Admin and Global folders.
